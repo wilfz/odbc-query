@@ -214,15 +214,33 @@ int main(int argc, char **argv)
                 // retrieve a double
                 query.GetFieldValue("balance", d);  // adressing the column by its name
 
-				SQLGUID g = { 0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-				if ( ! query.IsFieldNull(4))
-					query.GetFieldValue(4, g);	// ODBC C type is implicitly set by the parameter of type GUID.
+				// ********************************************************************
+				// Retrieving field value of type GUID
+				// ********************************************************************
+
+                // BEGIN special hack for SQLite; for many other DBMS this can be omitted.
+                // SQLite cannot recognize the SQL type and doesn't know SQL_GUID.
+                // But in this special case of GUID we can cast to binary instead:
+				query.SetColumnSqlType(4, SQL_BINARY);
+                // END special hack for SQLite
+
+                SQLGUID g = { 0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };				
+                query.GetFieldValue(4, g);	// ODBC C type is implicitly set by the parameter of type GUID.
                     
                 cout << lfnbr << "\t" << sName << endl;
                 printf("%02d.%02d.%04d\t", tsBirthDate.day, tsBirthDate.month, tsBirthDate.year);
                 printf("%8.2f\t", d);
-                printf("%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x\n",
-                    g.Data1, g.Data2, g.Data3, g.Data4[0], g.Data4[1], g.Data4[2], g.Data4[3], g.Data4[4], g.Data4[5], g.Data4[6], g.Data4[7] );
+
+                // Of course fields can be NULL and be recognized as such 
+				if (query.IsFieldNull(4))
+                {
+                    printf("no uniqueidentifier value stored\n");
+                }
+                else
+                {
+                    printf("%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x\n",
+                        g.Data1, g.Data2, g.Data3, g.Data4[0], g.Data4[1], g.Data4[2], g.Data4[3], g.Data4[4], g.Data4[5], g.Data4[6], g.Data4[7] );
+                }
 			}
 		}
 
@@ -447,16 +465,11 @@ int main(int argc, char **argv)
 				// Retrieving field value of type GUID
 				// ********************************************************************
 
-				// BEGIN special hack for SQLite
-				query.GetODBCFieldInfo(4, fieldinfo);
-				if (fieldinfo.m_nSQLType == -9)	// SQLite cannot recognize the SQL type ...
-				{
-					// ... and doesn't know GUID.
-					// But in the special case of GUID we can cast to binary instead:
-					fieldinfo.m_nSQLType = SQL_BINARY;	// We have to set the correct odbc sql type here!
-					query.SetODBCFieldInfo(4, fieldinfo);
-				}
-				// END special hack for SQLite
+                // BEGIN special hack for SQLite; for many other DBMS this can be omitted.
+                // SQLite cannot recognize the SQL type and doesn't know SQL_GUID.
+                // But in this special case of GUID we can cast to binary instead:
+				query.SetColumnSqlType(4, SQL_BINARY);
+                // END special hack for SQLite
 
 				SQLGUID g = { 0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 				query.GetFieldValue(4, g);	// ODBC C type is implicitly set by the parameter of type GUID.
