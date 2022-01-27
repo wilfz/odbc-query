@@ -319,6 +319,23 @@ bool Query::SetODBCFieldInfo(string lpszName, const FieldInfo& fieldinfo)
     return true;
 }
 
+void Query::SetColumnSqlType(short nIndex, SWORD nSQLType)
+{
+    if (nIndex < 0 || (unsigned int) nIndex >= m_FieldInfo.size())
+        throw DbException(SQL_ERROR, SQL_HANDLE_STMT, m_hstmt); // AFX_SQ_ERROR_FIELD_NOT_FOUND
+    m_FieldInfo[nIndex].m_nSQLType = nSQLType;
+    return;
+}
+
+bool Query::SetColumnSqlType(string lpszName, SWORD nSQLType)
+{
+    int nIndex = GetFieldIndexByName( lpszName);
+    if (nIndex < 0)
+        return false;
+    m_FieldInfo[nIndex].m_nSQLType = nSQLType;
+    return true;
+}
+
 bool Query::GetFieldValue(string lpszName, string& sValue)
 {
     assert(!lpszName.empty());
@@ -704,12 +721,6 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
     {
         nFieldType = FieldInfo::GetDefaultCType( fieldinfo);
     }
-
-    // Determine the default field type and get the data buffer
-    //if (nFieldType == DEFAULT_FIELD_TYPE)
-    //{
-    //    nFieldType = CRecordset::GetDefaultFieldType( fieldinfo.m_nSQLType);
-    //}
 
     SQLLEN len = 0; //fieldinfo.m_nPrecision;
     SQLRETURN nRetCode = SQL_ERROR;

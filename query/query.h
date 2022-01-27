@@ -62,6 +62,8 @@ public:
     // be able to tell the query if necessary.
     void SetODBCFieldInfo( short nIndex, const FieldInfo& fieldinfo);
     bool SetODBCFieldInfo( string lpszName, const FieldInfo& fieldinfo);
+    void SetColumnSqlType( short nIndex, SWORD nSQLType);
+    bool SetColumnSqlType( string lpszName, SWORD nSQLType);
 
     // TODO: mapping from DBItem type selector m_vartype to the according C type
     static SQLSMALLINT GetCType(DBItem::vartype vt);

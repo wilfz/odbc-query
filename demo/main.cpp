@@ -71,7 +71,6 @@ int main(int argc, char **argv)
 	}
 	catch(DbException& ex)
 	{
-		//ex.GetErrorMessage(errmsg.GetBufferSetLength(1024),1023);
 		nRetCode = ex.getSqlCode();
 		cout << "Cannot open connection:" << endl << ex.what() << endl;
 		return nRetCode;

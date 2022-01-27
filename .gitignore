@@ -27,6 +27,26 @@
 *.lib
 
 # Executables
+Debug/
+Release/
 *.exe
 *.out
 *.app
+
+# CVS
+CVS/
+.#*
+.cvsignore
+
+# unfinished files
+procedure.h
+procedure.cpp
+
+# CodeLite files
+.codelite
+linux/demo.mk
+linux/demo.txt
+linux/Makefile
+
+# Visual Studio files
+.vs
