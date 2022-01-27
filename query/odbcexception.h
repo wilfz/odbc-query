@@ -28,7 +28,7 @@ public:
     ~DbException();
 
     virtual const char* what() const noexcept;
-    
+
     SQLRETURN getSqlCode() const;
     string getSqlState() const;
     SQLINTEGER getNativeError() const;
@@ -38,8 +38,9 @@ protected:
     SQLRETURN m_SqlReturn;
     SQLTCHAR m_SqlState[8];
     SQLINTEGER m_NativeError;
-    SQLTCHAR* m_SqlError;
-    char* m_what;
+    SQLTCHAR m_SqlError[SQL_MAX_MESSAGE_LENGTH];
+    char m_what[SQL_MAX_MESSAGE_LENGTH * 2];
 };
+
 }
 
