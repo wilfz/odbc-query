@@ -26,7 +26,7 @@ namespace linguversa
     public:
         // members of CODBCParamInfo
         SWORD m_nSQLType;
-        UDWORD m_nPrecision;
+        SQLULEN m_nPrecision;
         SWORD m_nScale;
         SWORD m_nNullability;
 

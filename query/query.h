@@ -222,8 +222,8 @@ public:
 	RETCODE SetParamValue(SQLUSMALLINT ParameterNumber, SQLGUID guid, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);
 	// fieldlen is the length of the corresponding sql field, NOT the length of lpszValue. It can be omitted if 
 	// the fieldlen has already been set by Prepare() or a previous call of SetParamValue() for the same parameter.
-	RETCODE SetParamValue(SQLUSMALLINT ParameterNumber, string lpszValue, ParamInfo::InputOutputType inouttype = ParamInfo::unknown, SQLINTEGER fieldlen = 0);
-	RETCODE SetParamValue(SQLUSMALLINT ParameterNumber, const bytearray& ba, ParamInfo::InputOutputType inouttype = ParamInfo::unknown, SQLINTEGER fieldlen = 0);
+	RETCODE SetParamValue(SQLUSMALLINT ParameterNumber, string lpszValue, ParamInfo::InputOutputType inouttype = ParamInfo::unknown, SQLLEN fieldlen = 0);
+	RETCODE SetParamValue(SQLUSMALLINT ParameterNumber, const bytearray& ba, ParamInfo::InputOutputType inouttype = ParamInfo::unknown, SQLLEN fieldlen = 0);
     RETCODE SetParamNull(SQLUSMALLINT ParameterNumber);
 
 	bool GetParamValue(SQLUSMALLINT ParameterNumber, long& nParamValue);

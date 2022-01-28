@@ -2120,7 +2120,7 @@ RETCODE Query::BindParameter(SQLUSMALLINT ParameterNumber, TCHAR* bufParamRef, S
     m_ParamItem[ParameterNumber] = pPi;
 
     nRetCode = ::SQLBindParameter(m_hstmt, ParameterNumber, (SQLSMALLINT) inouttype,
-#ifdef _UNICODE
+#ifdef UNICODE
         SQL_C_WCHAR,
         pPi->m_nSQLType ? pPi->m_nSQLType : SQL_WVARCHAR,
 #else
@@ -2366,7 +2366,7 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, SQLGUID guid, ParamIn
     return nRetCode;
 }
 
-RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, string lpszValue, ParamInfo::InputOutputType inouttype, SQLINTEGER fieldlen)
+RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, string lpszValue, ParamInfo::InputOutputType inouttype, SQLLEN fieldlen)
 {
     ParamItem* pPi = NULL;
     assert(ParameterNumber < m_ParamItem.size());
@@ -2422,21 +2422,18 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, string lpszValue, Par
     return nRetCode;
 }
 
-RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, const bytearray& ba, ParamInfo::InputOutputType inouttype, SQLINTEGER fieldlen)
+RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, const bytearray& ba, ParamInfo::InputOutputType inouttype, SQLLEN fieldlen)
 {
     ParamItem* pPi = NULL;
     assert(ParameterNumber < m_ParamItem.size());
     if (ParameterNumber < m_ParamItem.size())
         pPi = m_ParamItem[ParameterNumber];
 
-    int nLen = 0;
     if (pPi && pPi->m_local && pPi->m_nCType == SQL_C_BINARY && pPi->m_pParam && pPi->m_nParamLen > 0 	// already bound to local heap variable of type CString
         && (fieldlen == 0 || fieldlen == pPi->m_nParamLen))
     {
         assert(pPi->m_pParam != NULL);
-        nLen = (int) ba.size() <= pPi->m_nParamLen ? ba.size() : pPi->m_nParamLen;
         // so we only have to copy the current ByteaArray to the (same old) buffer:
-        //memcpy(pPi->m_pParam, ba.GetData(), nLen);
         for (unsigned int i = 0; i < ba.size(); i++)
             ((BYTE*)(pPi->m_pParam))[i] = ba[i];
 
@@ -2454,8 +2451,7 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, const bytearray& ba, 
 
     // create new local buffer on the heap
     BYTE* pBuf = new BYTE[fieldlen];
-    nLen = (int) (((int) ba.size() < fieldlen) ? ba.size() : fieldlen);
-    //memcpy(pBuf, ba.GetData(), nLen);
+    int nLen = (int) (((int) ba.size() < fieldlen) ? ba.size() : fieldlen);
     for (int i = 0; i < nLen; i++)
         pBuf[i] = ba[i];
 
