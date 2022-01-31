@@ -2387,7 +2387,7 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, string lpszValue, Par
             for (unsigned long i = 0; i < lpszValue.length(); i++)
                 ((TCHAR*)(pPi->m_pParam))[i] = lpszValue[i];
             // terminating 0x00 and fill up the remaining buffer:
-            for (unsigned long i = (unsigned long) lpszValue.length(); i < (pPi->m_nParamLen) + 1; i++)    // +1 because of terminating 0x00
+            for (unsigned long i = (unsigned long) lpszValue.length(); i < (unsigned long) (pPi->m_nParamLen) + 1; i++)    // +1 because of terminating 0x00
                 ((TCHAR*)(pPi->m_pParam))[i] = (TCHAR)0x00;
             return SQL_SUCCESS;
         }
