@@ -358,7 +358,7 @@ int main(int argc, char **argv)
 			buffer[i] = sName[i];
 		}
 		// don't forget the terminating '\0'
-		int n = sName.size() < buffersize ? sName.size() : buffersize - 1;
+		unsigned int n = (unsigned int) (sName.size() < buffersize ? sName.size() : buffersize - 1);
 		buffer[n] = (TCHAR)0;
 
 		// If a statement contains N question mark placeholders the parameters are

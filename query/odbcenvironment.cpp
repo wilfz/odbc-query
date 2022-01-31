@@ -80,12 +80,12 @@ SQLRETURN ODBCEnvironment::FetchDriverInfo(string& driverdescription, vector<str
     {
         driverdescription.assign((const char*) description); // TODO: Unicode
         string s;
-        int i = 0;
+        SQLSMALLINT i = 0;
         while (i < usedlen2 && attrib[i] != 0)
         {
             s.assign((const char*) attrib+i); // TODO: Unicode
             attributes.resize(attributes.size()+1,s);
-            i += s.size() + 1;
+            i += (SQLSMALLINT) s.size() + 1;
         }
     }
     else if(retcode != SQL_NO_DATA)

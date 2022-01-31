@@ -177,7 +177,7 @@ RETCODE Query::SQLMoreResults()
     m_RowFieldState.clear();
 
 #ifdef USE_ROWDATA
-    int nColCnt = m_RowData.size();
+    int nColCnt = (int) m_RowData.size();
     for (int i = 0; i < nColCnt; i++)
     {
         m_RowData[i].clear();
@@ -1368,10 +1368,10 @@ int Query::AddParameter(string ParameterName,
     int pos = GetParamIndexByName(ParameterName);
 
     if (pos < 0) // not yet
-        pos = m_ParamItem.size(); // append to the end of m_ParamItem
+        pos = (int) m_ParamItem.size(); // append to the end of m_ParamItem
 
     if (SetParamType((SQLUSMALLINT)pos, nSqlType, nLength, nScale, nNullable, inouttype ) == SQL_SUCCESS)
-        return (short)pos;
+        return pos;
     else
         return -1;
 }
@@ -1381,10 +1381,10 @@ int linguversa::Query::AddParameter(const ParamInfo& paraminfo)
     int pos = -1;
     // Does m_ParamItem not yet include a parameter with the same name?
     if (paraminfo.m_ParamName.size() == 0 || (pos = GetParamIndexByName(paraminfo.m_ParamName)) < 0)
-        pos = m_ParamItem.size(); // append to the end of m_ParamItem
+        pos = (int) m_ParamItem.size(); // append to the end of m_ParamItem
 
     if (SetParamType((SQLUSMALLINT)pos, paraminfo) == SQL_SUCCESS)
-        return (short)pos;
+        return pos;
     else
         return -1;
 }
@@ -2384,11 +2384,10 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, string lpszValue, Par
         if (pPi->m_nParamLen > 1 && (long) lpszValue.length() < pPi->m_nParamLen)
         {
             // so we only have to copy the new string to the (same old) buffer:
-            //_tcsncpy_s( (TCHAR*)(pPi->m_pParam), fieldlen + 1, lpszValue,_TRUNCATE);
-            for (unsigned int i = 0; i < lpszValue.length(); i++)
+            for (unsigned long i = 0; i < lpszValue.length(); i++)
                 ((TCHAR*)(pPi->m_pParam))[i] = lpszValue[i];
             // terminating 0x00 and fill up the remaining buffer:
-            for (int i = lpszValue.length(); i < (pPi->m_nParamLen) + 1; i++)    // +1 because of terminating 0x00
+            for (unsigned long i = (unsigned long) lpszValue.length(); i < (pPi->m_nParamLen) + 1; i++)    // +1 because of terminating 0x00
                 ((TCHAR*)(pPi->m_pParam))[i] = (TCHAR)0x00;
             return SQL_SUCCESS;
         }
@@ -2603,7 +2602,7 @@ bool Query::GetParamValue(SQLUSMALLINT ParameterNumber, bytearray& ba)
     if (pPi == NULL || pPi->m_pParam == NULL)
         return false;
 
-    int datalen = pPi->m_lenInd;
+    SQLLEN datalen = pPi->m_lenInd;
     assert(datalen <= pPi->m_nParamLen);
     if (datalen > pPi->m_nParamLen)
         datalen = pPi->m_nParamLen;
