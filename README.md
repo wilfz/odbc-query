@@ -1,2 +1,3 @@
 # odbc-query
-Library to easily access ODBC in C++
+Library to easily access databases by ODBC in C++
+Works for Windows and Linux. 
