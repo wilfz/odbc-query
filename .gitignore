@@ -51,3 +51,4 @@ linux/Makefile
 # Visual Studio files
 .vs
 VS2019/
+*.vcxproj.user
