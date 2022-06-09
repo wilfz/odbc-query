@@ -1,9 +1,51 @@
 #include "query.h"
 #include "paramitem.h"
 #include <cassert>
+// for helper functions convert()
+#include <iostream>
+
 
 using namespace linguversa;
 using namespace std;
+
+// helper function according to
+// https://stackoverflow.com/questions/4339960/how-do-i-convert-wchar-t-to-stdstring
+std::string convert(const std::wstring& wstr)
+{
+    const int BUFF_SIZE = 7;
+    if (MB_CUR_MAX >= BUFF_SIZE) throw std::invalid_argument("BUFF_SIZE too small");
+    std::string result;
+    bool shifts = std::wctomb(nullptr, 0);  // reset the conversion state
+    for (const wchar_t wc : wstr)
+    {
+        //std::array<char, BUFF_SIZE> buffer;
+        char buffer[BUFF_SIZE];
+        const int ret = std::wctomb(buffer, wc);
+        if (ret < 0 || ret >= BUFF_SIZE) throw std::invalid_argument("inconvertible wide characters in the current locale");
+        buffer[ret] = '\0';  // make 'buffer' contain a C-style string
+        result = result + std::string(buffer);
+    }
+    return result;
+}
+
+std::string convert(const wchar_t* wstr)
+{
+    const int BUFF_SIZE = 7;
+    if (MB_CUR_MAX >= BUFF_SIZE) throw std::invalid_argument("BUFF_SIZE too small");
+    std::string result;
+    bool shifts = std::wctomb(nullptr, 0);  // reset the conversion state
+    size_t i = 0;
+    while (const wchar_t wc = wstr[i++])
+    {
+        //std::array<char, BUFF_SIZE> buffer;
+        char buffer[BUFF_SIZE];
+        const int ret = std::wctomb(buffer, wc);
+        if (ret < 0 || ret >= BUFF_SIZE) throw std::invalid_argument("inconvertible wide characters in the current locale");
+        buffer[ret] = '\0';  // make 'buffer' contain a C-style string
+        result = result + std::string(buffer);
+    }
+    return result;
+}
 
 Query::Query()
 {
@@ -867,23 +909,43 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
     } break;
 
     case SQL_C_WCHAR:
-        // TODO
-        assert(false);
-        return;
+    {
+        wchar_t c = 0;    // dummy variable, but necessary!
+        nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_WCHAR, &c, 0, &len);
+        if (SQL_SUCCEEDED(nRetCode) && len > 0)
+        {
+            // create a buffer
+            size_t strlen = len / sizeof(wchar_t);
+            wchar_t* buf = new wchar_t[strlen + 1];
+            // Get all the data at once.
+            nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_WCHAR, buf, len + sizeof(wchar_t), &len);
+            if (SQL_SUCCEEDED(nRetCode))
+            {
+                buf[strlen] = (wchar_t)0;
+                // initialize varValue with a pointer to string
+                varValue.m_nCType = DBItem::lwvt_string;
+                varValue.m_pstring = new string();
+                *varValue.m_pstring = ::convert( buf);
+            }
+
+            delete[] buf;
+        }
+    } break;
 
     case SQL_C_CHAR:
     default:    // most sql types can be converted to string
     {
-        TCHAR c = 0;    // dummy variable, but necessary!
+        char c = 0;    // dummy variable, but necessary!
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_CHAR, &c, 0, &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
             // create a buffer
-            TCHAR* buf = new TCHAR[len + 1];
+            char* buf = new char[len + 1];
             // Get all the data at once.
             nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_CHAR, buf, len + 1, &len);
             if (SQL_SUCCEEDED(nRetCode))
             {
+                buf[len] = (char) 0;
                 // initialize varValue with a pointer to string
                 varValue.m_nCType = DBItem::lwvt_string;
                 varValue.m_pstring = new string();
@@ -926,23 +988,6 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
         return;
     }
 */
-
-    if (nRetCode != SQL_SUCCESS)
-    {
-        SQLTCHAR       SqlState[6], Msg[SQL_MAX_MESSAGE_LENGTH];
-        SQLINTEGER    NativeError;
-        SQLSMALLINT   i, MsgLen;
-        SQLRETURN     rc2;
-
-        i = 1;
-        while ((rc2 = ::SQLGetDiagRec(SQL_HANDLE_STMT, m_hstmt, i, SqlState,
-            &NativeError, Msg, SQL_MAX_MESSAGE_LENGTH, &MsgLen)) != SQL_NO_DATA)
-        {
-            //DisplayError(SqlState,NativeError,Msg,MsgLen);
-            //TRACE(_T("::SQLGetData() failed: \nSqlState = %s\nNativeError = %d\nErrorText = %s\n"), (LPCSTR)SqlState, NativeError, (LPCSTR)Msg);
-            i++;
-        }
-    }
 
     if (!SQL_SUCCEEDED(nRetCode))
         throw DbException(nRetCode, SQL_HANDLE_STMT, m_hstmt);
