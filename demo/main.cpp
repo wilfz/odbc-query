@@ -22,6 +22,32 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
 	}
 }
 
+std::string lower(const std::string& str)
+{
+	std::string data = str;
+	size_t len = data.length();
+	// convert string to lower case
+	for (size_t i = 0; i < len; i++)
+	{
+		data[i] = ::tolower(data[i]);
+	}
+
+	return data;
+}
+
+std::string upper(const std::string& str)
+{
+	std::string data = str;
+	size_t len = data.length();
+	// convert string to upper case
+	for (size_t i = 0; i < len; i++)
+	{
+		data[i] = ::toupper(data[i]);
+	}
+
+	return data;
+}
+
 int main(int argc, char **argv)
 {
     cout << "Hello ODBC!" << endl << endl;
@@ -126,7 +152,7 @@ int main(int argc, char **argv)
 		nRetCode = con.SqlGetDriverName(sDriverName);
 
 		// ... because postgres doesn't know data type "datetime", it has "timestamp" instead.
-		if (sDriverName.find( "psqlodbc.dll") < string::npos)
+		if (::lower(sDriverName).find( "psqlodbc") < string::npos)
 		{
 			::replaceAll( statement, "datetime", "timestamp");
 			::replaceAll( statement, "uniqueidentifier", "UUID");
@@ -134,8 +160,8 @@ int main(int argc, char **argv)
 		}
 
 		// ... and mysql and sqlite don't know data type "uniqueidentifier".
-		if (sDriverName.find( "myodbc") < string::npos || sDriverName.find("maodbc") < string::npos
-			|| sDriverName.find("sqlite") < string::npos)
+		if (::lower(sDriverName).find( "myodbc") < string::npos || ::lower(sDriverName).find("maodbc") < string::npos
+			|| ::lower(sDriverName).find("sqlite") < string::npos)
 		{
 			::replaceAll( statement, "uniqueidentifier", "binary(16)"); // "char(36)");
 		}
@@ -522,8 +548,8 @@ int main(int argc, char **argv)
 		// ********************************************************************
 
 		// So far I have only a testproc for SQL Server, MySQL, and MariaDB
-		if (sDriverName.find("SQLSRV") >= string::npos && sDriverName.find("sqlncli") >= string::npos
-			&& sDriverName.find("myodbc") >= string::npos && sDriverName.find("maodbc") >= string::npos)
+		if (::lower(sDriverName).find("sqlsrv") >= string::npos && ::lower(sDriverName).find("sqlncli") >= string::npos
+			&& ::lower(sDriverName).find("myodbc") >= string::npos && ::lower(sDriverName).find("maodbc") >= string::npos)
 		{
 			// none of the above found
 			return nRetCode;
