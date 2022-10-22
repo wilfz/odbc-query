@@ -152,6 +152,7 @@
     <ClInclude Include="..\query\paraminfo.h" />
     <ClInclude Include="..\query\paramitem.h" />
     <ClInclude Include="..\query\query.h" />
+    <ClInclude Include="..\query\tstring.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\demo\main.cpp" />
