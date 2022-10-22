@@ -92,13 +92,13 @@ short FieldInfo::GetDefaultCType(const FieldInfo& fi)
     case SQL_CHAR:
     case SQL_VARCHAR:
     case SQL_LONGVARCHAR:
-        nFieldType = SQL_C_CHAR;
+        nFieldType = SQL_C_TCHAR;
         break;
 
     case SQL_WCHAR:
     case SQL_WVARCHAR:
     case SQL_WLONGVARCHAR:
-        nFieldType = SQL_C_WCHAR;
+        nFieldType = SQL_C_TCHAR;
         break;
 
     case SQL_BINARY:
@@ -125,7 +125,7 @@ short FieldInfo::GetDefaultCType(const FieldInfo& fi)
         nFieldType = SQL_C_GUID;
         break;
     case SQL_UNKNOWN_TYPE:
-        nFieldType = SQL_C_CHAR;    // a reasonable default for most data types
+        nFieldType = SQL_C_TCHAR;    // a reasonable default for most data types
         break;
     default:
         nFieldType = DEFAULT_FIELD_TYPE;

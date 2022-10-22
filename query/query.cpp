@@ -1,51 +1,9 @@
 #include "query.h"
 #include "paramitem.h"
 #include <cassert>
-// for helper functions convert()
-#include <iostream>
-
 
 using namespace linguversa;
 using namespace std;
-
-// helper function according to
-// https://stackoverflow.com/questions/4339960/how-do-i-convert-wchar-t-to-stdstring
-std::string convert(const std::wstring& wstr)
-{
-    const int BUFF_SIZE = 7;
-    if (MB_CUR_MAX >= BUFF_SIZE) throw std::invalid_argument("BUFF_SIZE too small");
-    std::string result;
-    bool shifts = std::wctomb(nullptr, 0);  // reset the conversion state
-    for (const wchar_t wc : wstr)
-    {
-        //std::array<char, BUFF_SIZE> buffer;
-        char buffer[BUFF_SIZE];
-        const int ret = std::wctomb(buffer, wc);
-        if (ret < 0 || ret >= BUFF_SIZE) throw std::invalid_argument("inconvertible wide characters in the current locale");
-        buffer[ret] = '\0';  // make 'buffer' contain a C-style string
-        result = result + std::string(buffer);
-    }
-    return result;
-}
-
-std::string convert(const wchar_t* wstr)
-{
-    const int BUFF_SIZE = 7;
-    if (MB_CUR_MAX >= BUFF_SIZE) throw std::invalid_argument("BUFF_SIZE too small");
-    std::string result;
-    bool shifts = std::wctomb(nullptr, 0);  // reset the conversion state
-    size_t i = 0;
-    while (const wchar_t wc = wstr[i++])
-    {
-        //std::array<char, BUFF_SIZE> buffer;
-        char buffer[BUFF_SIZE];
-        const int ret = std::wctomb(buffer, wc);
-        if (ret < 0 || ret >= BUFF_SIZE) throw std::invalid_argument("inconvertible wide characters in the current locale");
-        buffer[ret] = '\0';  // make 'buffer' contain a C-style string
-        result = result + std::string(buffer);
-    }
-    return result;
-}
 
 Query::Query()
 {
@@ -92,7 +50,7 @@ void Query::SetDatabase(Connection& connection)
     }
 }
 
-SQLRETURN Query::ExecDirect( string statement)
+SQLRETURN Query::ExecDirect( tstring statement)
 {
     SQLRETURN nRetCode = SQL_SUCCESS;    //Return code for your ODBC calls
     if (m_hdbc == NULL && m_pConnection != nullptr)
@@ -268,7 +226,7 @@ short Query::GetODBCFieldCount() const
     return (short) colcount;
 }
 
-int Query::GetFieldIndexByName(string lpszFieldName)
+int Query::GetFieldIndexByName(tstring lpszFieldName)
 {
     if (lpszFieldName.empty())
         return SQL_ERROR;
@@ -305,7 +263,7 @@ void Query::GetODBCFieldInfo(short nIndex, FieldInfo& fieldinfo)
     fieldinfo.m_nNullability = m_FieldInfo[nIndex].m_nNullability;
 }
 
-bool Query::GetODBCFieldInfo(string lpszName, FieldInfo& fieldinfo)
+bool Query::GetODBCFieldInfo(tstring lpszName, FieldInfo& fieldinfo)
 {
     assert(! lpszName.empty());
 
@@ -341,7 +299,7 @@ void Query::SetODBCFieldInfo(short nIndex, const FieldInfo & fieldinfo)
     m_FieldInfo[nIndex].m_nNullability = fieldinfo.m_nNullability;
 }
 
-bool Query::SetODBCFieldInfo(string lpszName, const FieldInfo& fieldinfo)
+bool Query::SetODBCFieldInfo(tstring lpszName, const FieldInfo& fieldinfo)
 {
     assert(! lpszName.empty());
 
@@ -369,7 +327,7 @@ void Query::SetColumnSqlType(short nIndex, SWORD nSQLType)
     return;
 }
 
-bool Query::SetColumnSqlType(string lpszName, SWORD nSQLType)
+bool Query::SetColumnSqlType(tstring lpszName, SWORD nSQLType)
 {
     int nIndex = GetFieldIndexByName( lpszName);
     if (nIndex < 0)
@@ -378,7 +336,7 @@ bool Query::SetColumnSqlType(string lpszName, SWORD nSQLType)
     return true;
 }
 
-bool Query::GetFieldValue(string lpszName, string& sValue)
+bool Query::GetFieldValue(tstring lpszName, tstring& sValue)
 {
     assert(!lpszName.empty());
 
@@ -406,16 +364,50 @@ bool Query::GetFieldValue(short nIndex, string& sValue)
 
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_CHAR);
+    #ifndef UNICODE
     if (dbitem.m_nCType == DBItem::lwvt_string)
     {
-        sValue = *dbitem.m_pstring;
+        sValue = *dbitem.m_pstringa;
+        return true;
+    }
+    #endif
+
+    if (dbitem.m_nCType == DBItem::lwvt_astring)
+    {
+        sValue = *dbitem.m_pstringa;
         return true;
     }
 
     return false;
 }
 
-bool Query::GetFieldValue(string lpszName, long & lValue)
+bool Query::GetFieldValue(short nIndex, wstring& sValue)
+{
+    if (nIndex < 0 || nIndex >= GetODBCFieldCount())
+    {
+        throw DbException( SQL_ERROR, SQL_HANDLE_STMT, m_hstmt); // AFX_SQL_ERROR_FIELD_NOT_FOUND
+    }
+
+    DBItem dbitem;
+    GetFieldValue(nIndex, dbitem, SQL_C_WCHAR);
+    #ifdef UNICODE
+    if (dbitem.m_nCType == DBItem::lwvt_string)
+    {
+        sValue = *dbitem.m_pstringw;
+        return true;
+    }
+    #endif
+
+    if (dbitem.m_nCType == DBItem::lwvt_wstring)
+    {
+        sValue = *dbitem.m_pstringw;
+        return true;
+    }
+
+    return false;
+}
+
+bool Query::GetFieldValue(tstring lpszName, long & lValue)
 {
     assert(!lpszName.empty());
 
@@ -434,7 +426,7 @@ bool Query::GetFieldValue(string lpszName, long & lValue)
     return GetFieldValue(nIndex, lValue);
 }
 
-bool Query::GetFieldValue(string lpszName, int & iValue)
+bool Query::GetFieldValue(tstring lpszName, int & iValue)
 {
     assert(!lpszName.empty());
 
@@ -453,7 +445,7 @@ bool Query::GetFieldValue(string lpszName, int & iValue)
     return GetFieldValue(nIndex, iValue);
 }
 
-bool Query::GetFieldValue(string lpszName, short & siValue)
+bool Query::GetFieldValue(tstring lpszName, short & siValue)
 {
     assert(!lpszName.empty());
 
@@ -472,7 +464,7 @@ bool Query::GetFieldValue(string lpszName, short & siValue)
     return GetFieldValue(nIndex, siValue);
 }
 
-bool Query::GetFieldValue(string lpszName, bytearray & ba)
+bool Query::GetFieldValue(tstring lpszName, bytearray & ba)
 {
     assert(!lpszName.empty());
 
@@ -491,7 +483,7 @@ bool Query::GetFieldValue(string lpszName, bytearray & ba)
     return GetFieldValue(nIndex, ba);
 }
 
-bool Query::GetFieldValue(string lpszName, ODBCINT64 & ui64Value)
+bool Query::GetFieldValue(tstring lpszName, ODBCINT64 & ui64Value)
 {
     assert(!lpszName.empty());
 
@@ -510,7 +502,7 @@ bool Query::GetFieldValue(string lpszName, ODBCINT64 & ui64Value)
     return GetFieldValue(nIndex, ui64Value);
 }
 
-bool Query::GetFieldValue(string lpszName, double & dValue)
+bool Query::GetFieldValue(tstring lpszName, double & dValue)
 {
     assert(!lpszName.empty());
 
@@ -529,7 +521,7 @@ bool Query::GetFieldValue(string lpszName, double & dValue)
     return GetFieldValue(nIndex, dValue);
 }
 
-bool Query::GetFieldValue(string lpszName, SQLGUID& guid)
+bool Query::GetFieldValue(tstring lpszName, SQLGUID& guid)
 {
     assert(!lpszName.empty());
 
@@ -548,7 +540,7 @@ bool Query::GetFieldValue(string lpszName, SQLGUID& guid)
     return GetFieldValue(nIndex, guid);
 }
 
-bool linguversa::Query::GetFieldValue(string lpszName, TIMESTAMP_STRUCT& tsValue)
+bool linguversa::Query::GetFieldValue(tstring lpszName, TIMESTAMP_STRUCT& tsValue)
 {
     assert(!lpszName.empty());
 
@@ -915,25 +907,28 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
             // create a buffer
-            size_t strlen = len / sizeof(wchar_t);
-            wchar_t* buf = new wchar_t[strlen + 1];
+            size_t n = len / sizeof(wchar_t);
+            wchar_t* buf = new wchar_t[n + 1];
             // Get all the data at once.
-            nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_WCHAR, buf, len + sizeof(wchar_t), &len);
+            nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_WCHAR, buf, (n + 1) * sizeof(wchar_t), &len);
             if (SQL_SUCCEEDED(nRetCode))
             {
-                buf[strlen] = (wchar_t)0;
-                // initialize varValue with a pointer to string
+                buf[n] = (wchar_t)0;
+                // initialize varValue with a pointer to wstring
+                #ifdef UNICODE
                 varValue.m_nCType = DBItem::lwvt_string;
-                varValue.m_pstring = new string();
-                *varValue.m_pstring = ::convert( buf);
+                #else
+                varValue.m_nCType = DBItem::lwvt_wstring;
+                #endif
+                varValue.m_pstringw = new wstring();
+                varValue.m_pstringw->assign(buf);
             }
 
             delete[] buf;
         }
     } break;
-
+    
     case SQL_C_CHAR:
-    default:    // most sql types can be converted to string
     {
         char c = 0;    // dummy variable, but necessary!
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_CHAR, &c, 0, &len);
@@ -947,47 +942,60 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
             {
                 buf[len] = (char) 0;
                 // initialize varValue with a pointer to string
+                #ifdef UNICODE
+                varValue.m_nCType = DBItem::lwvt_astring;
+                #else
                 varValue.m_nCType = DBItem::lwvt_string;
-                varValue.m_pstring = new string();
-                varValue.m_pstring->assign(buf); // TODO Unicode
+                #endif
+                varValue.m_pstringa = new string();
+                varValue.m_pstringa->assign(buf);
             }
 
             delete[] buf;
         }
     } break;
 
+    default:    // most sql types can be converted to tstring
+    {
+        TCHAR c = 0;    // dummy variable, but necessary!
+        nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_TCHAR, &c, 0, &len);
+        if (SQL_SUCCEEDED(nRetCode) && len > 0)
+        {
+            // create a buffer
+            size_t n = len/sizeof(TCHAR);
+            TCHAR* buf = new TCHAR[n + 1];
+            // Get all the data at once.
+            nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_TCHAR, buf, (n + 1) * sizeof(TCHAR), &len);
+            if (SQL_SUCCEEDED(nRetCode))
+            {
+                // initialize varValue with a pointer to tstring
+                varValue.m_nCType = DBItem::lwvt_string;
+                varValue.m_pstring = new tstring();
+                varValue.m_pstring->assign(buf);
+            }
+
+            delete[] buf;
+        }
+    } break;
 
     } // end of case
 
-/*
-    // handling of uniqueidentifier fields with explicit convert to string
-    if (nFieldType == SQL_C_CHAR && (fieldinfo.m_nSQLType == SQL_GUID || fieldinfo.m_nSQLType == SQL_TIMESTAMP))
+    if (nRetCode != SQL_SUCCESS)
     {
-        CString strVal;
-        ASSERT(fieldinfo.m_nSQLType != SQL_TIMESTAMP);	// TODO
-        if (fieldinfo.m_nSQLType != SQL_TIMESTAMP)
-            LwQuery::GetFieldValue(nIndex, strVal);
-        #if _MFC_VER >= 0x0700
-            #ifdef _UNICODE
-                varValue.m_nCType = DBVT_WSTRING;
-                varValue.m_pstringW = new CStringW(strVal);
-            #else
-                varValue.m_nCType = DBVT_ASTRING;
-                varValue.m_pstringA = new CStringA(strVal);
-            #endif
-        #else
-                varValue.m_nCType = DBVT_STRING;
-                varValue.m_pstring = new CString(strVal);
-        #endif
+        SQLTCHAR       SqlState[6], Msg[SQL_MAX_MESSAGE_LENGTH];
+        SQLINTEGER    NativeError;
+        SQLSMALLINT   i, MsgLen;
+        SQLRETURN     rc2;
 
-        m_RowFieldState[nIndex] |= 0x01;
-#ifdef USE_ROWDATA
-        m_RowData[nIndex] = varValue;
-        m_Init[nIndex] = TRUE;
-#endif
-        return;
+        i = 1;
+        while ((rc2 = ::SQLGetDiagRec(SQL_HANDLE_STMT, m_hstmt, i, SqlState,
+            &NativeError, Msg, SQL_MAX_MESSAGE_LENGTH, &MsgLen)) != SQL_NO_DATA)
+        {
+            //DisplayError(SqlState,NativeError,Msg,MsgLen);
+            //TRACE(_T("::SQLGetData() failed: \nSqlState = %s\nNativeError = %d\nErrorText = %s\n"), (LPCSTR)SqlState, NativeError, (LPCSTR)Msg);
+            i++;
+        }
     }
-*/
 
     if (!SQL_SUCCEEDED(nRetCode))
         throw DbException(nRetCode, SQL_HANDLE_STMT, m_hstmt);
@@ -1005,7 +1013,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
     return;
 }
 
-bool Query::GetFieldValue(string lpszName, DBItem& varValue, short nFieldType)
+bool Query::GetFieldValue(tstring lpszName, DBItem& varValue, short nFieldType)
 {
     assert(! lpszName.empty());
 
@@ -1056,17 +1064,17 @@ bool Query::GetFieldValue(short nIndex, DBItem& varValue, DBItem::vartype itemty
         sql_c_typ = SQL_C_TIMESTAMP;
         break;
     case DBItem::lwvt_string:
-        sql_c_typ = SQL_C_CHAR;
+        sql_c_typ = SQL_C_TCHAR;
         break;
     case DBItem::lwvt_binary:
         sql_c_typ = SQL_C_SHORT;
         break;
     case DBItem::lwvt_astring:
-        assert(false);
-        return false;   // TODO
+        sql_c_typ = SQL_C_CHAR;
+        break;
     case DBItem::lwvt_wstring:
-        assert(false);
-        return false;   // TODO
+        sql_c_typ = SQL_C_WCHAR;
+        break;
     case DBItem::lwvt_bytearray:
         sql_c_typ = SQL_C_BINARY;
         break;
@@ -1085,7 +1093,7 @@ bool Query::GetFieldValue(short nIndex, DBItem& varValue, DBItem::vartype itemty
     return true;
 }
 
-bool Query::GetFieldValue(string lpszName, DBItem& varValue, DBItem::vartype itemtype)
+bool Query::GetFieldValue(tstring lpszName, DBItem& varValue, DBItem::vartype itemtype)
 {
     assert(!lpszName.empty());
 
@@ -1110,7 +1118,7 @@ bool Query::IsFieldInit( short nIndex)
     return (nIndex >= 0 && (unsigned int) nIndex < m_RowFieldState.size() && (m_RowFieldState[nIndex] & 0x01) != 0);    // initialized
 }
 
-bool Query::IsFieldInit(string lpszName)
+bool Query::IsFieldInit(tstring lpszName)
 {
     // Get the index of the field corresponding to name
     short nField = GetFieldIndexByName(lpszName);
@@ -1122,14 +1130,14 @@ bool Query::IsFieldNull( short nIndex)
     return (nIndex >= 0 && (unsigned int) nIndex < m_RowFieldState.size() && (m_RowFieldState[nIndex] & 0x02) != 0);    // null value
 }
 
-bool Query::IsFieldNull(string lpszName)
+bool Query::IsFieldNull(tstring lpszName)
 {
     // Get the index of the field corresponding to name
     short nField = GetFieldIndexByName(lpszName);
     return IsFieldNull( nField);
 }
 
-RETCODE Query::Prepare(string statement)
+RETCODE Query::Prepare(tstring statement)
 {
     SQLRETURN nRetCode = SQL_SUCCESS;    //Return code for your ODBC calls
     if (m_hdbc == NULL && m_pConnection != nullptr)
@@ -1322,7 +1330,7 @@ RETCODE Query::GetParamInfo(SQLUSMALLINT ParameterNumber, ParamInfo& paraminfo)
     return nRetCode;
 }
 
-int Query::GetParamIndexByName(string ParameterName)
+int Query::GetParamIndexByName(tstring ParameterName)
 {
     if (ParameterName.empty())
         return -1;
@@ -1338,7 +1346,7 @@ int Query::GetParamIndexByName(string ParameterName)
     return -1;
 }
 
-SQLRETURN Query::SetParamName(SQLUSMALLINT ParameterNumber, string ParameterName)
+SQLRETURN Query::SetParamName(SQLUSMALLINT ParameterNumber, tstring ParameterName)
 {
     assert(m_hdbc);
     SQLRETURN nRetCode = SQL_SUCCESS;
@@ -1399,7 +1407,7 @@ SQLRETURN Query::SetParamName(SQLUSMALLINT ParameterNumber, string ParameterName
     return nRetCode;
 }
 
-int Query::AddParameter(string ParameterName,
+int Query::AddParameter(tstring ParameterName,
     SQLSMALLINT nSqlType,
     UDWORD nLength,
     SWORD nScale,
@@ -1510,18 +1518,18 @@ SQLRETURN Query::Finish()
 
     // find out whether it is "MySQL ODBC ?.? * Driver"
     // otherwise simply return with SQL_SUCCESS
-    string sDriverName;
-	string sDriverVersion;
+    tstring sDriverName;
+	tstring sDriverVersion;
     m_pConnection->SqlGetDriverName(sDriverName);
 	m_pConnection->SqlGetDriverVersion(sDriverVersion);
 
-	if (sDriverName.find("maodbc") != std::string::npos)
+	if (sDriverName.find(_T("maodbc")) != tstring::npos)
 	{
-		if (sDriverVersion < "03.01") // prevent exception
+		if (sDriverVersion < _T("03.01")) // prevent exception
 			return SQL_SUCCESS;
 	}
 
-    if (sDriverName.find("myodbc") == std::string::npos)
+    if (sDriverName.find(_T("myodbc")) == tstring::npos)
     {
         // read behind the last result set and return
         do
@@ -1649,8 +1657,8 @@ SQLRETURN Query::Finish()
                 }
 
                 // if po->m_pParam points to a host variable outside of Query (external binding)
-                // we possibly have to truncate the string to fit into the buffer!
-                // copy string from datarow's field into the output parameter's buffer
+                // we possibly have to truncate the tstring to fit into the buffer!
+                // copy tstring from datarow's field into the output parameter's buffer
                 for (int j = 0; j < po->m_nParamLen; j++)
                 {
                     if (j < (int) datarow[i].m_pstring->size())
@@ -1800,7 +1808,7 @@ RETCODE Query::BindParameter(	// 32 bit, SQL_INTEGER
     return nRetCode;
 }
 
-RETCODE Query::BindParameter(string ParameterName, int& nParamRef, ParamInfo::InputOutputType inouttype)
+RETCODE Query::BindParameter(tstring ParameterName, int& nParamRef, ParamInfo::InputOutputType inouttype)
 {
     RETCODE nRetCode = SQL_SUCCESS;
     int n = GetParamIndexByName(ParameterName);
@@ -1876,7 +1884,7 @@ RETCODE Query::BindParameter(	// 32 bit, SQL_INTEGER
     return nRetCode;
 }
 
-RETCODE Query::BindParameter(string ParameterName, long& nParamRef, ParamInfo::InputOutputType inouttype)
+RETCODE Query::BindParameter(tstring ParameterName, long& nParamRef, ParamInfo::InputOutputType inouttype)
 {
     RETCODE nRetCode = SQL_SUCCESS;
     int n = GetParamIndexByName(ParameterName);
@@ -1938,7 +1946,7 @@ RETCODE Query::BindParameter(	// 64 bit, SQL_BIGINT
         inouttype = pPi->m_InputOutputType;
     else
         inouttype = pPi->m_InputOutputType = ParamInfo::input;
-    // maybe it is necessary to set pPi->m_lenInd to SQL_NTS (null terminted string) or the BufferLength argument to 8 (64 bit is 8 byte)
+    // maybe it is necessary to set pPi->m_lenInd to SQL_NTS (null terminted tstring) or the BufferLength argument to 8 (64 bit is 8 byte)
     m_ParamItem[ParameterNumber] = pPi;
 
     nRetCode = ::SQLBindParameter(m_hstmt, ParameterNumber, (SQLSMALLINT) inouttype,
@@ -2153,7 +2161,7 @@ RETCODE Query::BindParameter(SQLUSMALLINT ParameterNumber, TCHAR* bufParamRef, S
     //pPi->m_dwType = LWVT_TCHARBUFFER;
     pPi->m_nCType = SQL_C_TCHAR;
     pPi->m_pParam = bufParamRef;
-    pPi->m_lenInd = SQL_NTS;	// null terminted string
+    pPi->m_lenInd = SQL_NTS;	// null terminted tstring
     pPi->m_local = false;
     // inouttype must be different from ParamInfo::unknown!
     if (inouttype != ParamInfo::unknown)
@@ -2165,7 +2173,7 @@ RETCODE Query::BindParameter(SQLUSMALLINT ParameterNumber, TCHAR* bufParamRef, S
     m_ParamItem[ParameterNumber] = pPi;
 
     nRetCode = ::SQLBindParameter(m_hstmt, ParameterNumber, (SQLSMALLINT) inouttype,
-#ifdef UNICODE
+#ifdef _UNICODE
         SQL_C_WCHAR,
         pPi->m_nSQLType ? pPi->m_nSQLType : SQL_WVARCHAR,
 #else
@@ -2182,7 +2190,7 @@ RETCODE Query::BindParameter(SQLUSMALLINT ParameterNumber, TCHAR* bufParamRef, S
     return nRetCode;
 }
 
-RETCODE Query::BindParameter(string ParameterName, TCHAR* bufParamRef, SQLLEN bufParamlen, ParamInfo::InputOutputType inouttype)
+RETCODE Query::BindParameter(tstring ParameterName, TCHAR* bufParamRef, SQLLEN bufParamlen, ParamInfo::InputOutputType inouttype)
 {
     RETCODE nRetCode = SQL_SUCCESS;
     int n = GetParamIndexByName(ParameterName);
@@ -2411,14 +2419,14 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, SQLGUID guid, ParamIn
     return nRetCode;
 }
 
-RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, string lpszValue, ParamInfo::InputOutputType inouttype, SQLLEN fieldlen)
+RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, tstring lpszValue, ParamInfo::InputOutputType inouttype, SQLLEN fieldlen)
 {
     ParamItem* pPi = NULL;
     assert(ParameterNumber < m_ParamItem.size());
     if (ParameterNumber < m_ParamItem.size())
         pPi = m_ParamItem[ParameterNumber];
 
-    // pPi->m_nParamLen and fieldlen do not include one extra char for the string terminator.
+    // pPi->m_nParamLen and fieldlen do not include one extra char for the tstring terminator.
     if (pPi && fieldlen == 0)
         fieldlen = pPi->m_nParamLen;
     else if (pPi && pPi->m_nParamLen == 0)
@@ -2428,7 +2436,7 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, string lpszValue, Par
     {
         if (pPi->m_nParamLen > 1 && (long) lpszValue.length() < pPi->m_nParamLen)
         {
-            // so we only have to copy the new string to the (same old) buffer:
+            // so we only have to copy the new tstring to the (same old) buffer:
             for (unsigned long i = 0; i < lpszValue.length(); i++)
                 ((TCHAR*)(pPi->m_pParam))[i] = lpszValue[i];
             // terminating 0x00 and fill up the remaining buffer:
@@ -2599,7 +2607,7 @@ bool Query::GetParamValue(SQLUSMALLINT ParameterNumber, TIMESTAMP_STRUCT& tsPara
     }
 }
 
-bool Query::GetParamValue(SQLUSMALLINT ParameterNumber, string& sParamValue)
+bool Query::GetParamValue(SQLUSMALLINT ParameterNumber, tstring& sParamValue)
 {
     ParamItem* pPi = NULL;
     if (ParameterNumber < m_ParamItem.size())
@@ -2782,7 +2790,7 @@ RETCODE Query::InitFieldInfos()
         //UDWORD m_nPrecision;
         //SWORD m_nScale;
         //SWORD m_nNullability;
-        m_FieldInfo[col].m_strName.assign( (const char*) colname); // TODO Unicode
+        m_FieldInfo[col].m_strName.assign( (const TCHAR*) colname);
         m_FieldInfo[col].m_nSQLType = datatype;
         m_FieldInfo[col].m_nPrecision = columnsize;
         m_FieldInfo[col].m_nScale = decimaldigits;

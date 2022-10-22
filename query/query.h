@@ -31,7 +31,7 @@ public:
     // Execute an arbitrary sql statement; on success the function returns SQL_SUCCESS, otherwise one of the return codes defined in <sql.h>.
     // If the statement contains question mark placeholders it is obligatory to bind a host variable for each placeholder(see below) 
     // before calling ExecDirect().
-    SQLRETURN ExecDirect( string statement);
+    SQLRETURN ExecDirect( tstring statement);
 
     // Finish the statement and release all its resources.
     SQLRETURN Close();
@@ -47,7 +47,7 @@ public:
 
     // Returns the 0-based column index which corresponds to the column named lpszFieldName, 
     // -1 if no column name matches.
-    int GetFieldIndexByName(string lpszFieldName);
+    int GetFieldIndexByName(tstring lpszFieldName);
 
     // Retrieves information about column type and size. See Visual Studio / MFC help for further information 
     // on CODBCFieldInfo.
@@ -55,15 +55,15 @@ public:
 
     // Retrieves information about column name, type and size. See Visual Studio / MFC help for further information 
     // on CODBCFieldInfo. Returns false if no column with the specified column name exists.
-    bool GetODBCFieldInfo( string lpszName, FieldInfo& fieldinfo);
+    bool GetODBCFieldInfo( tstring lpszName, FieldInfo& fieldinfo);
 
     // Some engines (like SQLite) do not always know the complete Fieldinfo. 
     // In those cases the application program should know and 
     // be able to tell the query if necessary.
     void SetODBCFieldInfo( short nIndex, const FieldInfo& fieldinfo);
-    bool SetODBCFieldInfo( string lpszName, const FieldInfo& fieldinfo);
+    bool SetODBCFieldInfo( tstring lpszName, const FieldInfo& fieldinfo);
     void SetColumnSqlType( short nIndex, SWORD nSQLType);
-    bool SetColumnSqlType( string lpszName, SWORD nSQLType);
+    bool SetColumnSqlType( tstring lpszName, SWORD nSQLType);
 
     // TODO: mapping from DBItem type selector m_vartype to the according C type
     static SQLSMALLINT GetCType(DBItem::vartype vt);
@@ -89,22 +89,23 @@ public:
     SQLRETURN SQLMoreResults();
 
     // The following functions retrieve the value of the specified column in the current row after Fetch(). 
-    // Most sql data types can be converted to CString.
+    // Most sql data types can be converted to string.
     // If a column name is specified that does not exist, the function returns false.
-    bool GetFieldValue( string lpszName, string& sValue );
+    bool GetFieldValue( tstring lpszName, tstring& sValue );
     bool GetFieldValue( short nIndex, string& sValue );
+    bool GetFieldValue( short nIndex, wstring& sValue );
 
     // Retrieve the value of the specified column in the current row into a variable of the respective type. 
     // Returns false if no column with name lpszName exists or if the sql type of the column cannot be converted into 
     // the target type. See the conversion matrix in Visual Studio help.
-    bool GetFieldValue( string lpszName, long& lValue);
-    bool GetFieldValue( string lpszName, int& iValue);
-    bool GetFieldValue( string lpszName, short& siValue);
-    bool GetFieldValue( string lpszName, bytearray& ba);
-    bool GetFieldValue( string lpszName, ODBCINT64& ui64Value);
-    bool GetFieldValue( string lpszName, double& dValue);
-    bool GetFieldValue( string lpszName, SQLGUID& guid);
-    bool GetFieldValue(string lpszName, TIMESTAMP_STRUCT& tsValue);
+    bool GetFieldValue( tstring lpszName, long& lValue);
+    bool GetFieldValue( tstring lpszName, int& iValue);
+    bool GetFieldValue( tstring lpszName, short& siValue);
+    bool GetFieldValue( tstring lpszName, bytearray& ba);
+    bool GetFieldValue( tstring lpszName, ODBCINT64& ui64Value);
+    bool GetFieldValue( tstring lpszName, double& dValue);
+    bool GetFieldValue( tstring lpszName, SQLGUID& guid);
+    bool GetFieldValue(tstring lpszName, TIMESTAMP_STRUCT& tsValue);
     bool GetFieldValue( short nIndex, long& lValue);
     bool GetFieldValue( short nIndex, int& iValue);
     bool GetFieldValue( short nIndex, short& siValue);
@@ -118,10 +119,10 @@ public:
     // Returns false if no column with name lpszName exists.
     // DBItem is a helper class which supports 
     //  - additional data types, 
-    //  - formatting into string, 
+    //  - formatting into tstring, 
     //  - assignment and comparison operators. 
     bool GetFieldValue(short nIndex, DBItem& varValue, DBItem::vartype itemtype);
-    bool GetFieldValue(string lpszName, DBItem& varValue, DBItem::vartype itemtype);
+    bool GetFieldValue(tstring lpszName, DBItem& varValue, DBItem::vartype itemtype);
 
     // Actually all GetFieldValue() functions internally use the following functions 
     // and cache the data in a protected member which is an array of DBItem.
@@ -129,20 +130,20 @@ public:
     // But only few number indicate an existing data type, and even those referring to valid
     // types might not be implemented in this class or in your ODBC driver.
     void GetFieldValue( short nIndex, DBItem& varValue, short nFieldType = DEFAULT_FIELD_TYPE);
-    bool GetFieldValue( string lpszName, DBItem& varValue, short nFieldType = DEFAULT_FIELD_TYPE);
+    bool GetFieldValue( tstring lpszName, DBItem& varValue, short nFieldType = DEFAULT_FIELD_TYPE);
 
     // If true the data field in the current row has been read and value or null indicator is initialized.
     bool IsFieldInit( short nIndex);
-    bool IsFieldInit( string lpszName);
+    bool IsFieldInit( tstring lpszName);
     // If true the column with nIndex has been read and holds the db null value.
     bool IsFieldNull( short nIndex);
-    bool IsFieldNull( string lpszName);
+    bool IsFieldNull( tstring lpszName);
 
     // Set an arbitrary SQL statement which is to be executed. 
     // The statement may contain question marks as placeholders for variables which have to 
     // be bound to the statement according to their types and the sql type in the statement. 
     // For details see the conversion matrix in Visual Studio help.
-    SQLRETURN Prepare(string statement);
+    SQLRETURN Prepare(tstring statement);
 
     // Execute the statement which was previously set with Prepare(). 
     // If you want to execute the same statement with different parameter values, it is sufficient to 
@@ -155,15 +156,15 @@ public:
     
     // Returns parameter index which corresponds to the parameter named ParameterName, 
     // -1 if no parameter name matches.
-    int GetParamIndexByName(string ParameterName);
+    int GetParamIndexByName(tstring ParameterName);
 
     // Set the name of a not yet named parameter
-    SQLRETURN SetParamName(SQLUSMALLINT ParameterNumber, string ParameterName);
+    SQLRETURN SetParamName(SQLUSMALLINT ParameterNumber, tstring ParameterName);
     
     // If there has been no previous Prepare() the host application itself must supply information on all parameters of the query.
     // For positional parameters ParammeterName should be empty.
     // Return value is the actual number of the parameter or -1 in case of error.
-    int AddParameter(string ParameterName, SQLSMALLINT nSqlType, UDWORD nLength = 0, SWORD nScale = 0, SWORD nNullable = 1, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);
+    int AddParameter(tstring ParameterName, SQLSMALLINT nSqlType, UDWORD nLength = 0, SWORD nScale = 0, SWORD nNullable = 1, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);
     int AddParameter(const ParamInfo& paraminfo);
     
     // Some ODBC drivers (MySQL) are not capable of retrieving correct SQL type / ParamInfo.
@@ -184,10 +185,10 @@ public:
 	RETCODE BindParameter(SQLUSMALLINT ParameterNumber, short& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);	// 16 bit, SQL_SMALLINT
 	// Host variable is of C++ type int(32 bit integer) which corresponds to the ODBC sql type SQL_INTEGER.
 	RETCODE BindParameter(SQLUSMALLINT ParameterNumber, int& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);	// 32 bit, SQL_INTEGER
-	virtual RETCODE BindParameter(string ParameterName, int& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::input);	// 32 bit, SQL_INTEGER
+	virtual RETCODE BindParameter(tstring ParameterName, int& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::input);	// 32 bit, SQL_INTEGER
 	// Host variable is of C++ type long (32 bit integer) which corresponds to the ODBC sql type SQL_INTEGER.
 	RETCODE BindParameter(SQLUSMALLINT ParameterNumber, long& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);	// 32 bit, SQL_INTEGER
-	RETCODE BindParameter(string ParameterName, long& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::input);	// 32 bit, SQL_INTEGER
+	RETCODE BindParameter(tstring ParameterName, long& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::input);	// 32 bit, SQL_INTEGER
 	// Host variable is of C++ type __int64 (64 bit integer) which corresponds to the ODBC sql type SQL_BIGINT.
 	RETCODE BindParameter(SQLUSMALLINT ParameterNumber, ODBCINT64& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);	// 64 bit, SQL_BIGINT
 	// Host variable is of C++ type double.Length in memory of double is 64 bit integer.
@@ -203,7 +204,7 @@ public:
     // in case of stored procedures at least as large as the maximum length of the corresponding stored proc parameter.
 	// The buffer length has to be set in the bufParamlen parameter.
 	RETCODE BindParameter(SQLUSMALLINT ParameterNumber, TCHAR* bufParamRef, SQLLEN bufParamlen = 0, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);
-	RETCODE BindParameter(string ParameterName, TCHAR* bufParamRef, SQLLEN bufParamlen = 0, ParamInfo::InputOutputType inouttype = ParamInfo::input);
+	RETCODE BindParameter(tstring ParameterName, TCHAR* bufParamRef, SQLLEN bufParamlen = 0, ParamInfo::InputOutputType inouttype = ParamInfo::input);
 	// Host variable is a buffer of BYTEs. Length in memory depends. It is very similar to the previous function except that there is no terminating 0. 
 	// It may be used for ODBC sql types SQL_BINARY, SQL_VARBINARY. 
 	// paramDataLen is the length of input data or the special value SQL_NULL_DATA to indicate input is null.
@@ -222,18 +223,18 @@ public:
 	RETCODE SetParamValue(SQLUSMALLINT ParameterNumber, SQLGUID guid, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);
 	// fieldlen is the length of the corresponding sql field, NOT the length of lpszValue. It can be omitted if 
 	// the fieldlen has already been set by Prepare() or a previous call of SetParamValue() for the same parameter.
-	RETCODE SetParamValue(SQLUSMALLINT ParameterNumber, string lpszValue, ParamInfo::InputOutputType inouttype = ParamInfo::unknown, SQLLEN fieldlen = 0);
+	RETCODE SetParamValue(SQLUSMALLINT ParameterNumber, tstring lpszValue, ParamInfo::InputOutputType inouttype = ParamInfo::unknown, SQLLEN fieldlen = 0);
 	RETCODE SetParamValue(SQLUSMALLINT ParameterNumber, const bytearray& ba, ParamInfo::InputOutputType inouttype = ParamInfo::unknown, SQLLEN fieldlen = 0);
     RETCODE SetParamNull(SQLUSMALLINT ParameterNumber);
 
 	bool GetParamValue(SQLUSMALLINT ParameterNumber, long& nParamValue);
 	bool GetParamValue(SQLUSMALLINT ParameterNumber, double& dParamValue);
 	bool GetParamValue(SQLUSMALLINT ParameterNumber, TIMESTAMP_STRUCT& tsParamValue);
-	bool GetParamValue(SQLUSMALLINT ParameterNumber, string& sValue);
+	bool GetParamValue(SQLUSMALLINT ParameterNumber, tstring& sValue);
 	bool GetParamValue(SQLUSMALLINT ParameterNumber, SQLGUID& guid);
 	bool GetParamValue(SQLUSMALLINT ParameterNumber, bytearray& ba);
 
-	// Set special parameter values, e.g. SQL_NTS (Null terminated string), SQL_NULL_DATA (for null value), 
+	// Set special parameter values, e.g. SQL_NTS (Null terminated tstring), SQL_NULL_DATA (for null value), 
 	// SQL_DEFAULT_PARAM (default parameter, only for stored procedure calls).
 	void SetParamLenIndicator(SQLUSMALLINT ParameterNumber, SQLLEN lenInd);
 

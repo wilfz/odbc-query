@@ -1,19 +1,9 @@
 #pragma once
 
-#ifdef _WIN32
-// needs to be included above sql.h for windows
-#ifndef __MINGW32__
-#define NOMINMAX
-#if _MSC_VER <= 1500
-#define nullptr NULL
-#endif // _MSC_VER <= 1500
-#endif
-#include <windows.h>
-#endif
+#include "tstring.h"
 
 #include <sql.h>
 #include <sqlext.h>
-#include <string>
 #include <vector>
 
 #define SQL_C_STRING SQL_VARCHAR
@@ -65,7 +55,9 @@ namespace linguversa
           float             m_fltVal;   // SQL_C_FLOAT     = SQL_REAL := 7       /* REAL          */
           double            m_dblVal;   // SQL_C_DOUBLE    = SQL_DOUBLE := 8     /* FLOAT, DOUBLE */
           TIMESTAMP_STRUCT* m_pdate;    // SQL_C_TIMESTAMP = SQL_TIMESTAMP := 11 /* DATETIME      */
-          string*           m_pstring;  // SQL_C_CHAR      = SQL_CHAR := 1       /* CHAR, VARCHAR */
+          tstring*          m_pstring;  // SQL_C_TCHAR     = SQL_CHAR := 1       /* CHAR, VARCHAR */
+          string*           m_pstringa; // SQL_C_CHAR      = SQL_CHAR := 1       /* CHAR, VARCHAR */
+          wstring*          m_pstringw; // SQL_C_WCHAR     = SQL_CHAR := 1       /* CHAR, VARCHAR */
           bytearray*        m_pByteArray; // SQL_C_BINARY  = SQL_BINARY := -2
           unsigned ODBCINT64* m_pUInt64;  // SQL_C_UBIGINT = SQL_BIGINT + SQL_UNSIGNED_OFFSET = -27
           SQLGUID*          m_pGUID;    // SQL_C_GUID :    = SQL_GUID = -11

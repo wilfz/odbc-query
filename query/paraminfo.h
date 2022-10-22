@@ -1,19 +1,9 @@
 #pragma once
 
-#ifdef _WIN32
-// needs to be included above sql.h for windows
-#ifndef __MINGW32__
-#define NOMINMAX
-#if _MSC_VER <= 1500
-#define nullptr NULL
-#endif // _MSC_VER <= 1500
-#endif
-#include <windows.h>
-#endif
+#include "tstring.h"
 
 #include <sql.h>
 #include <sqlext.h>
-#include <string>
 
 using namespace std;
 
@@ -42,7 +32,7 @@ namespace linguversa
         // other members
         InputOutputType m_InputOutputType;
         // nur für stored proceduers
-        string m_ParamName;
+        tstring m_ParamName;
 
         ParamInfo()
         {

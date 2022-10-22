@@ -11,7 +11,7 @@
 #include <windows.h>
 #endif
 
-#include <string>
+#include "tstring.h"
 #include <vector>
 #include "dbitem.h"
 
@@ -30,7 +30,7 @@ public:
     //bool operator == (const LwDataRow& other) const;
     //bool operator != (const LwDataRow& other) const;
 
-    //string Format( const LwResultInfo& fieldinfo, LPCTSTR fmt = NULL) const;
+    //tstring Format( const LwResultInfo& fieldinfo, LPCTSTR fmt = NULL) const;
 
 protected:
     //LwResultInfo* m_pResultInfo;

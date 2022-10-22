@@ -30,7 +30,7 @@ ODBCEnvironment::~ODBCEnvironment()
         m_henv = SQL_NULL_HENV;
 }
 
-SQLRETURN ODBCEnvironment::FetchDriverName(string& driverdescription, SQLUSMALLINT direction)
+SQLRETURN ODBCEnvironment::FetchDriverName(tstring& driverdescription, SQLUSMALLINT direction)
 {
    if (m_henv == SQL_NULL_HENV)
         return false;
@@ -47,7 +47,7 @@ SQLRETURN ODBCEnvironment::FetchDriverName(string& driverdescription, SQLUSMALLI
         
     if (SQL_SUCCEEDED(retcode))
     {
-        driverdescription.assign((const char*) description); // TODO: Unicode
+        driverdescription.assign((const TCHAR*) description); // TODO: Unicode
     }
     else if(retcode != SQL_NO_DATA)
     {
@@ -57,7 +57,7 @@ SQLRETURN ODBCEnvironment::FetchDriverName(string& driverdescription, SQLUSMALLI
     return retcode;
 }
 
-SQLRETURN ODBCEnvironment::FetchDriverInfo(string& driverdescription, vector<string>& attributes, SQLUSMALLINT direction)
+SQLRETURN ODBCEnvironment::FetchDriverInfo(tstring& driverdescription, vector<tstring>& attributes, SQLUSMALLINT direction)
 {
    if (m_henv == SQL_NULL_HENV)
         return false;
@@ -78,12 +78,12 @@ SQLRETURN ODBCEnvironment::FetchDriverInfo(string& driverdescription, vector<str
         
     if (SQL_SUCCEEDED(retcode))
     {
-        driverdescription.assign((const char*) description); // TODO: Unicode
-        string s;
+        driverdescription.assign((const TCHAR*) description); // TODO: Unicode
+        tstring s;
         SQLSMALLINT i = 0;
         while (i < usedlen2 && attrib[i] != 0)
         {
-            s.assign((const char*) attrib+i); // TODO: Unicode
+            s.assign((const TCHAR*) attrib+i); // TODO: Unicode
             attributes.resize(attributes.size()+1,s);
             i += (SQLSMALLINT) s.size() + 1;
         }
@@ -96,7 +96,7 @@ SQLRETURN ODBCEnvironment::FetchDriverInfo(string& driverdescription, vector<str
     return retcode;
 }
 
-SQLRETURN ODBCEnvironment::FetchDataSourceInfo(string& dsn, string& drivername, SQLUSMALLINT direction)
+SQLRETURN ODBCEnvironment::FetchDataSourceInfo(tstring& dsn, tstring& drivername, SQLUSMALLINT direction)
 {
    if (m_henv == SQL_NULL_HENV)
         return false;
@@ -114,8 +114,8 @@ SQLRETURN ODBCEnvironment::FetchDataSourceInfo(string& dsn, string& drivername, 
         
     if (SQL_SUCCEEDED(retcode))
     {
-        dsn.assign((const char*) dsname); // TODO: Unicode
-        drivername.assign((const char*) driver); // TODO: Unicode
+        dsn.assign((const TCHAR*) dsname); // TODO: Unicode
+        drivername.assign((const TCHAR*) driver); // TODO: Unicode
     }
     else if(retcode != SQL_NO_DATA)
     {

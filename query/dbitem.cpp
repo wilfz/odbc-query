@@ -27,24 +27,22 @@ void DBItem::clear()
     {
     case lwvt_string:
         if (m_pstring)
-            delete (string*) m_pstring;
+            delete (tstring*) m_pstring;
         m_pstring = nullptr;
         m_nCType = lwvt_null;
         break;
-    #if _MFC_VER >= 0x0700
-    case DBVT_WSTRING: // TODO
-        if (m_pstringW)
-            delete (CStringW*) m_pstringW;
-        m_pstringW = nullptr;
+    case lwvt_astring:
+        if (m_pstringw)
+            delete (wstring*) m_pstringw;
+        m_pstringw = nullptr;
         m_nCType = lwvt_null;
         break;
-    case DBVT_ASTRING: // TODO
-        if (m_pstringA)
-            delete (CStringA*) m_pstringA;
-        m_pstringA = nullptr;
+    case lwvt_wstring:
+        if (m_pstringa)
+            delete (string*) m_pstringa;
+        m_pstringa = nullptr;
         m_nCType = lwvt_null;
         break;
-    #endif
     case lwvt_date:
         if (m_pdate)
             delete (TIMESTAMP_STRUCT*) m_pdate;
@@ -192,7 +190,7 @@ void DBItem::copyfrom(const DBItem& src)
     case lwvt_string:
         if (m_nCType != src.m_nCType)
         {
-            m_pstring = new string(*src.m_pstring);
+            m_pstring = new tstring(*src.m_pstring);
             m_nCType = src.m_nCType;
         }
         else

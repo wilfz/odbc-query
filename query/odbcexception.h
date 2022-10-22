@@ -1,27 +1,15 @@
 #pragma once
 
-#ifdef _WIN32
-// needs to be included above sql.h for windows
-#ifndef __MINGW32__
-#define NOMINMAX
-#if _MSC_VER <= 1500
-#define nullptr NULL
-#define noexcept
-#define snprintf sprintf_s
-#endif // _MSC_VER <= 1500
-#endif
-#include <windows.h>
-#endif
+#include "tstring.h"
 
 #include <sql.h>
 #include <sqlext.h>
-#include <string>
 
 using namespace std;
 
 namespace linguversa
 {
-class DbException : exception 
+class DbException : public exception 
 {
 public:
     DbException( SQLRETURN ret, SQLSMALLINT handleType, SQLHANDLE handle);
@@ -30,9 +18,9 @@ public:
     virtual const char* what() const noexcept;
 
     SQLRETURN getSqlCode() const;
-    string getSqlState() const;
+    tstring getSqlState() const;
     SQLINTEGER getNativeError() const;
-    string getSqlErrorMessage() const;
+    tstring getSqlErrorMessage() const;
 
 protected:
     SQLRETURN m_SqlReturn;

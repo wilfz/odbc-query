@@ -16,6 +16,7 @@
     <File Name="../query/fieldinfo.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Header Files">
+    <File Name="../query/tstring.h"/>
     <File Name="../query/datarow.h"/>
     <File Name="../query/paramitem.h"/>
     <File Name="../query/odbcenvironment.h"/>

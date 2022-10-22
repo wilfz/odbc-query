@@ -1,20 +1,10 @@
 #pragma once
 
-#ifdef _WIN32
-// needs to be included above sql.h for windows
-#ifndef __MINGW32__
-#define NOMINMAX
-#if _MSC_VER <= 1500
-#define nullptr NULL
-#endif // _MSC_VER <= 1500
-#endif
-#include <windows.h>
-#endif
+#include "tstring.h"
 
 #include <sql.h>
 #include <sqlext.h>
 #include "odbcexception.h"
-#include <string>
 
 using namespace std;
 
@@ -27,12 +17,12 @@ public:
     Connection();
     ~Connection();
     
-    bool Open(string connectionstring);
+    bool Open(tstring connectionstring);
     bool IsOpen() const;
     void Close();
     
-    SQLRETURN SqlGetDriverName(string& drivername);
-    SQLRETURN SqlGetDriverVersion(string& sDriverVersion); 
+    SQLRETURN SqlGetDriverName(tstring& drivername);
+    SQLRETURN SqlGetDriverVersion(tstring& sDriverVersion); 
     
     HENV GetSqlHEnv() const { return m_henv;};
     HDBC GetSqlHDbc() const { return m_hdbc;};

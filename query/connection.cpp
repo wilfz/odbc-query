@@ -50,7 +50,7 @@ Connection::~Connection()
     }
 }
 
-bool Connection::Open(string connectionstring)
+bool Connection::Open(tstring connectionstring)
 {
     if (m_henv == SQL_NULL_HENV || m_hdbc != SQL_NULL_HDBC)
         return false;
@@ -99,7 +99,7 @@ void Connection::Close()
     }
 }
 
-SQLRETURN Connection::SqlGetDriverName(string& drivername)
+SQLRETURN Connection::SqlGetDriverName(tstring& drivername)
 {
     if (m_hdbc == NULL)
         return SQL_INVALID_HANDLE;
@@ -112,14 +112,14 @@ SQLRETURN Connection::SqlGetDriverName(string& drivername)
         SQLTCHAR* pBuf = new SQLTCHAR[nBufLen];
         // use SQLGetInfo() function to find out about the driver
         nRetCode = ::SQLGetInfo(m_hdbc, SQL_DRIVER_NAME, pBuf, nBufLen, &nBufNeeded);
-        drivername.assign( (const char*) pBuf); // TODO Unicode
+        drivername.assign( (const TCHAR*) pBuf);
         delete[] pBuf;
     } while (SQL_SUCCEEDED(nRetCode) && nBufLen <= nBufNeeded);
 
     return nRetCode;
 }
 
-SQLRETURN Connection::SqlGetDriverVersion(string& driverversion)
+SQLRETURN Connection::SqlGetDriverVersion(tstring& driverversion)
 {
     if (m_hdbc == NULL)
         return SQL_INVALID_HANDLE;
@@ -132,7 +132,7 @@ SQLRETURN Connection::SqlGetDriverVersion(string& driverversion)
         SQLTCHAR* pBuf = new SQLTCHAR[nBufLen];
         // use SQLGetInfo() function to find out about the driver
         nRetCode = ::SQLGetInfo(m_hdbc, SQL_DRIVER_VER, pBuf, nBufLen, &nBufNeeded);
-        driverversion.assign( (const char*) pBuf); // TODO Unicode
+        driverversion.assign( (const TCHAR*) pBuf);
         delete[] pBuf;
     } while (SQL_SUCCEEDED(nRetCode) && nBufLen <= nBufNeeded);
 
