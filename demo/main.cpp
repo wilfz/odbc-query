@@ -4,7 +4,7 @@
 
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
-#include "../query/procedure.h"
+//#include "../query/procedure.h"
 
 using namespace std;
 using namespace linguversa;
