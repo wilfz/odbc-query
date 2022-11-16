@@ -33,34 +33,26 @@
 #define _T
 #endif
 
-/*
-using namespace std;
 
-#ifdef UNICODE
-class tstring : public wstring
+namespace linguversa
+{
+
+std::tstring lower(const std::tstring& str);
+std::tstring upper(const std::tstring& str);
+
+class lvstring : public std::tstring
 {
 public:
-    tstring() {};
-    tstring(wstring s) : wstring(s) {};
-    tstring(const wchar_t s[]) : wstring(s) {};
+    lvstring() {};
+    lvstring(std::tstring s) : std::tstring(s) {};
+    lvstring(const TCHAR s[]) : std::tstring(s) {};
     
-    void Replace(const wstring from, const wstring to);
-    wstring Left(const unsigned int n);
-    wstring Right(const unsigned int n);
-    wstring Mid(const unsigned int from, const unsigned int cnt);
+    void Replace(const std::tstring from, const std::tstring to);
+    std::tstring Left(const unsigned int n) const;
+    std::tstring Right(const unsigned int n) const;
+    std::tstring Mid(const unsigned int from, const unsigned int cnt) const;
+    std::tstring& MakeLower();
+    std::tstring& MakeUpper();
 };
-#else
-class tstring : public string 
-{
-public:
-    tstring() {};
-    tstring(string s) : string(s) {};
-    tstring(const char s[]) : string(s) {};
-    
-    void Replace(const string from, const string to);
-    string Left(const unsigned int n);
-    string Right(const unsigned int n);
-    string Mid(const unsigned int from, const unsigned int cnt);
-};
-#endif
-*/
+
+}
