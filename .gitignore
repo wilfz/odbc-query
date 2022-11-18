@@ -52,3 +52,6 @@ linux/Makefile
 .vs
 VS2019/
 *.vcxproj.user
+
+# Backup files
+*.bkp
