@@ -1,16 +1,5 @@
 #pragma once
 
-#ifdef _WIN32
-// needs to be included above sql.h for windows
-#ifndef __MINGW32__
-#define NOMINMAX
-#if _MSC_VER <= 1500
-#define nullptr NULL
-#endif // _MSC_VER <= 1500
-#endif
-#include <windows.h>
-#endif
-
 #include "tstring.h"
 #include <vector>
 #include "dbitem.h"
