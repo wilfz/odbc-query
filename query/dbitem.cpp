@@ -1,6 +1,7 @@
 #include "dbitem.h"
 #include <cassert>
 
+using namespace std;
 using namespace linguversa;
 
 DBItem::DBItem()
@@ -147,6 +148,125 @@ bool DBItem::operator==(const DBItem & other) const
 	default:
 		return false;
     }
+}
+
+// TODO
+tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
+{
+	tstring sValue;
+	//bool bNationalDecSep = false;
+	tstring DecimalFormat;
+	tstring NullDefault;
+/*
+	int nPos = colFmt.Find( _T("|"));
+	if (nPos >= 0)
+	{
+		NullDefault = (nPos+1 < colFmt.GetLength()) ? colFmt.Mid(nPos+1) : _T("");
+		colFmt = colFmt.Left(nPos);
+	}
+*/
+	switch (var.m_nCType)
+	{
+/*
+	case DBVT_BOOL:
+		if (colFmt.IsEmpty())
+			colFmt = _T("%0d");
+		sValue.Format( colFmt, var.m_boolVal);
+		break;
+	case DBVT_UCHAR:
+		if (colFmt.IsEmpty())
+			colFmt = _T("%0d");
+		sValue.Format( colFmt, var.m_chVal);
+		break;
+	case DBVT_SHORT:
+		if (colFmt.IsEmpty())
+			colFmt = _T("%0d");
+		sValue.Format( colFmt, var.m_iVal);
+		break;
+	case DBVT_LONG:
+		if (colFmt.IsEmpty())
+			colFmt = _T("%0d");
+		sValue.Format( colFmt, var.m_lVal);
+		break;
+	case DBVT_SINGLE:
+		DecimalFormat = colFmt;
+		bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
+		sValue.Format( DecimalFormat, var.m_fltVal);
+		if (bNationalDecSep)
+			sValue.Replace(_T("."),_T(","));
+		break;
+	case DBVT_DOUBLE: 
+		DecimalFormat = colFmt;
+		bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
+		sValue.Format( DecimalFormat, var.m_dblVal);
+		if (bNationalDecSep)
+			sValue.Replace(_T("."),_T(","));
+		break;
+	case DBVT_DATE:
+		sValue = FormatTimeStamp( colFmt, var.m_pdate);
+		break;
+	case DBVT_STRING:
+		if (var.m_pstring && !colFmt.IsEmpty() && colFmt.Find(_T('%'))>=0)
+			sValue.Format( colFmt, (LPCTSTR) *(var.m_pstring));
+		else
+			sValue = StrLenFormat( var.m_pstring ? (LPCTSTR) *(var.m_pstring) : _T(""), colFmt);
+		break;
+	#if _MFC_VER >= 0x0700
+	case DBVT_ASTRING:
+		{
+			CString str = var.m_pstringA ? CString((LPCSTR) *(var.m_pstringA)) : _T("");
+			if (!colFmt.IsEmpty() && colFmt.Find(_T('%'))>=0)
+				sValue.Format( colFmt, (LPCTSTR) str);
+			else
+				sValue = StrLenFormat( str, colFmt);
+		}
+		break;
+	case DBVT_WSTRING:
+		{
+			CString str = var.m_pstringW ? (LPCWSTR) *(var.m_pstringW) : L"";
+			if (!colFmt.IsEmpty() && colFmt.Find(_T('%'))>=0)
+				sValue.Format( colFmt, (LPCTSTR) str);
+			else
+				sValue = StrLenFormat( str, colFmt);
+		}
+		break;
+	#endif
+	case LWVT_BYTEARRAY:
+		if (var.m_pbinary == NULL)
+			break;
+		else
+		{
+			CByteArray& ba = *(CByteArray*) var.m_pbinary;
+			CString s;
+			sValue = ba.GetSize() ? _T("0x") : _T("");;
+			for (int i = 0; i < ba.GetSize(); i++)
+			{
+				s.Format(_T("%02x"), ba[i]);
+				sValue += s;
+			}
+		}
+		break;
+	case LWVT_UINT64:
+		if (colFmt.IsEmpty())
+			colFmt = _T("%0d");
+		sValue.Format( colFmt, *(UINT64*) var.m_pbinary);
+		break;
+	case LWVT_GUID:
+		{
+			LwString s(*(GUID*)var.m_pbinary);
+			sValue = s;
+		}
+		break;
+*/
+	case lwvt_null:
+		sValue = NullDefault;
+		break;
+	default:
+		sValue = _T("<undefined>");
+		break;
+	}
+
+	return sValue;
 }
 
 void DBItem::copyfrom(const DBItem& src)

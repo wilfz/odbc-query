@@ -5,11 +5,9 @@
 #include <sql.h>
 #include <sqlext.h>
 
-using namespace std;
-
 namespace linguversa
 {
-class DbException : public exception 
+class DbException : public std::exception 
 {
 public:
     DbException( SQLRETURN ret, SQLSMALLINT handleType, SQLHANDLE handle);
@@ -18,9 +16,9 @@ public:
     virtual const char* what() const noexcept;
 
     SQLRETURN getSqlCode() const;
-    tstring getSqlState() const;
+    std::tstring getSqlState() const;
     SQLINTEGER getNativeError() const;
-    tstring getSqlErrorMessage() const;
+    std::tstring getSqlErrorMessage() const;
 
 protected:
     SQLRETURN m_SqlReturn;

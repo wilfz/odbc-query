@@ -6,8 +6,6 @@
 
 #define DEFAULT_FIELD_TYPE SQL_TYPE_NULL // pick "C" data type to match SQL data type
 
-using namespace std;
-
 namespace linguversa
 {
     class FieldInfo
@@ -26,7 +24,7 @@ namespace linguversa
 
         signed short m_nCType;
         // meta data from ODBC
-        tstring m_strName;
+        std::tstring m_strName;
         SWORD m_nSQLType;
         SQLULEN m_nPrecision;
         SWORD m_nScale;

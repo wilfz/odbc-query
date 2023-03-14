@@ -3,6 +3,7 @@
 #include "connection.h"
 #include "dbitem.h"
 #include "fieldinfo.h"
+#include "resultinfo.h"
 #include "paraminfo.h"
 
 #define USE_ROWDATA
@@ -243,7 +244,7 @@ protected:
     //HENV m_henv;
     HDBC m_hdbc;
     HSTMT m_hstmt;
-    vector<FieldInfo> m_FieldInfo;
+    ResultInfo m_FieldInfo;
     vector<ParamItem*> m_ParamItem;
     // If true map named params to the corresponding postional parameter,
     // otherwise append at the end of m_ParamItem regardless of ordinal position in signature.
@@ -255,10 +256,10 @@ protected:
 
 #ifdef USE_ROWDATA
 public:
-    // Retrieve whole row into an array of LwDBVariants (after previous Fetch().
-    void GetCurrentRow( LwDataRow& currentRow);
+    // Retrieve whole row into an array of DBItems (after previous Fetch().
+    void GetCurrentRow( DataRow& currentRow);
 protected:
-    LwDataRow m_RowData;
+    DataRow m_RowData;
     vector<bool> m_Init;
 #endif
 };

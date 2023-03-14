@@ -6,8 +6,6 @@
 #include <sqlext.h>
 #include "odbcexception.h"
 
-using namespace std;
-
 namespace linguversa
 {
 
@@ -17,12 +15,12 @@ public:
     Connection();
     ~Connection();
     
-    bool Open(tstring connectionstring);
+    bool Open(std::tstring connectionstring);
     bool IsOpen() const;
     void Close();
     
-    SQLRETURN SqlGetDriverName(tstring& drivername);
-    SQLRETURN SqlGetDriverVersion(tstring& sDriverVersion); 
+    SQLRETURN SqlGetDriverName(std::tstring& drivername);
+    SQLRETURN SqlGetDriverVersion(std::tstring& sDriverVersion); 
     
     HENV GetSqlHEnv() const { return m_henv;};
     HDBC GetSqlHDbc() const { return m_hdbc;};

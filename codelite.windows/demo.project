@@ -6,6 +6,7 @@
     </Plugin>
   </Plugins>
   <VirtualDirectory Name="Source Files">
+    <File Name="../query/resultinfo.cpp"/>
     <File Name="../demo/main.cpp"/>
     <File Name="../query/paramitem.cpp"/>
     <File Name="../query/odbcenvironment.cpp"/>
@@ -16,6 +17,7 @@
     <File Name="../query/fieldinfo.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Header Files">
+    <File Name="../query/resultinfo.h"/>
     <File Name="../query/tstring.h"/>
     <File Name="../query/datarow.h"/>
     <File Name="../query/paramitem.h"/>

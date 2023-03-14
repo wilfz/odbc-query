@@ -2,6 +2,7 @@
 #include "odbcexception.h"
 #include <stdio.h>
 
+using namespace std;
 using namespace linguversa;
 
 DbException::DbException( SQLRETURN ret, SQLSMALLINT handleType, SQLHANDLE handle)

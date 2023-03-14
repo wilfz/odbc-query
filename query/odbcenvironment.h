@@ -6,8 +6,6 @@
 #include "odbcexception.h"
 #include <vector>
 
-using namespace std;
-
 namespace linguversa
 {
     class ODBCEnvironment
@@ -16,9 +14,9 @@ namespace linguversa
         ODBCEnvironment();
         ~ODBCEnvironment();
         
-        SQLRETURN FetchDriverName(tstring& driverdescription, SQLUSMALLINT direction = SQL_FETCH_NEXT);
-        SQLRETURN FetchDriverInfo(tstring& driverdescription, vector<tstring>& attributes, SQLUSMALLINT direction = SQL_FETCH_NEXT);
-        SQLRETURN FetchDataSourceInfo(tstring& dsn, tstring& drivername, SQLUSMALLINT direction = SQL_FETCH_NEXT);
+        SQLRETURN FetchDriverName(std::tstring& driverdescription, SQLUSMALLINT direction = SQL_FETCH_NEXT);
+        SQLRETURN FetchDriverInfo(std::tstring& driverdescription, std::vector<std::tstring>& attributes, SQLUSMALLINT direction = SQL_FETCH_NEXT);
+        SQLRETURN FetchDataSourceInfo(std::tstring& dsn, std::tstring& drivername, SQLUSMALLINT direction = SQL_FETCH_NEXT);
         
     protected:
         HENV m_henv;
