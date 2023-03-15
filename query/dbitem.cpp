@@ -1,5 +1,8 @@
 #include "dbitem.h"
 #include <cassert>
+// only for the formatting
+#include <memory>
+#include <stdexcept>
 
 using namespace std;
 using namespace linguversa;
@@ -150,108 +153,127 @@ bool DBItem::operator==(const DBItem & other) const
     }
 }
 
-// TODO
+// TODO: move to a more fitting location
+// The following template function is a snippet from 
+// https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
+// under the CC0 1.0. (https://creativecommons.org/publicdomain/zero/1.0/)
+template<typename ... Args>
+std::string string_format( const std::string& format, Args ... args )
+{
+    int size_s = std::snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
+    if( size_s <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
+    auto size = static_cast<size_t>( size_s );
+    std::unique_ptr<char[]> buf( new char[ size ] );
+    std::snprintf( buf.get(), size, format.c_str(), args ... );
+    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+}
+
+//TODO
 tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
 {
 	tstring sValue;
 	//bool bNationalDecSep = false;
 	tstring DecimalFormat;
 	tstring NullDefault;
-/*
-	int nPos = colFmt.Find( _T("|"));
-	if (nPos >= 0)
+
+    // get the Default for NULL value, empty string if not specified
+	unsigned int nPos = colFmt.find( _T("|"));
+	if (nPos != tstring::npos)
 	{
-		NullDefault = (nPos+1 < colFmt.GetLength()) ? colFmt.Mid(nPos+1) : _T("");
-		colFmt = colFmt.Left(nPos);
+		NullDefault = (nPos+1 < colFmt.size()) ? colFmt.substr(nPos+1) : _T("");
+		colFmt = colFmt.substr(0,nPos);
 	}
-*/
+
+    // format var according to its type
 	switch (var.m_nCType)
 	{
+	case lwvt_bool:
+		if (colFmt.length() == 0)
+			colFmt = _T("%0d");
+		sValue = string_format( colFmt, (unsigned char) var.m_boolVal);
+		break;
+	case lwvt_uchar:
+		if (colFmt.length() == 0)
+			colFmt = _T("%0d");
+		sValue = string_format( colFmt, var.m_chVal);
+		break;
+	case lwvt_short:
+		if (colFmt.length() == 0)
+			colFmt = _T("%0d");
+		sValue = string_format( colFmt, var.m_iVal);
+		break;
+	case lwvt_long:
+		if (colFmt.length() == 0)
+			colFmt = _T("%0d");
+		sValue = string_format( colFmt, var.m_lVal);
+		break;
+	case lwvt_single:
+		DecimalFormat = colFmt;
+		//bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
+		sValue = string_format( DecimalFormat, var.m_fltVal);
+        //if (bNationalDecSep)
+        //    sValue.Replace(_T("."),_T(","));
+		break;
+	case lwvt_double: 
+		DecimalFormat = colFmt;
+		//bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
+		sValue = string_format( DecimalFormat, var.m_dblVal);
+		//if (bNationalDecSep)
+		//	sValue.Replace(_T("."),_T(","));
+		break;
 /*
-	case DBVT_BOOL:
-		if (colFmt.IsEmpty())
-			colFmt = _T("%0d");
-		sValue.Format( colFmt, var.m_boolVal);
-		break;
-	case DBVT_UCHAR:
-		if (colFmt.IsEmpty())
-			colFmt = _T("%0d");
-		sValue.Format( colFmt, var.m_chVal);
-		break;
-	case DBVT_SHORT:
-		if (colFmt.IsEmpty())
-			colFmt = _T("%0d");
-		sValue.Format( colFmt, var.m_iVal);
-		break;
-	case DBVT_LONG:
-		if (colFmt.IsEmpty())
-			colFmt = _T("%0d");
-		sValue.Format( colFmt, var.m_lVal);
-		break;
-	case DBVT_SINGLE:
-		DecimalFormat = colFmt;
-		bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
-		sValue.Format( DecimalFormat, var.m_fltVal);
-		if (bNationalDecSep)
-			sValue.Replace(_T("."),_T(","));
-		break;
-	case DBVT_DOUBLE: 
-		DecimalFormat = colFmt;
-		bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
-		sValue.Format( DecimalFormat, var.m_dblVal);
-		if (bNationalDecSep)
-			sValue.Replace(_T("."),_T(","));
-		break;
-	case DBVT_DATE:
+	case lwvt_date:
 		sValue = FormatTimeStamp( colFmt, var.m_pdate);
 		break;
-	case DBVT_STRING:
-		if (var.m_pstring && !colFmt.IsEmpty() && colFmt.Find(_T('%'))>=0)
-			sValue.Format( colFmt, (LPCTSTR) *(var.m_pstring));
+	case lwvt_string:
+		if (var.m_pstring && !colFmt.length() == 0 && colFmt.find(_T('%')) != tstring::npos)
+			sValue = string_format( colFmt, var.m_pstring->c_str());
 		else
-			sValue = StrLenFormat( var.m_pstring ? (LPCTSTR) *(var.m_pstring) : _T(""), colFmt);
+			sValue = StrLenFormat( var.m_pstring ? var.m_pstring->c_str() : _T(""), colFmt);
 		break;
 	#if _MFC_VER >= 0x0700
-	case DBVT_ASTRING:
+	case lwvt_astring:
 		{
-			CString str = var.m_pstringA ? CString((LPCSTR) *(var.m_pstringA)) : _T("");
-			if (!colFmt.IsEmpty() && colFmt.Find(_T('%'))>=0)
-				sValue.Format( colFmt, (LPCTSTR) str);
+			tstring str = var.m_pstringA ? tstring((LPCSTR) *(var.m_pstringA)) : _T("");
+			if (!colFmt.length() == 0 && colFmt.find(_T('%')) != tstring::npos)
+				sValue = string_format( colFmt, (LPCTSTR) str);
 			else
 				sValue = StrLenFormat( str, colFmt);
 		}
 		break;
-	case DBVT_WSTRING:
+	case lwvt_wstring:
 		{
-			CString str = var.m_pstringW ? (LPCWSTR) *(var.m_pstringW) : L"";
-			if (!colFmt.IsEmpty() && colFmt.Find(_T('%'))>=0)
-				sValue.Format( colFmt, (LPCTSTR) str);
+			tstring str = var.m_pstringW ? (LPCWSTR) *(var.m_pstringW) : L"";
+			if (!colFmt.length() == 0 && colFmt.Find(_T('%'))>=0)
+				sValue = string_format( colFmt, (LPCTSTR) str);
 			else
 				sValue = StrLenFormat( str, colFmt);
 		}
 		break;
 	#endif
-	case LWVT_BYTEARRAY:
-		if (var.m_pbinary == NULL)
+*/
+	case lwvt_bytearray:
+		if (var.m_pByteArray == NULL)
 			break;
 		else
 		{
-			CByteArray& ba = *(CByteArray*) var.m_pbinary;
-			CString s;
-			sValue = ba.GetSize() ? _T("0x") : _T("");;
-			for (int i = 0; i < ba.GetSize(); i++)
+			bytearray& ba = *var.m_pByteArray;
+			tstring s;
+			sValue = ba.size() ? _T("0x") : _T("");;
+			for (unsigned int i = 0; i < ba.size(); i++)
 			{
-				s.Format(_T("%02x"), ba[i]);
+				s = string_format(_T("%02x"), ba[i]);
 				sValue += s;
 			}
 		}
 		break;
-	case LWVT_UINT64:
-		if (colFmt.IsEmpty())
+	case lwvt_uint64:
+		if (colFmt.length() == 0)
 			colFmt = _T("%0d");
-		sValue.Format( colFmt, *(UINT64*) var.m_pbinary);
+		sValue = string_format( colFmt, *var.m_pUInt64);
 		break;
-	case LWVT_GUID:
+/*
+	case lwvt_guid:
 		{
 			LwString s(*(GUID*)var.m_pbinary);
 			sValue = s;
@@ -283,10 +305,10 @@ void DBItem::copyfrom(const DBItem& src)
     {
     case lwvt_null:
         break;
-    //case lwvt_bool:
-    //    m_nCType = src.m_nCType;
-    //    m_boolVal = src.m_boolVal;
-    //    break;
+    case lwvt_bool:
+        m_nCType = src.m_nCType;
+        m_boolVal = src.m_boolVal;
+        break;
     case lwvt_uchar:
         m_nCType = src.m_nCType;
         m_chVal = src.m_chVal;
