@@ -16,6 +16,7 @@
     <File Name="../query/dbitem.h"/>
     <File Name="../query/fieldinfo.h"/>
     <File Name="../query/connection.h"/>
+    <File Name="../query/resultinfo.h"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
@@ -27,6 +28,7 @@
     <File Name="../query/odbcexception.cpp"/>
     <File Name="../query/paramitem.cpp"/>
     <File Name="../query/query.cpp"/>
+    <File Name="../query/resultinfo.cpp"/>
     <File Name="../demo/main.cpp"/>
   </VirtualDirectory>
   <Settings Type="Executable">
