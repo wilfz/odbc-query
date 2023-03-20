@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Workspace Name="odbc-query" Database="" Version="10.0.0">
+  <Project Name="demo" Path="demo.project" Active="Yes"/>
+  <Project Name="qx" Path="qx.project" Active="No"/>
+  <Project Name="odbcquery" Path="query.project" Active="No"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
+      <Environment/>
+      <Project Name="demo" ConfigName="Debug"/>
+      <Project Name="qx" ConfigName="Debug"/>
+      <Project Name="odbcquery" ConfigName="Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Release" Selected="no">
+      <Environment/>
+      <Project Name="demo" ConfigName="Release"/>
+      <Project Name="qx" ConfigName="Release"/>
+      <Project Name="odbcquery" ConfigName="Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>
