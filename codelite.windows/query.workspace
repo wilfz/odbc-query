@@ -2,16 +2,19 @@
 <CodeLite_Workspace Name="query" Database="" Version="10000">
   <Project Name="demo" Path="demo.project" Active="Yes"/>
   <Project Name="qx" Path="qx.project" Active="No"/>
+  <Project Name="odbcquery" Path="odbcquery.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug">
       <Environment/>
       <Project Name="demo" ConfigName="Debug"/>
       <Project Name="qx" ConfigName="Debug"/>
+      <Project Name="odbcquery" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release">
       <Environment/>
       <Project Name="demo" ConfigName="Release"/>
       <Project Name="qx" ConfigName="Release"/>
+      <Project Name="odbcquery" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
