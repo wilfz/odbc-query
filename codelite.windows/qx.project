@@ -23,17 +23,8 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
-    <File Name="../query/resultinfo.cpp"/>
-    <File Name="../query/query.cpp"/>
-    <File Name="../query/paramitem.cpp"/>
-    <File Name="../query/fieldinfo.cpp"/>
-    <File Name="../query/dbitem.cpp"/>
-    <File Name="../query/connection.cpp"/>
-    <File Name="../query/odbcexception.cpp"/>
-    <File Name="../query/odbcenvironment.cpp"/>
     <File Name="../qx/qx.cpp"/>
   </VirtualDirectory>
-  <Dependencies Name="Release"/>
   <Dependencies Name="Debug">
     <Project Name="odbcquery"/>
   </Dependencies>
@@ -52,7 +43,8 @@
         <IncludePath Value="."/>
       </Compiler>
       <Linker Options="-m32" Required="yes">
-        <LibraryPath Value="Debug"/>
+        <LibraryPath Value="$(ConfigurationName)"/>
+        <Library Value="odbcquery"/>
         <Library Value="odbc32"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
@@ -95,6 +87,8 @@
         <Preprocessor Value="NDEBUG"/>
       </Compiler>
       <Linker Options="-m32" Required="yes">
+        <LibraryPath Value="$(ConfigurationName)"/>
+        <Library Value="odbcquery"/>
         <Library Value="odbc32"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
@@ -132,4 +126,7 @@
       </Completion>
     </Configuration>
   </Settings>
+  <Dependencies Name="Release">
+    <Project Name="odbcquery"/>
+  </Dependencies>
 </CodeLite_Project>
