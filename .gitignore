@@ -41,6 +41,7 @@ CVS/
 # unfinished files
 procedure.h
 procedure.cpp
+lvstring.cpp
 
 # CodeLite files
 .codelite
@@ -55,3 +56,9 @@ VS2019/
 
 # Backup files
 *.bkp
+
+# CMake generated files
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CMakeCache.txt
