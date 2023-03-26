@@ -177,7 +177,7 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
 	tstring NullDefault;
 
     // get the Default for NULL value, empty string if not specified
-	unsigned int nPos = colFmt.find( _T("|"));
+	size_t nPos = colFmt.find( _T("|"));
 	if (nPos != tstring::npos)
 	{
 		NullDefault = (nPos+1 < colFmt.size()) ? colFmt.substr(nPos+1) : _T("");
