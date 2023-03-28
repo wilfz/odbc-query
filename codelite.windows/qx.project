@@ -5,6 +5,9 @@
       <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
     </Plugin>
   </Plugins>
+  <VirtualDirectory Name="cmake">
+    <File Name="../qx/CMakeLists.txt"/>
+  </VirtualDirectory>
   <VirtualDirectory Name="include">
     <File Name="../qx/SimpleIni.h"/>
     <File Name="../query/resultinfo.h"/>
@@ -26,6 +29,9 @@
     <File Name="../qx/qx.cpp"/>
   </VirtualDirectory>
   <Dependencies Name="Debug">
+    <Project Name="odbcquery"/>
+  </Dependencies>
+  <Dependencies Name="Release">
     <Project Name="odbcquery"/>
   </Dependencies>
   <Settings Type="Executable">
@@ -126,7 +132,4 @@
       </Completion>
     </Configuration>
   </Settings>
-  <Dependencies Name="Release">
-    <Project Name="odbcquery"/>
-  </Dependencies>
 </CodeLite_Project>
