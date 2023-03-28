@@ -34,4 +34,6 @@
 #define tcerr cerr
 #define _tprintf printf
 #define _T
+
+#define SI_NO_CONVERSION
 #endif
