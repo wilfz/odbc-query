@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <exception>
 #include "CLI11.hpp"
-#include "../query/tstring.h"
+//#include "../query/tstring.h"
 #include "SimpleIni.h"
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
@@ -88,7 +88,11 @@ int main(int argc, char** argv)
     // 2. in environment variable QXCONNECTION
     if (connectionstring.length() == 0)
     {
+#ifdef _WIN32
+        const TCHAR* cs = ::_tgetenv(_T("QXCONNECTION"));
+#else
         const char* cs = std::getenv("QXCONNECTION");
+#endif
         if (cs)
             connectionstring.assign(cs);
     }
@@ -100,7 +104,7 @@ int main(int argc, char** argv)
         SI_Error rc = ini.LoadFile("qx.ini");
         if (rc == SI_OK)
         {
-            const char* cs = ini.GetValue("Database", "ConnectionString", "");
+            const TCHAR* cs = ini.GetValue(_T("Database"), _T("ConnectionString"), _T(""));
             if (cs)
                 connectionstring.assign(cs);
         }

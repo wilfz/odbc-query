@@ -41,7 +41,6 @@ CVS/
 # unfinished files
 procedure.h
 procedure.cpp
-lvstring.cpp
 
 # CodeLite files
 .codelite
