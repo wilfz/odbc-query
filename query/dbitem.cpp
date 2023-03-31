@@ -158,14 +158,22 @@ bool DBItem::operator==(const DBItem & other) const
 // https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 // under the CC0 1.0. (https://creativecommons.org/publicdomain/zero/1.0/)
 template<typename ... Args>
-std::string string_format( const std::string& format, Args ... args )
+std::tstring string_format( const std::tstring& format, Args ... args )
 {
-    int size_s = std::snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
+#ifdef _UNICODE
+    int size_s = swprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
     if( size_s <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
     auto size = static_cast<size_t>( size_s );
-    std::unique_ptr<char[]> buf( new char[ size ] );
-    std::snprintf( buf.get(), size, format.c_str(), args ... );
-    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+    std::unique_ptr<wchar_t[]> buf( new wchar_t[ size ] );
+    swprintf( buf.get(), size, format.c_str(), args ... );
+#else
+    int size_s = std::snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
+    if (size_s <= 0) { throw std::runtime_error("Error during formatting."); }
+    auto size = static_cast<size_t>(size_s);
+    std::unique_ptr<char[]> buf(new char[size]);
+    std::snprintf(buf.get(), size, format.c_str(), args ...);
+#endif
+    return std::tstring( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
 }
 
 //TODO

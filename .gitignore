@@ -45,13 +45,18 @@ lvstring.cpp
 
 # CodeLite files
 .codelite
-linux/demo.mk
-linux/demo.txt
+linux/*.mk
+linux/*.txt
 linux/Makefile
+codelite.windows/*.mk
+codelite.windows/*.txt
+codelite.windows/Makefile
+codelite.windows/compile_commands.json
+codelite.windows/.build-debug/
+codelite.windows/.build-release/
 
 # Visual Studio files
 .vs
-VS2019/
 *.vcxproj.user
 
 # Backup files
@@ -62,3 +67,4 @@ CMakeFiles/
 cmake_install.cmake
 Makefile
 CMakeCache.txt
+build/
