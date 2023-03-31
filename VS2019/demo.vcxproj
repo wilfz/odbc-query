@@ -147,11 +147,13 @@
     <ClInclude Include="..\query\datarow.h" />
     <ClInclude Include="..\query\dbitem.h" />
     <ClInclude Include="..\query\fieldinfo.h" />
+    <ClInclude Include="..\query\lvstring.h" />
     <ClInclude Include="..\query\odbcenvironment.h" />
     <ClInclude Include="..\query\odbcexception.h" />
     <ClInclude Include="..\query\paraminfo.h" />
     <ClInclude Include="..\query\paramitem.h" />
     <ClInclude Include="..\query\query.h" />
+    <ClInclude Include="..\query\resultinfo.h" />
     <ClInclude Include="..\query\tstring.h" />
   </ItemGroup>
   <ItemGroup>
@@ -159,10 +161,12 @@
     <ClCompile Include="..\query\connection.cpp" />
     <ClCompile Include="..\query\dbitem.cpp" />
     <ClCompile Include="..\query\fieldinfo.cpp" />
+    <ClCompile Include="..\query\lvstring.cpp" />
     <ClCompile Include="..\query\odbcenvironment.cpp" />
     <ClCompile Include="..\query\odbcexception.cpp" />
     <ClCompile Include="..\query\paramitem.cpp" />
     <ClCompile Include="..\query\query.cpp" />
+    <ClCompile Include="..\query\resultinfo.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
