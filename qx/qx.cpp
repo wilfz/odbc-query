@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <exception>
 #include "CLI11.hpp"
-//#include "../query/tstring.h"
+#include "../query/tstring.h"
 #include "SimpleIni.h"
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
