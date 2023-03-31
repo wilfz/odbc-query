@@ -6,6 +6,7 @@
     </Plugin>
   </Plugins>
   <VirtualDirectory Name="Header Files">
+    <File Name="../query/lvstring.h"/>
     <File Name="../query/resultinfo.h"/>
     <File Name="../query/tstring.h"/>
     <File Name="../query/datarow.h"/>
@@ -22,6 +23,7 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="Source Files">
+    <File Name="../query/lvstring.cpp"/>
     <File Name="../query/resultinfo.cpp"/>
     <File Name="../query/connection.cpp"/>
     <File Name="../query/dbitem.cpp"/>
