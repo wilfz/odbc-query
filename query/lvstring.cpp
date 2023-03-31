@@ -1,4 +1,5 @@
 #include "lvstring.h"
+#include <sql.h>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ tstring lvstring::Left(const unsigned int n) const
 
 tstring lvstring::Right(const unsigned int n) const
 {
-    unsigned int cnt = tstring::length();
+    size_t cnt = tstring::length();
     if (n < cnt)
         return tstring::substr( cnt - n, n);
     else 
@@ -34,5 +35,106 @@ tstring lvstring::Mid(const unsigned int from, const unsigned int cnt) const
 {
     return tstring::substr( from, cnt);
 }
+
+tstring FormatTimeStamp(const tstring& colFmt, const TIMESTAMP_STRUCT* pdt)
+{
+    // The value of the fraction field is the number of billionths of a second and ranges from 0 through 999999999 (1 less than 1 billion).
+    // For example, the value of the fraction field for a half - second is 500000000, for a thousandth of a second(one millisecond) is 1000000, 
+    // for a millionth of a second(one microsecond) is 1000, and for a billionth of a second(one nanosecond) is 1.
+    lvstring sValue = colFmt;
+    if (colFmt.length()==0)
+    {
+        if (pdt)
+        {
+            sValue = linguversa::string_format(_T("%04d-%02d-%02d %02d:%02d:%02d.%03d"),
+                pdt->year, pdt->month, pdt->day,
+                pdt->hour, pdt->minute, pdt->second, pdt->fraction / 1000000);
+        }
+        else
+        {
+            sValue = _T("0000-00-00 00:00:00.000");
+        }
+    }
+    else
+    {
+        // Replace the placholder for pdt->fraction first, otherwise we 
+        // might replace an already valid part of the date representation.
+        lvstring sFraction;
+        sFraction = linguversa::string_format(_T(".%09d"), pdt ? pdt->fraction : 0);
+        // TODO:
+        //if (sFraction.GetLength() > 10)
+        //  throw exception!
+        sValue.Replace(_T(".999999999"), sFraction.Left(10));
+        sValue.Replace(_T(".99999999"), sFraction.Left(9));
+        sValue.Replace(_T(".9999999"), sFraction.Left(8));
+        sValue.Replace(_T(".999999"), sFraction.Left(7));
+        sValue.Replace(_T(".99999"), sFraction.Left(6));
+        sValue.Replace(_T(".9999"), sFraction.Left(5));
+        sValue.Replace(_T(".999"), sFraction.Left(4));
+        sValue.Replace(_T(".99"), sFraction.Left(3));
+        sValue.Replace(_T(".9"), sFraction.Left(2));
+
+        lvstring sYear;
+        sYear = linguversa::string_format(_T("%04d"), pdt ? pdt->year : 0);
+        sValue.Replace(_T("YYYY"), sYear);
+        sYear = linguversa::string_format(_T("%02d"), pdt ? pdt->year : 0);
+        sValue.Replace(_T("YY"), sYear.Right(2));
+        lvstring sMonth;
+        sMonth = linguversa::string_format(_T("%02d"), pdt ? pdt->month : 0);
+        sValue.Replace(_T("MM"), sMonth);
+        sMonth = linguversa::string_format(_T("%01d"), pdt ? pdt->month : 0);
+        sValue.Replace(_T("M"), sMonth);
+        lvstring sDay;
+        sDay = linguversa::string_format(_T("%02d"), pdt ? pdt->day : 0);
+        sValue.Replace(_T("DD"), sDay);
+        sDay = linguversa::string_format(_T("%01d"), pdt ? pdt->day : 0);
+        sValue.Replace(_T("D"), sDay);
+        lvstring sHour;
+        sHour = linguversa::string_format(_T("%02d"), pdt ? pdt->hour : 0);
+        sValue.Replace(_T("hh"), sHour);
+        sHour = linguversa::string_format(_T("%01d"), pdt ? pdt->hour : 0);
+        sValue.Replace(_T("h"), sHour);
+        lvstring sMinute;
+        sMinute = linguversa::string_format(_T("%02d"), pdt ? pdt->minute : 0);
+        sValue.Replace(_T("mm"), sMinute);
+        lvstring sSecond;
+        sSecond = linguversa::string_format(_T("%02d"), pdt ? pdt->second : 0);
+        sValue.Replace(_T("ss"), sSecond);
+    }
+
+    return (tstring)sValue;
+}
+
+// helper function
+static tstring StrLenFormat(tstring str, tstring fmt)
+{
+    //int t = fmt.Find(_T(','));
+    //tstring sLen = (t >= 0) ? fmt.Left(t) : fmt;
+    //int minlen = _tstoi(sLen);
+    //int maxlen = (t >= 0 && t + 1 < fmt.GetLength()) ? _tstoi(fmt.Mid(t + 1)) : minlen;
+    //while (str.GetLength() < minlen && minlen <= maxlen)
+    //  str.AppendChar(_T(' '));
+    //if (minlen <= maxlen && maxlen > 1 && maxlen < str.GetLength())
+    //  return str.Left(maxlen);
+    //else
+        return str;
+}
+
+bool ConvertNationalSeparator(tstring& format)
+{
+    if (format.length()==0)
+        format = _T("%01.6f");
+    size_t posNationalDecSep = format.find(_T(","), 0);
+    size_t posCDecSep = format.find(_T("."), 0);
+    bool bNationalDecSep = (posNationalDecSep != tstring::npos && posCDecSep == tstring::npos);
+    if (bNationalDecSep)
+    {
+        lvstring f = format;
+        f.Replace(_T(","), _T("."));
+        format = f;
+    }
+    return bNationalDecSep;
+}
+
 
 }

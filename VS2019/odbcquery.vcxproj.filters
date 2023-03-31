@@ -48,6 +48,9 @@
     <ClInclude Include="..\query\tstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\query\lvstring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\query\connection.cpp">
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\query\resultinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\query\lvstring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

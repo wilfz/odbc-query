@@ -1,23 +1,25 @@
 set(libSrcs 
     connection.h
+    connection.cpp
+    query.h
+    query.cpp
     datarow.h
     dbitem.h
+    dbitem.cpp
     fieldinfo.h
+    fieldinfo.cpp
     odbcenvironment.h
+    odbcenvironment.cpp
     odbcexception.h
+    odbcexception.cpp
     paraminfo.h
     paramitem.h
-    query.h
-    resultinfo.h
-    tstring.h
-    connection.cpp
-    dbitem.cpp
-    fieldinfo.cpp
-    odbcenvironment.cpp
-    odbcexception.cpp
     paramitem.cpp
-    query.cpp
+    resultinfo.h
     resultinfo.cpp
+    tstring.h
+	lvstring.h
+	lvstring.cpp
     )
  
 if (UNIX)

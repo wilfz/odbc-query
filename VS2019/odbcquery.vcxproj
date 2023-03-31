@@ -155,6 +155,7 @@
     <ClInclude Include="..\query\datarow.h" />
     <ClInclude Include="..\query\dbitem.h" />
     <ClInclude Include="..\query\fieldinfo.h" />
+    <ClInclude Include="..\query\lvstring.h" />
     <ClInclude Include="..\query\odbcenvironment.h" />
     <ClInclude Include="..\query\odbcexception.h" />
     <ClInclude Include="..\query\paraminfo.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="..\query\connection.cpp" />
     <ClCompile Include="..\query\dbitem.cpp" />
     <ClCompile Include="..\query\fieldinfo.cpp" />
+    <ClCompile Include="..\query\lvstring.cpp" />
     <ClCompile Include="..\query\odbcenvironment.cpp" />
     <ClCompile Include="..\query\odbcexception.cpp" />
     <ClCompile Include="..\query\paramitem.cpp" />

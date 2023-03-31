@@ -11,6 +11,7 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
+    <File Name="../query/lvstring.cpp"/>
     <File Name="../query/resultinfo.cpp"/>
     <File Name="../query/query.cpp"/>
     <File Name="../query/paramitem.cpp"/>
@@ -21,6 +22,7 @@
     <File Name="../query/connection.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
+    <File Name="../query/lvstring.h"/>
     <File Name="../query/tstring.h"/>
     <File Name="../query/resultinfo.h"/>
     <File Name="../query/query.h"/>
