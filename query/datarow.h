@@ -18,7 +18,7 @@ public:
     //bool operator == (const LwDataRow& other) const;
     //bool operator != (const LwDataRow& other) const;
 
-    std::tstring Format( const ResultInfo& resultinfo, const std::tstring fmt = "") const;
+    std::tstring Format( const ResultInfo& resultinfo, const std::tstring fmt = _T("")) const;
 
 protected:
     //ResultInfo* m_pResultInfo;

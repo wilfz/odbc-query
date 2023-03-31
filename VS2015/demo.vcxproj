@@ -152,6 +152,7 @@
     <ClInclude Include="..\query\paraminfo.h" />
     <ClInclude Include="..\query\paramitem.h" />
     <ClInclude Include="..\query\query.h" />
+    <ClInclude Include="..\query\resultinfo.h" />
     <ClInclude Include="..\query\tstring.h" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +164,7 @@
     <ClCompile Include="..\query\odbcexception.cpp" />
     <ClCompile Include="..\query\paramitem.cpp" />
     <ClCompile Include="..\query\query.cpp" />
+    <ClCompile Include="..\query\resultinfo.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
