@@ -166,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\query\connection.cpp" />
+    <ClCompile Include="..\query\datarow.cpp" />
     <ClCompile Include="..\query\dbitem.cpp" />
     <ClCompile Include="..\query\fieldinfo.cpp" />
     <ClCompile Include="..\query\lvstring.cpp" />

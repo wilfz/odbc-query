@@ -11,6 +11,7 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
+    <File Name="../query/datarow.cpp"/>
     <File Name="../query/lvstring.cpp"/>
     <File Name="../query/resultinfo.cpp"/>
     <File Name="../query/query.cpp"/>

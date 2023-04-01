@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Project Name="demo" Version="11000" InternalType="Console">
-  <VirtualDirectory Name="cmake"/>
   <Plugins>
     <Plugin Name="qmake">
       <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
     </Plugin>
   </Plugins>
+  <VirtualDirectory Name="cmake"/>
   <VirtualDirectory Name="Source Files">
+    <File Name="../query/datarow.cpp"/>
+    <File Name="../query/lvstring.cpp"/>
     <File Name="../query/resultinfo.cpp"/>
     <File Name="../demo/main.cpp"/>
     <File Name="../query/paramitem.cpp"/>
@@ -18,6 +20,7 @@
     <File Name="../query/fieldinfo.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Header Files">
+    <File Name="../query/lvstring.h"/>
     <File Name="../query/resultinfo.h"/>
     <File Name="../query/tstring.h"/>
     <File Name="../query/datarow.h"/>

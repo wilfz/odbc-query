@@ -44,9 +44,9 @@ public:
     lvstring(const TCHAR s[]) : std::tstring(s) {};
     
     void Replace(const std::tstring from, const std::tstring to);
-    std::tstring Left(const unsigned int n) const;
-    std::tstring Right(const unsigned int n) const;
-    std::tstring Mid(const unsigned int from, const unsigned int cnt) const;
+    std::tstring Left(const size_t n) const;
+    std::tstring Right(const size_t n) const;
+    std::tstring Mid(const size_t from, const size_t cnt) const;
     std::tstring& MakeLower();
     std::tstring& MakeUpper();
 };

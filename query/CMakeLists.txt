@@ -4,6 +4,7 @@ set(libSrcs
     query.h
     query.cpp
     datarow.h
+    datarow.cpp
     dbitem.h
     dbitem.cpp
     fieldinfo.h

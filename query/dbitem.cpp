@@ -188,19 +188,19 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
     case lwvt_long:
         if (colFmt.length() == 0)
             colFmt = _T("%0d");
-        sValue = string_format( colFmt, var.m_lVal);
+        sValue = linguversa::string_format( colFmt, var.m_lVal);
         break;
     case lwvt_single:
         DecimalFormat = colFmt;
         //bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
-        sValue = string_format( DecimalFormat, var.m_fltVal);
+        sValue = linguversa::string_format( DecimalFormat, var.m_fltVal);
         //if (bNationalDecSep)
         //    sValue.Replace(_T("."),_T(","));
         break;
     case lwvt_double: 
         DecimalFormat = colFmt;
         //bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
-        sValue = string_format( DecimalFormat, var.m_dblVal);
+        sValue = linguversa::string_format( DecimalFormat, var.m_dblVal);
         //if (bNationalDecSep)
         //  sValue.Replace(_T("."),_T(","));
         break;

@@ -2,9 +2,8 @@
 #include <sql.h>
 
 using namespace std;
+using namespace linguversa;
 
-namespace linguversa
-{
 void lvstring::Replace(const tstring from, const tstring to)
 {
     if (from.empty())
@@ -17,12 +16,12 @@ void lvstring::Replace(const tstring from, const tstring to)
     }
 }
 
-tstring lvstring::Left(const unsigned int n) const
+tstring lvstring::Left(const size_t n) const
 {
     return tstring::substr( 0, n);
 }
 
-tstring lvstring::Right(const unsigned int n) const
+tstring lvstring::Right(const size_t n) const
 {
     size_t cnt = tstring::length();
     if (n < cnt)
@@ -31,12 +30,12 @@ tstring lvstring::Right(const unsigned int n) const
         return tstring::substr( 0, tstring::npos);
 }
 
-tstring lvstring::Mid(const unsigned int from, const unsigned int cnt) const
+tstring lvstring::Mid(const size_t from, const size_t cnt) const
 {
     return tstring::substr( from, cnt);
 }
 
-tstring FormatTimeStamp(const tstring& colFmt, const TIMESTAMP_STRUCT* pdt)
+tstring linguversa::FormatTimeStamp(const tstring& colFmt, const TIMESTAMP_STRUCT* pdt)
 {
     // The value of the fraction field is the number of billionths of a second and ranges from 0 through 999999999 (1 less than 1 billion).
     // For example, the value of the fraction field for a half - second is 500000000, for a thousandth of a second(one millisecond) is 1000000, 
@@ -134,7 +133,4 @@ bool ConvertNationalSeparator(tstring& format)
         format = f;
     }
     return bNationalDecSep;
-}
-
-
 }
