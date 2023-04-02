@@ -23,6 +23,7 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="Source Files">
+    <File Name="../query/datarow.cpp"/>
     <File Name="../query/lvstring.cpp"/>
     <File Name="../query/resultinfo.cpp"/>
     <File Name="../query/connection.cpp"/>
