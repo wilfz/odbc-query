@@ -19,6 +19,8 @@ int main(int argc, char** argv)
     CLI::App app{ "qx - ODBC Query eXecuter" };
 
     tstring connectionstring;
+    tstring fieldseparator = _T("\t");
+    tstring rowformat;
     tstring target;
     bool verbose = false;
     bool listdrivers = false;
@@ -28,6 +30,8 @@ int main(int argc, char** argv)
     app.add_flag("--listdrivers", listdrivers, "list installed drivers");
     app.add_flag("--listdsn", listdsn, "List data sources");
     app.add_option("-s,--source", connectionstring, "ODBC connection string");
+    app.add_option("--fieldseparator", fieldseparator, "fieldseparator");
+    app.add_option("-f,--format", rowformat, "row format");
     //app.add_option("-t,--target", connectionstring, "output target");
     app.add_flag("-v,--verbose", verbose, "verbose output");
     app.add_option("sqlcmd", sqlcmd, "SQL statement");
@@ -124,11 +128,15 @@ int main(int argc, char** argv)
     if (connectionstring.length() == 0 && sqlcmd.size() == 0)
         return 0;
 
+    // now open a real connection as specified by connectionstring
     bool b = false;
     Connection con;
+    Query query;
     try 
     {
         b = con.Open( connectionstring);
+        if (b)
+            query.SetDatabase(con);
     } 
     catch(DbException& ex)
     {
@@ -154,5 +162,74 @@ int main(int argc, char** argv)
     if(!b)
         return -1;
 
-    Query query;
+    // ready to execute real sql statements
+    for (size_t n = 0; n < sqlcmd.size(); n++)
+    {
+        tstring sql = sqlcmd[n];
+        try
+        {
+            if (verbose)
+                tcout << sql << endl;
+
+            nRetCode = query.ExecDirect(sql);
+
+            // Check for the result set.
+            short colcount = query.GetODBCFieldCount();
+
+            // If there is a resultset colcount will be > 0 (even if the result holds 0 rows!)
+            while (colcount > 0 && rowformat.length() == 0)
+            {
+                // ***********************************************************************
+                // Retrieve meta information on the columns of the result set
+                // this is NOT mandatory for the subsequent retrieval of the column values
+                // ***********************************************************************
+                for (short col = 0; col < colcount; col++)
+                {
+                    FieldInfo fieldinfo;
+                    query.GetODBCFieldInfo(col, fieldinfo);
+                    tcout << fieldinfo.m_strName;
+                    if (col == colcount - 1)
+                        tcout << endl;
+                    else
+                        tcout << fieldseparator;
+                }
+
+                // ***********************************************************************
+                // Now we retrieve data by iterating over the rows of the result set.
+                // If Result set has 0 rows it will skip the loop because nRetCode is set to SQL_NO_DATA immediately
+                // ***********************************************************************
+                for (nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
+                {
+                    for (short col = 0; col < colcount; col++)
+                    {
+                        DBItem dbitem;
+                        query.GetFieldValue(col, dbitem);
+                        tcout << DBItem::ConvertToString(dbitem);
+                        if (col == colcount - 1)
+                            tcout << endl;
+                        else
+                            tcout << fieldseparator;
+                    }
+                }
+
+                nRetCode = query.SQLMoreResults();
+                if (SQL_SUCCEEDED(nRetCode))
+                    colcount = query.GetODBCFieldCount();
+                else
+                    colcount = 0; // or break;
+            }
+        }
+        catch (DbException& ex)
+        {
+            nRetCode = ex.getSqlCode();
+            tcerr << _T("Cannot open connection:") << endl;
+            cerr << ex.what() << endl;
+            return nRetCode;
+        }
+    }
+
+    if (nRetCode == SQL_NO_DATA) // end of data successfully reached
+        nRetCode = SQL_SUCCESS;
+
+   return nRetCode;
 }
