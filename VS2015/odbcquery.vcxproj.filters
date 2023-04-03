@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\query\connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -28,6 +25,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\query\fieldinfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\query\lvstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\query\odbcenvironment.h">
@@ -45,27 +45,27 @@
     <ClInclude Include="..\query\query.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\query\tstring.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\query\resultinfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\query\lvstring.h">
+    <ClInclude Include="..\query\tstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\demo\main.cpp">
+    <ClCompile Include="..\query\connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\query\connection.cpp">
+    <ClCompile Include="..\query\datarow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\query\dbitem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\query\fieldinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\query\lvstring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\query\odbcenvironment.cpp">
@@ -81,12 +81,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\query\resultinfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\query\datarow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\query\lvstring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
