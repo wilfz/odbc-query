@@ -48,10 +48,10 @@
     <ClInclude Include="..\query\tstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\query\resultinfo.h">
+    <ClInclude Include="..\query\lvstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\query\lvstring.h">
+    <ClInclude Include="..\query\resultinfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -80,13 +80,13 @@
     <ClCompile Include="..\query\query.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\query\lvstring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\query\resultinfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\query\datarow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\query\lvstring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
