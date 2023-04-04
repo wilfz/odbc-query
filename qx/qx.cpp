@@ -21,20 +21,20 @@ int main(int argc, char** argv)
     tstring connectionstring;
     tstring fieldseparator = _T("\t");
     tstring rowformat;
-    tstring target;
+    tstring target = _T("stdout");
     bool verbose = false;
     bool listdrivers = false;
     bool listdsn = false;
     vector<tstring> sqlcmd;
 
-    app.add_flag("--listdrivers", listdrivers, "list installed drivers");
-    app.add_flag("--listdsn", listdsn, "List data sources");
-    app.add_option("-s,--source", connectionstring, "ODBC connection string");
-    app.add_option("--fieldseparator", fieldseparator, "fieldseparator");
-    app.add_option("-f,--format", rowformat, "row format");
-    //app.add_option("-t,--target", connectionstring, "output target");
     app.add_flag("-v,--verbose", verbose, "verbose output");
-    app.add_option("sqlcmd", sqlcmd, "SQL statement");
+    app.add_flag("--listdrivers", listdrivers, "list installed ODBC drivers");
+    app.add_flag("--listdsn", listdsn, "list ODBC data sources");
+    app.add_option("-s,--source", connectionstring, "ODBC connection string");
+    app.add_option("-f,--format", rowformat, "row format");
+    app.add_option("--fieldseparator", fieldseparator, "fieldseparator")->excludes("--format");
+    //app.add_option("-t,--target", connectionstring, "output target");
+    app.add_option("sqlcmd", sqlcmd, "SQL-statement(s) (each enclosed in \"\" and space-separated)");
 
     try {
         app.parse(argc, argv);
@@ -222,7 +222,7 @@ int main(int argc, char** argv)
         catch (DbException& ex)
         {
             nRetCode = ex.getSqlCode();
-            tcerr << _T("Cannot open connection:") << endl;
+            tcerr << _T("Execute error:") << endl;
             cerr << ex.what() << endl;
             return nRetCode;
         }
