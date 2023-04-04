@@ -26,13 +26,13 @@ std::tstring DataRow::Format(const ResultInfo& resultinfo, const std::tstring fm
 		if (pos1 != tstring::npos && pos1 < pos2)
 		{
 			// ':' and format found
-			colname = retVal.substr(pos0 + 1, pos1 - pos0);
-			colfmt = retVal.substr(pos1 + 1, pos2 - pos1);
+			colname = retVal.substr(pos0 + 1, pos1 - pos0 - 1);
+			colfmt = retVal.substr(pos1 + 1, pos2 - pos1 - 1);
 		}
 		else
 		{
 			// no format found
-			colname = retVal.substr(pos0 + 1, pos2 - pos0);
+			colname = retVal.substr(pos0 + 1, pos2 - pos0 - 1);
 		}
 
 		int col = -1;
@@ -41,7 +41,7 @@ std::tstring DataRow::Format(const ResultInfo& resultinfo, const std::tstring fm
 		{
 			const DBItem& var = at(col);
 			sValue = DBItem::ConvertToString(var, colfmt);
-			retVal.replace(pos0, pos2 - pos1 + 1, sValue);
+			retVal.replace(pos0, pos2 - pos0 + 1, sValue);
 			pos0 = retVal.find(_T("["), pos0 + sValue.length());
 		}
 		else

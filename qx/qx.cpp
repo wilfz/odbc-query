@@ -9,6 +9,7 @@
 #include "SimpleIni.h"
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
+#include "../query/lvstring.h"
 
 using namespace std;
 using namespace linguversa;
@@ -86,6 +87,7 @@ int main(int argc, char** argv)
         tcerr << _T("Cannot read list of installed drivers:") << endl << ex.what() << endl;
     }
 
+
     // connectionstring can be specified (in order of priortity)
     // 1. as option --source on the command line
     
@@ -117,16 +119,25 @@ int main(int argc, char** argv)
     if (verbose) 
     {
         tcout << "Connection string: " << connectionstring << endl;
+        if (rowformat.length() > 0)
+            tcout << "Format: " << rowformat << endl;
 
-        for(unsigned int i = 1; i < sqlcmd.size(); i++)
+        for(unsigned int i = 0; i < sqlcmd.size(); i++)
         {
             tcout << sqlcmd[i] << endl;
         }
+
         tcout << endl;
     }
 
     if (connectionstring.length() == 0 && sqlcmd.size() == 0)
         return 0;
+
+    //rowformat = _T("[lfnbr:%5d]\\n");
+    lvstring f = rowformat;
+    f.Replace(_T("\\n"), _T("\n"));
+    f.Replace(_T("\\t"), _T("\t"));
+    rowformat = f;
 
     // now open a real connection as specified by connectionstring
     bool b = false;
@@ -175,6 +186,21 @@ int main(int argc, char** argv)
 
             // Check for the result set.
             short colcount = query.GetODBCFieldCount();
+
+            // Apply user-defined rowformat to each row of the result set.
+            if (colcount > 0 && rowformat.length() > 0)
+            {
+                // ***********************************************************************
+                // Iterate over the rows of the result set. Result set has 0 rows it will 
+                // skip the loop because nRetCode is set to SQL_NO_DATA immediately
+                // ***********************************************************************
+                for (nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
+                {
+                    tcout << query.FormatCurrentRow(rowformat);
+                }
+
+                continue;
+            }
 
             // If there is a resultset colcount will be > 0 (even if the result holds 0 rows!)
             while (colcount > 0 && rowformat.length() == 0)

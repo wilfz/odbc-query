@@ -140,6 +140,9 @@ public:
     bool IsFieldNull( short nIndex);
     bool IsFieldNull( tstring lpszName);
 
+    // formatting of output
+    tstring FormatCurrentRow(const std::tstring);
+
     // Set an arbitrary SQL statement which is to be executed. 
     // The statement may contain question marks as placeholders for variables which have to 
     // be bound to the statement according to their types and the sql type in the statement. 

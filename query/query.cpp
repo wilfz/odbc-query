@@ -1137,6 +1137,17 @@ bool Query::IsFieldNull(tstring lpszName)
     return IsFieldNull( nField);
 }
 
+tstring Query::FormatCurrentRow(const std::tstring fmt)
+{
+    for (unsigned short col = 0; col < m_FieldInfo.size(); col++)
+    {
+        DBItem item;
+        GetFieldValue(col, item);
+    }
+
+    return m_RowData.Format(m_FieldInfo, fmt);
+}
+
 RETCODE Query::Prepare(tstring statement)
 {
     SQLRETURN nRetCode = SQL_SUCCESS;    //Return code for your ODBC calls
