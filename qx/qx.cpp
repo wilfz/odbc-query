@@ -20,6 +20,9 @@ void ListDrivers();
 void ListDataSources();
 void FormatResultSet(Query& query, const tstring& rowformat);
 void OutputResultSet(Query& query, const tstring& fieldseparator);
+void GenerateCreate(Query& query, const tstring& tablename);
+void GenerateInsert(Query& query, const tstring& tablename);
+
 
 int main(int argc, char** argv) 
 {
@@ -28,7 +31,11 @@ int main(int argc, char** argv)
     tstring connectionstring;
     tstring fieldseparator = _T("\t");
     tstring rowformat;
+    tstring inputfile;
     tstring target = _T("stdout");
+    tstring create;
+    tstring insert;
+    tstring createinsert;
     bool verbose = false;
     bool listdrivers = false;
     bool listdsn = false;
@@ -40,13 +47,24 @@ int main(int argc, char** argv)
     app.add_option("-s,--source", connectionstring, "ODBC connection string");
     app.add_option("-f,--format", rowformat, "row format");
     app.add_option("--fieldseparator", fieldseparator, "fieldseparator (Default is TAB)")->excludes("--format");
-    //app.add_option("-t,--target", connectionstring, "output target");
+    app.add_option("--create", create, "generate create statement for specified tablename")->excludes("--format")->excludes("--fieldseparator");
+    //app.add_option("--insert", insert, "generate insert statements for specified tablename")->excludes("--format")->excludes("--fieldseparator");
+    //app.add_option("--createinsert", createinsert, "generate create and insert statements for specified tablename")
+    //    ->excludes("--format")->excludes("--fieldseparator")->excludes("--create")->excludes("--insert");
+    //app.add_option("--inputfile", inputfile, "filepath of input file containing SQL statements");
+    //app.add_option("-t,--target", target, "output target");
     app.add_option("sqlcmd", sqlcmd, "SQL-statement(s) (each enclosed in \"\" and space-separated)");
 
     try {
         app.parse(argc, argv);
     } catch(const CLI::ParseError& e) {
         return app.exit(e);
+    }
+
+    if (createinsert.length() > 0)
+    {
+        create = createinsert;
+        insert = createinsert;
     }
 
     SQLRETURN nRetCode = SQL_SUCCESS;
@@ -184,6 +202,9 @@ int main(int argc, char** argv)
         {
             nRetCode = query.ExecDirect(sql);
 
+            if (SQL_SUCCEEDED(nRetCode) && create.length() > 0)
+                ::GenerateCreate(query, create);
+
             // even a single statement (or batch of statements) can have more than one result set
             while (SQL_SUCCEEDED(nRetCode))
             {
@@ -192,9 +213,12 @@ int main(int argc, char** argv)
                 {
                     ::FormatResultSet(query, rowformat);
                 }
-
-                // If there is a resultset colcount will be > 0 (even if the result holds 0 rows!)
-                else if (rowformat.length() == 0)
+                else if (create.length() > 0 || insert.length() > 0)
+                {
+                    ::GenerateInsert(query, insert);
+                }
+                // standard format
+                else
                 {
                     ::OutputResultSet(query, fieldseparator);
                 }
@@ -306,4 +330,118 @@ void ListDataSources()
     }
 
     tcout << endl;
+}
+
+void GenerateCreate(Query& query, const tstring& tablename)
+{
+    if (tablename.length() == 0)
+        return;
+    short colcount = query.GetODBCFieldCount();
+    if (colcount <= 0)
+        return;
+
+    tstring sOutput = string_format(_T("create table %s(\n"), tablename.c_str());
+    // ***********************************************************************
+    // Retrieve meta information on the columns of the result set
+    // this is NOT mandatory for the subsequent retrieval of the column values
+    // ***********************************************************************
+    for (short col = 0; col < colcount; col++)
+    {
+        FieldInfo fieldinfo;
+        tstring sqltypename;
+        query.GetODBCFieldInfo(col, fieldinfo);
+        switch (fieldinfo.m_nSQLType)
+        {
+        case SQL_TINYINT:
+            sqltypename = _T("BYTE");
+            break;
+        case SQL_SMALLINT:
+            sqltypename = _T("SMALLINT");
+            break;
+        case SQL_INTEGER:
+            sqltypename = _T("INTEGER");
+            break;
+        case SQL_REAL:
+            sqltypename = _T("REAL");
+            break;
+        case SQL_DOUBLE:
+            sqltypename = _T("DOUBLE");
+            break;
+        //case SQL_DATE:
+        //    sqltypename = _T("DATE");
+        //    break;
+        case SQL_DATETIME:
+            sqltypename = _T("DATETIME");
+            break;
+        case SQL_TYPE_DATE:
+            sqltypename = _T("DATE");
+            break;
+        case SQL_TIME:
+            sqltypename = string_format(_T("TIME(%01d)"), fieldinfo.m_nPrecision);
+            break;
+        case SQL_TYPE_TIME:
+            sqltypename = _T("TIME");
+            break;
+        case SQL_TIMESTAMP:
+            sqltypename = _T("DATETIME");
+            break;
+        case SQL_TYPE_TIMESTAMP:
+            sqltypename = _T("DATETIME");
+            break;
+        case SQL_CHAR:
+            sqltypename = string_format(_T("CHAR(%01d)"), fieldinfo.m_nPrecision);
+            break;
+        case SQL_VARCHAR:
+            sqltypename = string_format(_T("VARCHAR(%01d)"), fieldinfo.m_nPrecision);
+            break;
+        case SQL_WCHAR:
+            sqltypename = string_format(_T("NCHAR(%01d)"), fieldinfo.m_nPrecision);
+            break;
+        case SQL_WVARCHAR:
+            sqltypename = string_format(_T("NVARCHAR(%01d)"), fieldinfo.m_nPrecision);
+            break;
+        case SQL_BINARY:
+            sqltypename = string_format(_T("BINARY(%01d)"), fieldinfo.m_nPrecision);
+            break;
+        case SQL_DECIMAL:
+            sqltypename = string_format(_T("DECIMAL(%01d,%01d)"), fieldinfo.m_nPrecision, fieldinfo.m_nScale);
+            break;
+        case SQL_NUMERIC:
+            sqltypename = string_format(_T("NUMERIC(%01d,%01d)"), fieldinfo.m_nPrecision, fieldinfo.m_nScale);
+            break;
+        case SQL_BIGINT:
+        case SQL_BIGINT + SQL_UNSIGNED_OFFSET:
+            sqltypename = _T("BIGINT");
+            break;
+        case SQL_GUID:
+            sqltypename = _T("UNIQUE_IDENTIFIER");
+            break;
+        default:
+            sqltypename = _T("UNKNOWN");
+            break;
+        }
+
+        tstring sNullable;
+        switch (fieldinfo.m_nNullability)
+        {
+        case SQL_NULLABLE:
+            sNullable = _T("NULL");
+            break;
+        case SQL_NO_NULLS:
+            sNullable = _T("NOT NULL");
+            break;
+        }
+
+        sOutput += ::string_format(_T("\t%s %s %s%s"), 
+            fieldinfo.m_strName.c_str(), sqltypename.c_str(), sNullable.c_str(), 
+            (col < colcount -1) ? _T(",\n") : _T("\n);\n"));
+    }
+
+    tcout << sOutput;
+}
+
+void GenerateInsert(Query& query, const tstring& tablename)
+{
+    if (tablename.length() == 0)
+        return;
 }
