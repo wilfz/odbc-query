@@ -15,6 +15,12 @@ using namespace std;
 using namespace linguversa;
 using namespace CLI;
 
+//forward declarations
+void ListDrivers();
+void ListDataSources();
+void FormatResultSet(Query& query, const tstring& rowformat);
+void OutputResultSet(Query& query, const tstring& fieldseparator);
+
 int main(int argc, char** argv) 
 {
     CLI::App app{ "qx - ODBC Query eXecuter" };
@@ -33,7 +39,7 @@ int main(int argc, char** argv)
     app.add_flag("--listdsn", listdsn, "list ODBC data sources");
     app.add_option("-s,--source", connectionstring, "ODBC connection string");
     app.add_option("-f,--format", rowformat, "row format");
-    app.add_option("--fieldseparator", fieldseparator, "fieldseparator")->excludes("--format");
+    app.add_option("--fieldseparator", fieldseparator, "fieldseparator (Default is TAB)")->excludes("--format");
     //app.add_option("-t,--target", connectionstring, "output target");
     app.add_option("sqlcmd", sqlcmd, "SQL-statement(s) (each enclosed in \"\" and space-separated)");
 
@@ -43,42 +49,19 @@ int main(int argc, char** argv)
         return app.exit(e);
     }
 
-    // first get information independent of specific connection
-    ODBCEnvironment environment;
     SQLRETURN nRetCode = SQL_SUCCESS;
 
-    try 
+    try
     {
+        // first get information independent of specific connection
         if (listdrivers)
         {
-            tcout << _T("ODBCDrivers:") << endl;
-            tstring driver;
-            vector<tstring> attributes;
-            for (nRetCode = environment.FetchDriverInfo(driver, attributes, SQL_FETCH_FIRST); 
-                SQL_SUCCEEDED(nRetCode);
-                nRetCode = environment.FetchDriverInfo(driver, attributes)) 
-            {
-                tcout << driver << endl;
-                for (unsigned short i = 0; i < attributes.size(); i++)
-                    tcout << _T("\t") << attributes[i] << endl;
-            }
-
-            tcout << endl;
+            ::ListDrivers();
         }
 
         if (listdsn) 
         {
-            tcout << "ODBC data sources:" << endl;
-
-            tstring dsn;
-            tstring drivername;
-            for (nRetCode = environment.FetchDataSourceInfo(dsn, drivername, SQL_FETCH_FIRST); SQL_SUCCEEDED(nRetCode);
-                nRetCode = environment.FetchDataSourceInfo(dsn, drivername)) 
-            {
-                tcout << dsn << _T("|") << drivername << endl;
-            }
-
-            tcout << endl;
+            ::ListDataSources();
         }
     }
     catch(DbException& ex) 
@@ -98,6 +81,17 @@ int main(int argc, char** argv)
         const TCHAR* cs = ::_tgetenv(_T("QXCONNECTION"));
 #else
         const char* cs = std::getenv("QXCONNECTION");
+#endif
+        if (cs)
+            connectionstring.assign(cs);
+    }
+
+    if (connectionstring.length() == 0)
+    {
+#ifdef _WIN32
+        const TCHAR* cs = ::_tgetenv(_T("QEXCONNECTION"));
+#else
+        const char* cs = std::getenv("QEXCONNECTION");
 #endif
         if (cs)
             connectionstring.assign(cs);
@@ -134,16 +128,22 @@ int main(int argc, char** argv)
         return 0;
 
     //rowformat = _T("[lfnbr:%5d]\\n");
-    lvstring f = rowformat;
-    f.Replace(_T("\\n"), _T("\n"));
-    f.Replace(_T("\\t"), _T("\t"));
-    rowformat = f;
+    lvstring s = rowformat;
+    s.Replace(_T("\\n"), _T("\n"));
+    s.Replace(_T("\\t"), _T("\t"));
+    rowformat = s;
+
+    s = fieldseparator;
+    s.Replace(_T("\\n"), _T("\n"));
+    s.Replace(_T("\\t"), _T("\t"));
+    fieldseparator = s;
 
     // now open a real connection as specified by connectionstring
     bool b = false;
     Connection con;
     Query query;
-    try 
+
+    try
     {
         b = con.Open( connectionstring);
         if (b)
@@ -177,72 +177,30 @@ int main(int argc, char** argv)
     for (size_t n = 0; n < sqlcmd.size(); n++)
     {
         tstring sql = sqlcmd[n];
+        if (verbose)
+            tcout << sql << endl;
+
         try
         {
-            if (verbose)
-                tcout << sql << endl;
-
             nRetCode = query.ExecDirect(sql);
 
-            // Check for the result set.
-            short colcount = query.GetODBCFieldCount();
-
-            // Apply user-defined rowformat to each row of the result set.
-            if (colcount > 0 && rowformat.length() > 0)
+            // even a single statement (or batch of statements) can have more than one result set
+            while (SQL_SUCCEEDED(nRetCode))
             {
-                // ***********************************************************************
-                // Iterate over the rows of the result set. Result set has 0 rows it will 
-                // skip the loop because nRetCode is set to SQL_NO_DATA immediately
-                // ***********************************************************************
-                for (nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
+                // Apply user-defined rowformat to each row of the result set.
+                if (rowformat.length() > 0)
                 {
-                    tcout << query.FormatCurrentRow(rowformat);
+                    ::FormatResultSet(query, rowformat);
                 }
 
-                continue;
-            }
-
-            // If there is a resultset colcount will be > 0 (even if the result holds 0 rows!)
-            while (colcount > 0 && rowformat.length() == 0)
-            {
-                // ***********************************************************************
-                // Retrieve meta information on the columns of the result set
-                // this is NOT mandatory for the subsequent retrieval of the column values
-                // ***********************************************************************
-                for (short col = 0; col < colcount; col++)
+                // If there is a resultset colcount will be > 0 (even if the result holds 0 rows!)
+                else if (rowformat.length() == 0)
                 {
-                    FieldInfo fieldinfo;
-                    query.GetODBCFieldInfo(col, fieldinfo);
-                    tcout << fieldinfo.m_strName;
-                    if (col == colcount - 1)
-                        tcout << endl;
-                    else
-                        tcout << fieldseparator;
+                    ::OutputResultSet(query, fieldseparator);
                 }
 
-                // ***********************************************************************
-                // Now we retrieve data by iterating over the rows of the result set.
-                // If Result set has 0 rows it will skip the loop because nRetCode is set to SQL_NO_DATA immediately
-                // ***********************************************************************
-                for (nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
-                {
-                    for (short col = 0; col < colcount; col++)
-                    {
-                        DBItem dbitem;
-                        query.GetFieldValue(col, dbitem);
-                        tcout << DBItem::ConvertToString(dbitem);
-                        if (col == colcount - 1)
-                            tcout << endl;
-                        else
-                            tcout << fieldseparator;
-                    }
-                }
-
+                // there may be more result sets ...
                 nRetCode = query.SQLMoreResults();
-                if (SQL_SUCCEEDED(nRetCode))
-                    colcount = query.GetODBCFieldCount();
-                else
-                    colcount = 0; // or break;
             }
         }
         catch (DbException& ex)
@@ -252,10 +210,100 @@ int main(int argc, char** argv)
             cerr << ex.what() << endl;
             return nRetCode;
         }
+
+        //query.close();
     }
 
     if (nRetCode == SQL_NO_DATA) // end of data successfully reached
         nRetCode = SQL_SUCCESS;
 
    return nRetCode;
+}
+
+void FormatResultSet(Query& query, const tstring& rowformat)
+{
+    // ***********************************************************************
+    // Iterate over the rows of the result set. if Result set has 0 rows it will 
+    // skip the loop because nRetCode is set to SQL_NO_DATA immediately
+    // ***********************************************************************
+    for (SQLRETURN nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
+    {
+        tcout << query.FormatCurrentRow(rowformat);
+    }
+}
+
+
+void OutputResultSet(Query& query, const tstring& fieldseparator)
+{
+    short colcount = query.GetODBCFieldCount();
+    if (colcount <= 0)
+        return;
+
+    // ***********************************************************************
+    // Retrieve meta information on the columns of the result set
+    // this is NOT mandatory for the subsequent retrieval of the column values
+    // ***********************************************************************
+    for (short col = 0; col < colcount; col++)
+    {
+        FieldInfo fieldinfo;
+        query.GetODBCFieldInfo(col, fieldinfo);
+        tcout << fieldinfo.m_strName;
+        if (col == colcount - 1)
+            tcout << endl;
+        else
+            tcout << fieldseparator;
+    }
+
+    // ***********************************************************************
+    // Now we retrieve data by iterating over the rows of the result set.
+    // If Result set has 0 rows it will skip the loop because nRetCode is set to SQL_NO_DATA immediately
+    // ***********************************************************************
+    for (SQLRETURN nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
+    {
+        for (short col = 0; col < colcount; col++)
+        {
+            DBItem dbitem;
+            query.GetFieldValue(col, dbitem);
+            tcout << DBItem::ConvertToString(dbitem);
+            if (col == colcount - 1)
+                tcout << endl;
+            else
+                tcout << fieldseparator;
+        }
+    }
+}
+
+void ListDrivers()
+{
+    tcout << _T("ODBCDrivers:") << endl;
+
+    ODBCEnvironment environment;
+    tstring driver;
+    vector<tstring> attributes;
+    for (SQLRETURN nRetCode = environment.FetchDriverInfo(driver, attributes, SQL_FETCH_FIRST);
+        SQL_SUCCEEDED(nRetCode);
+        nRetCode = environment.FetchDriverInfo(driver, attributes))
+    {
+        tcout << driver << endl;
+        for (unsigned short i = 0; i < attributes.size(); i++)
+            tcout << _T("\t") << attributes[i] << endl;
+    }
+
+    tcout << endl;
+}
+
+void ListDataSources()
+{
+    tcout << "ODBC data sources:" << endl;
+
+    ODBCEnvironment environment;
+    tstring dsn;
+    tstring drivername;
+    for (SQLRETURN nRetCode = environment.FetchDataSourceInfo(dsn, drivername, SQL_FETCH_FIRST); SQL_SUCCEEDED(nRetCode);
+        nRetCode = environment.FetchDataSourceInfo(dsn, drivername))
+    {
+        tcout << dsn << _T("|") << drivername << endl;
+    }
+
+    tcout << endl;
 }
