@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <exception>
+#include <iostream>
 #include "CLI11.hpp"
 #include "../query/tstring.h"
 #include "SimpleIni.h"

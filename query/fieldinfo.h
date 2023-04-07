@@ -3,6 +3,7 @@
 #include "tstring.h"
 
 #include <sqlext.h>
+#include <iostream>
 
 #define DEFAULT_FIELD_TYPE SQL_TYPE_NULL // pick "C" data type to match SQL data type
 
@@ -30,4 +31,7 @@ namespace linguversa
         SWORD m_nScale;
         SWORD m_nNullability;
     };
+
+    std::ostream& operator <<(std::ostream& ar, const FieldInfo& item);
+    std::istream& operator >>(std::istream& ar, FieldInfo& item);
 }

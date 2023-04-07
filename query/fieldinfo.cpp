@@ -1,4 +1,5 @@
 #include "fieldinfo.h"
+#include "fieldinfo.h"
 
 using namespace linguversa;
 
@@ -142,3 +143,14 @@ short FieldInfo::GetDefaultCType()
         return FieldInfo::GetDefaultCType(*this);
 }
 
+std::ostream& linguversa::operator<<(std::ostream& ar, const FieldInfo& item)
+{
+    ar << item.m_nCType << item.m_strName << item.m_nSQLType << item.m_nPrecision << item.m_nScale << item.m_nNullability;
+    return ar;
+}
+
+std::istream& linguversa::operator>>(std::istream& ar, FieldInfo& item)
+{
+    ar >> item.m_nCType >> item.m_strName >> item.m_nSQLType >> item.m_nPrecision >> item.m_nScale >> item.m_nNullability;
+    return ar;
+}
