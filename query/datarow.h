@@ -4,7 +4,6 @@
 #include <vector>
 #include "dbitem.h"
 #include "resultinfo.h"
-#include <iostream>
 
 #define SQL_C_STRING SQL_VARCHAR
 
@@ -25,6 +24,4 @@ protected:
     //ResultInfo* m_pResultInfo;
 };
 
-std::ostream& operator <<(std::ostream& ar, const DataRow& row);
-std::istream& operator >>(std::istream& ar, DataRow& row);
 }

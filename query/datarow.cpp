@@ -54,22 +54,3 @@ std::tstring DataRow::Format(const ResultInfo& resultinfo, const std::tstring fm
 
 	return retVal;
 }
-
-std::ostream& linguversa::operator<<(std::ostream& ar, const DataRow& row)
-{
-	size_t colcount = row.size();
-	ar << colcount;
-	for (size_t i = 0; i < colcount; i++)
-		ar << row[i];
-	return ar;
-}
-
-std::istream& linguversa::operator>>(std::istream& ar, DataRow& row)
-{
-	size_t colcount = 0;
-	ar >> colcount;
-	row.resize(colcount);
-	for (size_t i = 0; i < colcount; i++)
-		ar >> row[i];
-	return ar;
-}

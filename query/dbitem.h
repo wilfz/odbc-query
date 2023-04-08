@@ -5,7 +5,6 @@
 #include <sql.h>
 #include <sqlext.h>
 #include <vector>
-#include <iostream>
 
 #define SQL_C_STRING SQL_VARCHAR
 
@@ -67,7 +66,4 @@ namespace linguversa
     protected:
         void copyfrom( const DBItem& src);
     };
-
-    std::ostream& operator <<(std::ostream& ar, const DBItem& item);
-    std::istream& operator >>(std::istream& ar, DBItem& item);
 }

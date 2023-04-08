@@ -5,7 +5,9 @@
       <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
     </Plugin>
   </Plugins>
-  <VirtualDirectory Name="cmake"/>
+  <VirtualDirectory Name="cmake">
+    <File Name="../demo/CMakeLists.txt"/>
+  </VirtualDirectory>
   <VirtualDirectory Name="Source Files">
     <File Name="../query/datarow.cpp"/>
     <File Name="../query/lvstring.cpp"/>

@@ -154,11 +154,13 @@
     <ClInclude Include="..\query\paramitem.h" />
     <ClInclude Include="..\query\query.h" />
     <ClInclude Include="..\query\resultinfo.h" />
+    <ClInclude Include="..\query\resultstream.h" />
     <ClInclude Include="..\query\tstring.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\demo\main.cpp" />
     <ClCompile Include="..\query\connection.cpp" />
+    <ClCompile Include="..\query\datarow.cpp" />
     <ClCompile Include="..\query\dbitem.cpp" />
     <ClCompile Include="..\query\fieldinfo.cpp" />
     <ClCompile Include="..\query\lvstring.cpp" />
@@ -167,6 +169,7 @@
     <ClCompile Include="..\query\paramitem.cpp" />
     <ClCompile Include="..\query\query.cpp" />
     <ClCompile Include="..\query\resultinfo.cpp" />
+    <ClCompile Include="..\query\resultstream.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
