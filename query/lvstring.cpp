@@ -107,15 +107,18 @@ tstring linguversa::FormatTimeStamp(const tstring& colFmt, const TIMESTAMP_STRUC
 // helper function
 static tstring StrLenFormat(tstring str, tstring fmt)
 {
-    //int t = fmt.Find(_T(','));
-    //tstring sLen = (t >= 0) ? fmt.Left(t) : fmt;
-    //int minlen = _tstoi(sLen);
-    //int maxlen = (t >= 0 && t + 1 < fmt.GetLength()) ? _tstoi(fmt.Mid(t + 1)) : minlen;
-    //while (str.GetLength() < minlen && minlen <= maxlen)
-    //  str.AppendChar(_T(' '));
-    //if (minlen <= maxlen && maxlen > 1 && maxlen < str.GetLength())
-    //  return str.Left(maxlen);
-    //else
+    size_t t = fmt.find(_T(","));
+    tstring sLen = (t != tstring::npos) ? fmt.substr(0, t) : fmt;
+    int minlen = ::_tstoi(sLen.c_str());
+    int maxlen = (t != tstring::npos && t + 1 < fmt.length()) ? ::_tstoi(fmt.substr(t + 1).c_str()) : minlen;
+    int curlen = str.length();
+    if (curlen < minlen && minlen <= maxlen)
+        str.resize(minlen);
+    for (int i = curlen; i < minlen; i++)
+        str[i] = _T(' ');
+    if (minlen <= maxlen && maxlen > 1 && maxlen < (int) str.length())
+        return str.substr(0,maxlen);
+    else
         return str;
 }
 
