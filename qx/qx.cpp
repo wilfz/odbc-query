@@ -206,21 +206,25 @@ int main(int argc, char** argv)
             if (SQL_SUCCEEDED(nRetCode) && create.length() > 0)
                 ::GenerateCreate(query, create);
 
-            // even a single statement (or batch of statements) can have more than one result set
+            // Even a single statement (or.batch of statements) can have more than one result set.
+            // Iterate over all result sets:
             while (SQL_SUCCEEDED(nRetCode))
             {
-                // Apply user-defined rowformat to each row of the result set.
                 if (rowformat.length() > 0)
                 {
+                    // Iterate over all rows of the curnnt result set and
+                    // apply user-defined rowformat to each row.
                     ::FormatResultSet(query, rowformat);
                 }
                 else if (create.length() > 0 || insert.length() > 0)
                 {
+                    // Iterate over all rows of the curnnt result set and
+                    // create an insert statement for each row.
                     ::GenerateInsert(query, insert);
                 }
-                // standard format
                 else
                 {
+                    // Output the complete current result set in standard format.
                     ::OutputResultSet(query, fieldseparator);
                 }
 
