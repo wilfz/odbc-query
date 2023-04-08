@@ -38,6 +38,7 @@
 #define tcout cout
 #define tcerr cerr
 #define _tprintf printf
+#define _tstoi atoi
 #define _T
 
 #define SI_NO_CONVERSION
