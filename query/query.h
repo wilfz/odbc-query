@@ -103,7 +103,7 @@ public:
     bool GetFieldValue( tstring lpszName, int& iValue);
     bool GetFieldValue( tstring lpszName, short& siValue);
     bool GetFieldValue( tstring lpszName, bytearray& ba);
-    bool GetFieldValue( tstring lpszName, ODBCINT64& ui64Value);
+    bool GetFieldValue( tstring lpszName, unsigned ODBCINT64& ui64Value);
     bool GetFieldValue( tstring lpszName, double& dValue);
     bool GetFieldValue( tstring lpszName, SQLGUID& guid);
     bool GetFieldValue(tstring lpszName, TIMESTAMP_STRUCT& tsValue);
@@ -111,7 +111,7 @@ public:
     bool GetFieldValue( short nIndex, int& iValue);
     bool GetFieldValue( short nIndex, short& siValue);
     bool GetFieldValue( short nIndex, bytearray& ba);
-    bool GetFieldValue( short nIndex, ODBCINT64& ui64Value);
+    bool GetFieldValue( short nIndex, unsigned ODBCINT64& ui64Value);
     bool GetFieldValue( short nIndex, double& dValue);
     bool GetFieldValue( short nIndex, SQLGUID& guid);
     bool GetFieldValue( short nIndex, TIMESTAMP_STRUCT& tsValue);
@@ -194,7 +194,7 @@ public:
 	RETCODE BindParameter(SQLUSMALLINT ParameterNumber, long& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);	// 32 bit, SQL_INTEGER
 	RETCODE BindParameter(tstring ParameterName, long& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::input);	// 32 bit, SQL_INTEGER
 	// Host variable is of C++ type __int64 (64 bit integer) which corresponds to the ODBC sql type SQL_BIGINT.
-	RETCODE BindParameter(SQLUSMALLINT ParameterNumber, ODBCINT64& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);	// 64 bit, SQL_BIGINT
+	RETCODE BindParameter(SQLUSMALLINT ParameterNumber, unsigned ODBCINT64& nParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);	// 64 bit, SQL_BIGINT
 	// Host variable is of C++ type double.Length in memory of double is 64 bit integer.
 	// It maybe used for ODBC sql type SQL_DOUBLE but also for SQL_DECIMAL, SQL_NUMERIC, or SQL_FLOAT.
 	RETCODE BindParameter(SQLUSMALLINT ParameterNumber, double& sParamRef, ParamInfo::InputOutputType inouttype = ParamInfo::unknown);	// 64 bit
