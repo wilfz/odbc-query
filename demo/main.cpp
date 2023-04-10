@@ -64,10 +64,17 @@ int main(int argc, char **argv)
     Connection con;
     try
     {
+        // I do not like using these macro variables, but unfortunately the driver specification 
+        // is different on different oerating systems.
+        #ifdef _WIN32
         b = con.Open(
-            //_T("Driver={SQL Server};Server=localhost;Database=test;Trusted_Connection=Yes;"));
             _T("Driver={SQLite3 ODBC Driver};Database=test.db;"));// win32
-            //"Driver=SQLITE3;Database=test.db;");    // un*x
+        #else
+        b = con.Open(
+            "Driver=SQLITE3;Database=test.db;");    // un*x
+        #endif
+        //b = con.Open(
+        //_T("Driver={SQL Server};Server=localhost;Database=test;Trusted_Connection=Yes;"));
     }
     catch(DbException& ex)
     {
