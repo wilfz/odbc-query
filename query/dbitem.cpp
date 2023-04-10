@@ -59,7 +59,7 @@ void DBItem::clear()
         break;
     case lwvt_uint64:
         if (m_pUInt64)
-            delete (ODBCINT64*) m_pUInt64;
+            delete (unsigned ODBCINT64*) m_pUInt64;
         m_pUInt64 = nullptr;
         m_nCType = lwvt_null;
         break;
