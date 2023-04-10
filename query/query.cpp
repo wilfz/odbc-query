@@ -483,7 +483,7 @@ bool Query::GetFieldValue(tstring lpszName, bytearray & ba)
     return GetFieldValue(nIndex, ba);
 }
 
-bool Query::GetFieldValue(tstring lpszName, ODBCINT64 & ui64Value)
+bool Query::GetFieldValue(tstring lpszName, unsigned ODBCINT64 & ui64Value)
 {
     assert(!lpszName.empty());
 
@@ -643,7 +643,7 @@ bool Query::GetFieldValue(short nIndex, bytearray & ba)
     return false;
 }
 
-bool Query::GetFieldValue(short nIndex, ODBCINT64 & ui64Value)
+bool Query::GetFieldValue(short nIndex, unsigned ODBCINT64 & ui64Value)
 {
     if (nIndex < 0 || nIndex >= GetODBCFieldCount())
     {
@@ -875,7 +875,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
     // special handling of LWVT_UINT64 which is pointer to ODBCINT64
     case SQL_C_UBIGINT:
     {
-        ODBCINT64 biValue = 0;
+        unsigned ODBCINT64 biValue = 0;
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, nFieldType, &biValue, sizeof(biValue), &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
@@ -1916,7 +1916,7 @@ RETCODE Query::BindParameter(tstring ParameterName, long& nParamRef, ParamInfo::
 
 RETCODE Query::BindParameter(	// 64 bit, SQL_BIGINT
     SQLUSMALLINT ParameterNumber,
-    ODBCINT64& nParamRef,
+    unsigned ODBCINT64& nParamRef,
     ParamInfo::InputOutputType inouttype)
 {
     RETCODE nRetCode = SQL_SUCCESS;	//Return code for your ODBC calls
