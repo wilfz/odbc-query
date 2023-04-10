@@ -241,7 +241,7 @@ int main(int argc, char **argv)
                 SQLGUID g = { 0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };				
                 query.GetFieldValue(4, g);	// ODBC C type is implicitly set by the parameter of type GUID.
                     
-                tcout << lfnbr << _T("\t") << sName << endl;
+                tcout << lfnbr << _T("\t") << sName << _T("\t");
                 _tprintf(_T("%02d.%02d.%04d\t"), tsBirthDate.day, tsBirthDate.month, tsBirthDate.year);
                 _tprintf(_T("%8.2f\t"), d);
 
@@ -488,7 +488,7 @@ int main(int argc, char **argv)
                 SQLGUID g = { 0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                 query.GetFieldValue(4, g);	// ODBC C type is implicitly set by the parameter of type GUID.
                     
-                tcout << lfnbr << _T("\t") << sName << endl;
+                tcout << lfnbr << _T("\t") << sName << _T("\t");
                 if (varBirthDte.m_pdate)
                     _tprintf(_T("%02d.%02d.%04d\t"), varBirthDte.m_pdate->day, varBirthDte.m_pdate->month, varBirthDte.m_pdate->year);
                 _tprintf(_T("%8.2f\t"), d);
