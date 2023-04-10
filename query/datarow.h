@@ -22,12 +22,6 @@ public:
 
 protected:
     //ResultInfo* m_pResultInfo;
-
-    //friend LW_EXT_CLASS CArchive& operator <<(CArchive& ar, const LwDataRow& row);
-    //friend LW_EXT_CLASS CArchive& operator >>(CArchive& ar, LwDataRow& row);
 };
-
-//LW_EXT_CLASS CArchive& operator <<(CArchive& ar, const LwDataRow& row);
-//LW_EXT_CLASS CArchive& operator >>(CArchive& ar, LwDataRow& row);
 
 }

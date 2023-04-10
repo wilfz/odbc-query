@@ -236,7 +236,7 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
     #endif
 
     case lwvt_bytearray:
-        if (var.m_pByteArray == NULL)
+        if (var.m_pByteArray == nullptr)
             break;
         else
         {

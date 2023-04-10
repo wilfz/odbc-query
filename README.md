@@ -1,4 +1,4 @@
 # odbc-query
-Library to easily access databases by ODBC in C++
-Works for Windows and Linux. 
-Supports Windows UNICODE, too.
+Command line tool **qx** and Library **odbcquery** to easily access databases by ODBC in C++<br>
+Multiplatform: Works for Windows and Linux.<br>
+Windows support for x86 and x64, Multibyte and UNICODE.</br>

@@ -141,4 +141,3 @@ short FieldInfo::GetDefaultCType()
     else // otherwise we derive it from m_nSQLType
         return FieldInfo::GetDefaultCType(*this);
 }
-

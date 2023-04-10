@@ -54,6 +54,9 @@
     <ClInclude Include="..\query\resultinfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\query\resultstream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\demo\main.cpp">
@@ -84,6 +87,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\query\resultinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\query\datarow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\query\resultstream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

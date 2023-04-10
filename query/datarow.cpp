@@ -36,7 +36,7 @@ std::tstring DataRow::Format(const ResultInfo& resultinfo, const std::tstring fm
 		}
 
 		int col = -1;
-		// does colanem match any column name in resulltinfo?
+		// does colname match any column name in resulltinfo?
 		if (colname.length() > 0 && (col = resultinfo.GetSqlColumn(colname)) >= 0)
 		{
 			const DBItem& var = at(col);

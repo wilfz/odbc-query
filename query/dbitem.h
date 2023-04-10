@@ -62,9 +62,8 @@ namespace linguversa
         };
         
         static std::tstring ConvertToString( const DBItem& var, std::tstring colFmt = _T(""));
-        
+
     protected:
         void copyfrom( const DBItem& src);
-  };
-
+    };
 }

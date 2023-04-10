@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <exception>
+#include <iostream>
 #include "CLI11.hpp"
 #include "../query/tstring.h"
 #include "SimpleIni.h"
@@ -18,10 +19,10 @@ using namespace CLI;
 //forward declarations
 void ListDrivers();
 void ListDataSources();
-void FormatResultSet(Query& query, const tstring& rowformat);
-void OutputResultSet(Query& query, const tstring& fieldseparator);
-void GenerateCreate(Query& query, const tstring& tablename);
-void GenerateInsert(Query& query, const tstring& tablename);
+void FormatResultSet(ostream& os, Query& query, const tstring& rowformat);
+void OutputResultSet(ostream& os, Query& query, const tstring& fieldseparator);
+void GenerateCreate(ostream& os, Query& query, const tstring& tablename);
+void GenerateInsert(ostream& os, Query& query, const tstring& tablename);
 
 
 int main(int argc, char** argv) 
@@ -48,9 +49,9 @@ int main(int argc, char** argv)
     app.add_option("-f,--format", rowformat, "row format");
     app.add_option("--fieldseparator", fieldseparator, "fieldseparator (Default is TAB)")->excludes("--format");
     app.add_option("--create", create, "generate create statement for specified tablename")->excludes("--format")->excludes("--fieldseparator");
-    //app.add_option("--insert", insert, "generate insert statements for specified tablename")->excludes("--format")->excludes("--fieldseparator");
-    //app.add_option("--createinsert", createinsert, "generate create and insert statements for specified tablename")
-    //    ->excludes("--format")->excludes("--fieldseparator")->excludes("--create")->excludes("--insert");
+    app.add_option("--insert", insert, "generate insert statements for specified tablename")->excludes("--format")->excludes("--fieldseparator");
+    app.add_option("--createinsert", createinsert, "generate create and insert statements for specified tablename")
+        ->excludes("--format")->excludes("--fieldseparator")->excludes("--create")->excludes("--insert");
     //app.add_option("--inputfile", inputfile, "filepath of input file containing SQL statements");
     //app.add_option("-t,--target", target, "output target");
     app.add_option("sqlcmd", sqlcmd, "SQL-statement(s) (each enclosed in \"\" and space-separated)");
@@ -203,24 +204,28 @@ int main(int argc, char** argv)
             nRetCode = query.ExecDirect(sql);
 
             if (SQL_SUCCEEDED(nRetCode) && create.length() > 0)
-                ::GenerateCreate(query, create);
+                ::GenerateCreate(tcout, query, create);
 
-            // even a single statement (or batch of statements) can have more than one result set
+            // Even a single statement (or.batch of statements) can have more than one result set.
+            // Iterate over all result sets:
             while (SQL_SUCCEEDED(nRetCode))
             {
-                // Apply user-defined rowformat to each row of the result set.
                 if (rowformat.length() > 0)
                 {
-                    ::FormatResultSet(query, rowformat);
+                    // Iterate over all rows of the curnnt result set and
+                    // apply user-defined rowformat to each row.
+                    ::FormatResultSet(tcout, query, rowformat);
                 }
                 else if (create.length() > 0 || insert.length() > 0)
                 {
-                    ::GenerateInsert(query, insert);
+                    // Iterate over all rows of the curnnt result set and
+                    // create an insert statement for each row.
+                    ::GenerateInsert(tcout, query, insert);
                 }
-                // standard format
                 else
                 {
-                    ::OutputResultSet(query, fieldseparator);
+                    // Output the complete current result set in standard format.
+                    ::OutputResultSet(tcout, query, fieldseparator);
                 }
 
                 // there may be more result sets ...
@@ -244,7 +249,7 @@ int main(int argc, char** argv)
    return nRetCode;
 }
 
-void FormatResultSet(Query& query, const tstring& rowformat)
+void FormatResultSet(ostream& os, Query& query, const tstring& rowformat)
 {
     // ***********************************************************************
     // Iterate over the rows of the result set. if Result set has 0 rows it will 
@@ -252,12 +257,12 @@ void FormatResultSet(Query& query, const tstring& rowformat)
     // ***********************************************************************
     for (SQLRETURN nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
     {
-        tcout << query.FormatCurrentRow(rowformat);
+        os << query.FormatCurrentRow(rowformat);
     }
 }
 
 
-void OutputResultSet(Query& query, const tstring& fieldseparator)
+void OutputResultSet(ostream& os, Query& query, const tstring& fieldseparator)
 {
     short colcount = query.GetODBCFieldCount();
     if (colcount <= 0)
@@ -271,11 +276,11 @@ void OutputResultSet(Query& query, const tstring& fieldseparator)
     {
         FieldInfo fieldinfo;
         query.GetODBCFieldInfo(col, fieldinfo);
-        tcout << fieldinfo.m_strName;
+        os << fieldinfo.m_strName;
         if (col == colcount - 1)
-            tcout << endl;
+            os << endl;
         else
-            tcout << fieldseparator;
+            os << fieldseparator;
     }
 
     // ***********************************************************************
@@ -288,11 +293,11 @@ void OutputResultSet(Query& query, const tstring& fieldseparator)
         {
             DBItem dbitem;
             query.GetFieldValue(col, dbitem);
-            tcout << DBItem::ConvertToString(dbitem);
+            os << DBItem::ConvertToString(dbitem);
             if (col == colcount - 1)
-                tcout << endl;
+                os << endl;
             else
-                tcout << fieldseparator;
+                os << fieldseparator;
         }
     }
 }
@@ -332,7 +337,7 @@ void ListDataSources()
     tcout << endl;
 }
 
-void GenerateCreate(Query& query, const tstring& tablename)
+void GenerateCreate(ostream& os, Query& query, const tstring& tablename)
 {
     if (tablename.length() == 0)
         return;
@@ -340,7 +345,7 @@ void GenerateCreate(Query& query, const tstring& tablename)
     if (colcount <= 0)
         return;
 
-    tstring sOutput = string_format(_T("create table %s(\n"), tablename.c_str());
+    os << string_format(_T("create table %s(\n"), tablename.c_str());
     // ***********************************************************************
     // Retrieve meta information on the columns of the result set
     // this is NOT mandatory for the subsequent retrieval of the column values
@@ -432,16 +437,51 @@ void GenerateCreate(Query& query, const tstring& tablename)
             break;
         }
 
-        sOutput += ::string_format(_T("\t%s %s %s%s"), 
+        os << ::string_format(_T("\t%s %s %s%s"), 
             fieldinfo.m_strName.c_str(), sqltypename.c_str(), sNullable.c_str(), 
             (col < colcount -1) ? _T(",\n") : _T("\n);\n"));
     }
-
-    tcout << sOutput;
 }
 
-void GenerateInsert(Query& query, const tstring& tablename)
+void GenerateInsert(ostream& os, Query& query, const tstring& tablename)
 {
     if (tablename.length() == 0)
         return;
+
+    short colcount = query.GetODBCFieldCount();
+    if (colcount <= 0)
+        return;
+
+    tstring insertstmt = ::string_format(_T("insert into %01s( "), tablename.c_str());
+    tstring strval;
+    // ***********************************************************************
+    // Retrieve meta information on the columns of the result set.
+    // ***********************************************************************
+    for (short col = 0; col < colcount; col++)
+    {
+        FieldInfo fieldinfo;
+        query.GetODBCFieldInfo(col, fieldinfo);
+        insertstmt += fieldinfo.m_strName;
+        if (col < colcount - 1)
+            insertstmt += _T(", ");
+    }
+    insertstmt += _T(")");
+
+    // ***********************************************************************
+    // Now we retrieve data by iterating over the rows of the result set.
+    // If Result set has 0 rows it will skip the loop because nRetCode is set to SQL_NO_DATA immediately
+    // ***********************************************************************
+    for (SQLRETURN nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
+    {
+        os << insertstmt << endl << _T("values( ");
+        for (short col = 0; col < colcount; col++)
+        {
+            DBItem dbitem;
+            query.GetFieldValue(col, dbitem);
+            os << (dbitem.m_nCType != DBItem::lwvt_null ? DBItem::ConvertToString(dbitem) : _T("NULL"));
+            if (col < colcount - 1)
+                os << _T(", ");
+        }
+        os << _T(")") << endl;
+    }
 }
