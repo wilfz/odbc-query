@@ -109,12 +109,12 @@ static tstring StrLenFormat(tstring str, tstring fmt)
 {
     size_t t = fmt.find(_T(","));
     tstring sLen = (t != tstring::npos) ? fmt.substr(0, t) : fmt;
-    int minlen = ::_tstoi(sLen.c_str());
-    int maxlen = (t != tstring::npos && t + 1 < fmt.length()) ? ::_tstoi(fmt.substr(t + 1).c_str()) : minlen;
-    int curlen = str.length();
+    size_t minlen = ::_tstoi(sLen.c_str());
+    size_t maxlen = (t != tstring::npos && t + 1 < fmt.length()) ? ::_tstoi(fmt.substr(t + 1).c_str()) : minlen;
+    size_t curlen = str.length();
     if (curlen < minlen && minlen <= maxlen)
         str.resize(minlen);
-    for (int i = curlen; i < minlen; i++)
+    for (size_t i = curlen; i < minlen; i++)
         str[i] = _T(' ');
     if (minlen <= maxlen && maxlen > 1 && maxlen < (int) str.length())
         return str.substr(0,maxlen);

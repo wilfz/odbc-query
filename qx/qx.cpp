@@ -97,6 +97,7 @@ int main(int argc, char** argv)
     if (connectionstring.length() == 0)
     {
 #ifdef _WIN32
+		#pragma warning(suppress : 4996)
         const TCHAR* cs = ::_tgetenv(_T("QXCONNECTION"));
 #else
         const char* cs = std::getenv("QXCONNECTION");
@@ -108,6 +109,7 @@ int main(int argc, char** argv)
     if (connectionstring.length() == 0)
     {
 #ifdef _WIN32
+		#pragma warning(suppress : 4996)
         const TCHAR* cs = ::_tgetenv(_T("QEXCONNECTION"));
 #else
         const char* cs = std::getenv("QEXCONNECTION");
