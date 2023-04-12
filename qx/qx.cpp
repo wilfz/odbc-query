@@ -34,6 +34,7 @@ int main(int argc, char** argv)
     tstring rowformat;
     tstring inputfile;
     tstring target = _T("stdout");
+    tstring outputfile;
     tstring create;
     tstring insert;
     tstring createinsert;
@@ -53,6 +54,7 @@ int main(int argc, char** argv)
     app.add_option("--createinsert", createinsert, "generate create and insert statements for specified tablename")
         ->excludes("--format")->excludes("--fieldseparator")->excludes("--create")->excludes("--insert");
     //app.add_option("--inputfile", inputfile, "filepath of input file containing SQL statements");
+    app.add_option("--outputfile", outputfile, "filename of output file");
     //app.add_option("-t,--target", target, "output target");
     app.add_option("sqlcmd", sqlcmd, "SQL-statement(s) (each enclosed in \"\" and space-separated)");
 
@@ -68,6 +70,11 @@ int main(int argc, char** argv)
         insert = createinsert;
     }
 
+    ofstream ofs;
+    if (outputfile.length() > 0)
+        ofs.open(outputfile);
+
+    ostream& os = ofs.is_open() ? ofs : tcout;
     SQLRETURN nRetCode = SQL_SUCCESS;
 
     try
@@ -133,20 +140,24 @@ int main(int argc, char** argv)
 
     if (verbose) 
     {
-        tcout << "Connection string: " << connectionstring << endl;
+        os << "Connection string: " << connectionstring << endl;
         if (rowformat.length() > 0)
-            tcout << "Format: " << rowformat << endl;
+            os << "Format: " << rowformat << endl;
 
         for(unsigned int i = 0; i < sqlcmd.size(); i++)
         {
-            tcout << sqlcmd[i] << endl;
+            os << sqlcmd[i] << endl;
         }
 
-        tcout << endl;
+        os << endl;
     }
 
     if (connectionstring.length() == 0 && sqlcmd.size() == 0)
+    {
+        if (rowformat.length() > 0)
+            os << "Format: " << rowformat << endl;
         return 0;
+    }
 
     //rowformat = _T("[lfnbr:%5d]\\n");
     lvstring s = rowformat;
@@ -175,38 +186,46 @@ int main(int argc, char** argv)
         nRetCode = ex.getSqlCode();
         tcerr << _T("Cannot open connection:") << endl;
         cerr << ex.what() << endl;
+        if (ofs.is_open())
+            ofs.close();
         return nRetCode;
     } 
     catch(...) 
     {
         tcerr << _T("Cannot open connection!") << endl;
+        if (ofs.is_open())
+            ofs.close();
         return -1;
     }
 
     if (verbose)
     {
         if(b) 
-            tcout << "Connection opened." << endl;
+            os << "Connection opened." << endl;
         else
-            tcout << "Cannot open connection." << endl;
+            os << "Cannot open connection." << endl;
     }
 
-    if(!b)
+    if (!b)
+    {
+        if (ofs.is_open())
+            ofs.close();
         return -1;
+    }
 
     // ready to execute real sql statements
     for (size_t n = 0; n < sqlcmd.size(); n++)
     {
         tstring sql = sqlcmd[n];
         if (verbose)
-            tcout << sql << endl;
+            os << sql << endl;
 
         try
         {
             nRetCode = query.ExecDirect(sql);
 
             if (SQL_SUCCEEDED(nRetCode) && create.length() > 0)
-                ::GenerateCreate(tcout, query, create);
+                ::GenerateCreate(os, query, create);
 
             // Even a single statement (or.batch of statements) can have more than one result set.
             // Iterate over all result sets:
@@ -216,18 +235,18 @@ int main(int argc, char** argv)
                 {
                     // Iterate over all rows of the curnnt result set and
                     // apply user-defined rowformat to each row.
-                    ::FormatResultSet(tcout, query, rowformat);
+                    ::FormatResultSet(os, query, rowformat);
                 }
                 else if (create.length() > 0 || insert.length() > 0)
                 {
                     // Iterate over all rows of the curnnt result set and
                     // create an insert statement for each row.
-                    ::GenerateInsert(tcout, query, insert);
+                    ::GenerateInsert(os, query, insert);
                 }
                 else
                 {
                     // Output the complete current result set in standard format.
-                    ::OutputResultSet(tcout, query, fieldseparator);
+                    ::OutputResultSet(os, query, fieldseparator);
                 }
 
                 // there may be more result sets ...
@@ -239,16 +258,21 @@ int main(int argc, char** argv)
             nRetCode = ex.getSqlCode();
             tcerr << _T("Execute error:") << endl;
             cerr << ex.what() << endl;
+            if (ofs.is_open())
+                ofs.close();
             return nRetCode;
         }
 
         //query.close();
     }
 
+    if (ofs.is_open())
+        ofs.close();
+    
     if (nRetCode == SQL_NO_DATA) // end of data successfully reached
         nRetCode = SQL_SUCCESS;
 
-   return nRetCode;
+    return nRetCode;
 }
 
 void FormatResultSet(ostream& os, Query& query, const tstring& rowformat)
