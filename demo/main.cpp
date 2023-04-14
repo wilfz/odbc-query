@@ -71,7 +71,7 @@ int main(int argc, char **argv)
             _T("Driver={SQLite3 ODBC Driver};Database=test.db3;"));// win32
         #else
         b = con.Open(
-            "Driver=SQLITE3;Database=test.db;");    // un*x
+            "Driver=SQLITE3;Database=test.db3;");    // un*x
         #endif
         //b = con.Open(
         //_T("Driver={SQL Server};Server=localhost;Database=test;Trusted_Connection=Yes;"));
