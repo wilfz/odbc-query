@@ -135,7 +135,9 @@ int main(int argc, char** argv)
     if (connectionstring.length() == 0)
     {
 #ifdef _WIN32
+  #ifdef _MSC_VER
         #pragma warning(suppress : 4996)
+  #endif
         const TCHAR* cs = ::_tgetenv(_T("QXCONNECTION"));
 #else
         const char* cs = std::getenv("QXCONNECTION");
@@ -147,7 +149,9 @@ int main(int argc, char** argv)
     if (connectionstring.length() == 0)
     {
 #ifdef _WIN32
+  #ifdef _MSC_VER
         #pragma warning(suppress : 4996)
+  #endif
         const TCHAR* cs = ::_tgetenv(_T("QEXCONNECTION"));
 #else
         const char* cs = std::getenv("QEXCONNECTION");
@@ -591,8 +595,8 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
         {
             connectionstring = string_format(_T("Driver={Microsoft dBase Driver (*.dbf)};DriverID=277;Dbq=%s%;"), drv, dir);
         }
-        if (len > 4 && sourcepath.substr(len - 4) == _T(".csv") || len > 4 && sourcepath.substr(len - 4) == _T(".tsv")
-            || len > 4 && sourcepath.substr(len - 4) == _T(".tab") || len > 4 && sourcepath.substr(len - 4) == _T(".txt"))
+        if (len > 4 && (sourcepath.substr(len - 4) == _T(".csv") || sourcepath.substr(len - 4) == _T(".tsv")
+            || sourcepath.substr(len - 4) == _T(".tab") || sourcepath.substr(len - 4) == _T(".txt")))
         {
             connectionstring = string_format(
                 _T("Driver={Microsoft Text Driver (*.txt; *.csv)};Dbq=%s%s;Extensions=asc,csv,tab,txt;"), drv, dir);
@@ -604,7 +608,7 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
         free(fp);
         size_t len = sourcepath.length();
 #endif
-        if (len >= 4 && sourcepath.substr(len - 4) == _T(".db3") || len >= 8 && sourcepath.substr(len - 8) == _T(".sqlite3"))
+        if ((len >= 4 && sourcepath.substr(len - 4) == _T(".db3")) || (len >= 8 && sourcepath.substr(len - 8) == _T(".sqlite3")))
         {
             // sqlite3 db dile
 #ifdef _WIN32
