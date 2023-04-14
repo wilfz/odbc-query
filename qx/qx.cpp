@@ -32,6 +32,9 @@ int main(int argc, char** argv)
 
     tstring connectionstring;
     tstring sourcepath;
+    tstring dirpath;
+    tstring dbasedir;
+    tstring sqlite3;
     tstring fieldseparator = _T("\t");
     tstring rowformat;
     tstring inputfile;
@@ -50,6 +53,11 @@ int main(int argc, char** argv)
     app.add_flag("--listdsn", listdsn, "list ODBC data sources");
     app.add_option("-s,--source", connectionstring, "ODBC connection string");
     app.add_option("--sourcepath", sourcepath, "path of a textfile or database directory")->excludes("--source");
+    app.add_option("--sqlite3", sqlite3, "path of a sqlite3 database file")->excludes("--source")->excludes("--sourcepath");
+    app.add_option("--dirpath", dirpath, "path of a database directory containing textfiles")
+        ->excludes("--sqlite3")->excludes("--source")->excludes("--sourcepath");
+    app.add_option("--dbase", dbasedir, "path of a database directory containing dbase files")
+        ->excludes("--sqlite3")->excludes("--source")->excludes("--sourcepath")->excludes("--dirpath");
     app.add_option("-f,--format", rowformat, "row format");
     app.add_option("--fieldseparator", fieldseparator, "fieldseparator (Default is TAB)")->excludes("--format");
     app.add_option("--create", create, "generate create statement for specified tablename")->excludes("--format")->excludes("--fieldseparator");
@@ -109,7 +117,7 @@ int main(int argc, char** argv)
         }
         else if (spattr.st_mode & S_IFDIR) // directory
         {
-#ifdef WIN32
+#ifdef _WIN32
             // build connectionstring from sourcepath path, assuming it is text based db
             TCHAR* fp = ::_tfullpath(nullptr, sourcepath.c_str(), 0);
             if (fp)
@@ -126,6 +134,15 @@ int main(int argc, char** argv)
         else if (spattr.st_mode & S_IFREG) // regular file
         {
         }
+    }
+
+    if (sqlite3.length() > 0)
+    {
+#ifdef _WIN32
+        connectionstring = ::string_format(_T("Driver={SQLite3 ODBC Driver};Database=%s;"), sqlite3.c_str());
+#else
+        connectionstring = ::string_format(_T("SQLite3;Database=%s;"), sqlite3.c_str());
+#endif
     }
 
     // connectionstring can be specified (in order of priortity)
