@@ -39,6 +39,7 @@
 #define tcerr cerr
 #define _tprintf printf
 #define _tstoi atoi
+#define _tstat64 stat64
 #define _T
 
 #define SI_NO_CONVERSION

@@ -2,9 +2,10 @@
 //
 
 #include <iostream>
+#include <stdlib.h>
 #include <stdio.h>
+#include <sys/stat.h>
 #include <exception>
-#include <iostream>
 #include "CLI11.hpp"
 #include "../query/tstring.h"
 #include "SimpleIni.h"
@@ -30,6 +31,7 @@ int main(int argc, char** argv)
     CLI::App app{ "qx - ODBC Query eXecuter" };
 
     tstring connectionstring;
+    tstring sourcepath;
     tstring fieldseparator = _T("\t");
     tstring rowformat;
     tstring inputfile;
@@ -47,6 +49,7 @@ int main(int argc, char** argv)
     app.add_flag("--listdrivers", listdrivers, "list installed ODBC drivers");
     app.add_flag("--listdsn", listdsn, "list ODBC data sources");
     app.add_option("-s,--source", connectionstring, "ODBC connection string");
+    app.add_option("--sourcepath", sourcepath, "path of a textfile or database directory")->excludes("--source");
     app.add_option("-f,--format", rowformat, "row format");
     app.add_option("--fieldseparator", fieldseparator, "fieldseparator (Default is TAB)")->excludes("--format");
     app.add_option("--create", create, "generate create statement for specified tablename")->excludes("--format")->excludes("--fieldseparator");
@@ -96,6 +99,34 @@ int main(int argc, char** argv)
         tcerr << _T("Cannot read list of installed drivers:") << endl << ex.what() << endl;
     }
 
+    // build connectionstring fromn sourcepath parameter
+    if (sourcepath.length() > 0)
+    {
+        struct ::_tstat64 spattr;
+        if (::_tstat64(sourcepath.c_str(), &spattr) != 0)
+        {
+            // error
+        }
+        else if (spattr.st_mode & S_IFDIR) // directory
+        {
+#ifdef WIN32
+            // build connectionstring from sourcepath path, assuming it is text based db
+            TCHAR* fp = ::_tfullpath(nullptr, sourcepath.c_str(), 0);
+            if (fp)
+            {
+                connectionstring = ::string_format(_T("Driver={Microsoft Text Driver (*.txt; *.csv)};Dbq=%s;Extensions=asc,csv,tab,txt;"), fp);
+                free(fp);
+            }
+#else
+            // linux:
+            TCHAR* fp = ::realpath(sourcepath.c_str(), nullptr);
+            free(fp);
+#endif
+        }
+        else if (spattr.st_mode & S_IFREG) // regular file
+        {
+        }
+    }
 
     // connectionstring can be specified (in order of priortity)
     // 1. as option --source on the command line
