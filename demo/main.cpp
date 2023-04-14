@@ -68,7 +68,7 @@ int main(int argc, char **argv)
         // is different on different oerating systems.
         #ifdef _WIN32
         b = con.Open(
-            _T("Driver={SQLite3 ODBC Driver};Database=test.db;"));// win32
+            _T("Driver={SQLite3 ODBC Driver};Database=test.db3;"));// win32
         #else
         b = con.Open(
             "Driver=SQLITE3;Database=test.db;");    // un*x
