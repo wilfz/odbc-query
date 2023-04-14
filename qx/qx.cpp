@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <exception>
+#include <cassert>
 #include "CLI11.hpp"
 #include "../query/tstring.h"
 #include "SimpleIni.h"
@@ -114,7 +115,7 @@ int main(int argc, char** argv)
         tstring stmt;
         // build connectionstring fromn sourcepath parameter
         BuildConnectionstring( sourcepath, connectionstring, stmt);
-        if (sqlcmd.size() == 0)
+        if (sqlcmd.size() == 0 && stmt.length() > 0)
             sqlcmd.push_back(stmt);
     }
 
