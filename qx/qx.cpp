@@ -24,6 +24,7 @@ void FormatResultSet(ostream& os, Query& query, const tstring& rowformat);
 void OutputResultSet(ostream& os, Query& query, const tstring& fieldseparator);
 void GenerateCreate(ostream& os, Query& query, const tstring& tablename);
 void GenerateInsert(ostream& os, Query& query, const tstring& tablename);
+void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt);
 
 
 int main(int argc, char** argv) 
@@ -53,7 +54,8 @@ int main(int argc, char** argv)
     app.add_flag("--listdsn", listdsn, "list ODBC data sources");
     app.add_option("-s,--source", connectionstring, "ODBC connection string");
     app.add_option("--sourcepath", sourcepath, "path of a textfile or database directory")->excludes("--source");
-    app.add_option("--sqlite3", sqlite3, "path of a sqlite3 database file")->excludes("--source")->excludes("--sourcepath");
+    app.add_option("--sqlite3", sqlite3, "path of a sqlite3 database file")
+        ->excludes("--source")->excludes("--sourcepath");
     app.add_option("--dirpath", dirpath, "path of a database directory containing textfiles")
         ->excludes("--sqlite3")->excludes("--source")->excludes("--sourcepath");
     app.add_option("--dbase", dbasedir, "path of a database directory containing dbase files")
@@ -107,33 +109,13 @@ int main(int argc, char** argv)
         tcerr << _T("Cannot read list of installed drivers:") << endl << ex.what() << endl;
     }
 
-    // build connectionstring fromn sourcepath parameter
     if (sourcepath.length() > 0)
     {
-        struct ::_tstat64 spattr;
-        if (::_tstat64(sourcepath.c_str(), &spattr) != 0)
-        {
-            // error
-        }
-        else if (spattr.st_mode & S_IFDIR) // directory
-        {
-#ifdef _WIN32
-            // build connectionstring from sourcepath path, assuming it is text based db
-            TCHAR* fp = ::_tfullpath(nullptr, sourcepath.c_str(), 0);
-            if (fp)
-            {
-                connectionstring = ::string_format(_T("Driver={Microsoft Text Driver (*.txt; *.csv)};Dbq=%s;Extensions=asc,csv,tab,txt;"), fp);
-                free(fp);
-            }
-#else
-            // linux:
-            TCHAR* fp = ::realpath(sourcepath.c_str(), nullptr);
-            free(fp);
-#endif
-        }
-        else if (spattr.st_mode & S_IFREG) // regular file
-        {
-        }
+        tstring stmt;
+        // build connectionstring fromn sourcepath parameter
+        BuildConnectionstring( sourcepath, connectionstring, stmt);
+        if (sqlcmd.size() == 0)
+            sqlcmd.push_back(stmt);
     }
 
     if (sqlite3.length() > 0)
@@ -152,7 +134,7 @@ int main(int argc, char** argv)
     if (connectionstring.length() == 0)
     {
 #ifdef _WIN32
-		#pragma warning(suppress : 4996)
+        #pragma warning(suppress : 4996)
         const TCHAR* cs = ::_tgetenv(_T("QXCONNECTION"));
 #else
         const char* cs = std::getenv("QXCONNECTION");
@@ -164,7 +146,7 @@ int main(int argc, char** argv)
     if (connectionstring.length() == 0)
     {
 #ifdef _WIN32
-		#pragma warning(suppress : 4996)
+        #pragma warning(suppress : 4996)
         const TCHAR* cs = ::_tgetenv(_T("QEXCONNECTION"));
 #else
         const char* cs = std::getenv("QEXCONNECTION");
@@ -557,5 +539,83 @@ void GenerateInsert(ostream& os, Query& query, const tstring& tablename)
                 os << _T(", ");
         }
         os << _T(")") << endl;
+    }
+}
+
+void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt)
+{
+    stmt.clear();
+    struct ::_tstat64 spattr;
+    if (::_tstat64(sourcepath.c_str(), &spattr) != 0)
+    {
+        // error
+    }
+    else if (spattr.st_mode & S_IFDIR) // directory
+    {
+#ifdef _WIN32
+        // build connectionstring from sourcepath path, assuming it is text based db
+        TCHAR* fp = ::_tfullpath(nullptr, sourcepath.c_str(), _MAX_PATH);
+        if (fp)
+        {
+            connectionstring = ::string_format(
+                _T("Driver={Microsoft Text Driver (*.txt; *.csv)};Dbq=%s;Extensions=asc,csv,tab,txt;"), fp);
+            free(fp);
+        }
+#else
+        // linux:
+        TCHAR* fp = ::realpath(sourcepath.c_str(), nullptr);
+        free(fp);
+#endif
+    }
+    else if (spattr.st_mode & S_IFREG) // regular file
+    {
+#ifdef _WIN32
+        // build connectionstring from sourcepath path, assuming it is text based db
+        TCHAR* fp = ::_tfullpath(nullptr, sourcepath.c_str(), _MAX_PATH);
+        if (fp)
+        {
+            sourcepath.assign(fp);
+            free(fp);
+        }
+
+        size_t len = sourcepath.length();
+        _TCHAR drv[_MAX_DRIVE];
+        _TCHAR dir[_MAX_DIR];
+        _TCHAR fname[_MAX_FNAME];
+        _TCHAR fext[_MAX_EXT];
+        errno_t errnbr = _tsplitpath_s(sourcepath.c_str(), drv, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, fext, _MAX_EXT);
+        assert(errnbr == 0);
+        tstring filename = string_format(_T("%s%s"), fname, fext);
+        if (len >= 4 && sourcepath.substr(len - 4) == _T(".dbf"))
+        {
+            connectionstring = string_format(_T("Driver={Microsoft dBase Driver (*.dbf)};DriverID=277;Dbq=%s%;"), drv, dir);
+        }
+        if (len > 4 && sourcepath.substr(len - 4) == _T(".csv") || len > 4 && sourcepath.substr(len - 4) == _T(".tsv")
+            || len > 4 && sourcepath.substr(len - 4) == _T(".tab") || len > 4 && sourcepath.substr(len - 4) == _T(".txt"))
+        {
+            connectionstring = string_format(
+                _T("Driver={Microsoft Text Driver (*.txt; *.csv)};Dbq=%s%s;Extensions=asc,csv,tab,txt;"), drv, dir);
+        }
+#else
+        // linux:
+        TCHAR* fp = ::realpath(sourcepath.c_str(), nullptr);
+        sourcepath.assign(fp);
+        free(fp);
+        size_t len = sourcepath.length();
+#endif
+        if (len >= 4 && sourcepath.substr(len - 4) == _T(".db3") || len >= 8 && sourcepath.substr(len - 8) == _T(".sqlite3"))
+        {
+            // sqlite3 db dile
+#ifdef _WIN32
+            connectionstring = ::string_format(_T("Driver={SQLite3 ODBC Driver};Database=%s;"), sourcepath.c_str());
+#else
+            connectionstring = ::string_format(_T("SQLite3;Database=%s;"), sourcepath.c_str());
+#endif
+        }
+        else if (len >= 4 && sourcepath.substr(len - 4) == _T(".mdb"))
+        {
+            connectionstring = ::string_format(
+                _T("Driver={Microsoft Access Driver (*.mdb)};Dbq=%s;Uid=Admin;Pwd=;"), sourcepath.c_str());
+        }
     }
 }
