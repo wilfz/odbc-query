@@ -123,7 +123,7 @@ int main(int argc, char** argv)
 #ifdef _WIN32
         connectionstring = ::string_format(_T("Driver={SQLite3 ODBC Driver};Database=%s;"), sqlite3.c_str());
 #else
-        connectionstring = ::string_format(_T("SQLite3;Database=%s;"), sqlite3.c_str());
+        connectionstring = ::string_format(_T("Driver=SQLite3;Database=%s;"), sqlite3.c_str());
 #endif
     }
 
@@ -609,7 +609,7 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
 #ifdef _WIN32
             connectionstring = ::string_format(_T("Driver={SQLite3 ODBC Driver};Database=%s;"), sourcepath.c_str());
 #else
-            connectionstring = ::string_format(_T("SQLite3;Database=%s;"), sourcepath.c_str());
+            connectionstring = ::string_format(_T("Driver=SQLite3;Database=%s;"), sourcepath.c_str());
 #endif
         }
         else if (len >= 4 && sourcepath.substr(len - 4) == _T(".mdb"))
