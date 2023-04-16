@@ -116,7 +116,7 @@ static tstring StrLenFormat(tstring str, tstring fmt)
         str.resize(minlen);
     for (size_t i = curlen; i < minlen; i++)
         str[i] = _T(' ');
-    if (minlen <= maxlen && maxlen > 1 && maxlen < (int) str.length())
+    if (minlen <= maxlen && maxlen > 1 && maxlen < str.length())
         return str.substr(0,maxlen);
     else
         return str;

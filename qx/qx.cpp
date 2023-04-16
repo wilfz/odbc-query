@@ -26,6 +26,7 @@ void OutputResultSet(ostream& os, Query& query, const tstring& fieldseparator);
 void GenerateCreate(ostream& os, Query& query, const tstring& tablename);
 void GenerateInsert(ostream& os, Query& query, const tstring& tablename);
 void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt);
+tstring isSqliteFilename( tstring& path);
 
 
 int main(int argc, char** argv) 
@@ -40,7 +41,6 @@ int main(int argc, char** argv)
     tstring fieldseparator = _T("\t");
     tstring rowformat;
     tstring inputfile;
-    tstring target = _T("stdout");
     tstring outputfile;
     tstring create;
     tstring insert;
@@ -54,13 +54,17 @@ int main(int argc, char** argv)
     app.add_flag("--listdrivers", listdrivers, "list installed ODBC drivers");
     app.add_flag("--listdsn", listdsn, "list ODBC data sources");
     app.add_option("-s,--source", connectionstring, "ODBC connection string");
-    app.add_option("--sourcepath", sourcepath, "path of a textfile or database directory")->excludes("--source");
+    app.add_option("--sourcepath", sourcepath, "path of a textfile or database directory")
+        ->excludes("--source")
+        ->check(CLI::ExistingPath | CLI::Validator(isSqliteFilename, _T("*.sqlite or *.db3")));
     app.add_option("--sqlite3", sqlite3, "path of a sqlite3 database file")
         ->excludes("--source")->excludes("--sourcepath");
-    app.add_option("--dirpath", dirpath, "path of a database directory containing textfiles")
-        ->excludes("--sqlite3")->excludes("--source")->excludes("--sourcepath");
+    app.add_option("--dir", dirpath, "path of a database directory containing textfiles")
+        ->excludes("--sqlite3")->excludes("--source")->excludes("--sourcepath")
+        ->check(CLI::ExistingDirectory);
     app.add_option("--dbase", dbasedir, "path of a database directory containing dbase files")
-        ->excludes("--sqlite3")->excludes("--source")->excludes("--sourcepath")->excludes("--dirpath");
+        ->excludes("--sqlite3")->excludes("--source")->excludes("--sourcepath")->excludes("--dir")
+        ->check(CLI::ExistingDirectory);
     app.add_option("-f,--format", rowformat, "row format");
     app.add_option("--fieldseparator", fieldseparator, "fieldseparator (Default is TAB)")->excludes("--format");
     app.add_option("--create", create, "generate create statement for specified tablename")->excludes("--format")->excludes("--fieldseparator");
@@ -134,28 +138,20 @@ int main(int argc, char** argv)
     // 2. in environment variable QXCONNECTION
     if (connectionstring.length() == 0)
     {
-#ifdef _WIN32
-  #ifdef _MSC_VER
+        #ifdef _MSC_VER
         #pragma warning(suppress : 4996)
-  #endif
+        #endif
         const TCHAR* cs = ::_tgetenv(_T("QXCONNECTION"));
-#else
-        const char* cs = std::getenv("QXCONNECTION");
-#endif
         if (cs)
             connectionstring.assign(cs);
     }
 
     if (connectionstring.length() == 0)
     {
-#ifdef _WIN32
-  #ifdef _MSC_VER
+        #ifdef _MSC_VER
         #pragma warning(suppress : 4996)
-  #endif
+        #endif
         const TCHAR* cs = ::_tgetenv(_T("QEXCONNECTION"));
-#else
-        const char* cs = std::getenv("QEXCONNECTION");
-#endif
         if (cs)
             connectionstring.assign(cs);
     }
@@ -549,11 +545,14 @@ void GenerateInsert(ostream& os, Query& query, const tstring& tablename)
 
 void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt)
 {
+    size_t len = sourcepath.length();
+    bool isSQLite = (len >= 4 && sourcepath.substr(len - 4) == _T(".db3")) 
+        || (len >= 8 && sourcepath.substr(len - 8) == _T(".sqlite3"));
     stmt.clear();
     struct ::_tstat64 spattr;
     if (::_tstat64(sourcepath.c_str(), &spattr) != 0)
     {
-        // error
+        // error, except when of type sqlite
     }
     else if (spattr.st_mode & S_IFDIR) // directory
     {
@@ -572,7 +571,7 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
         free(fp);
 #endif
     }
-    else if (spattr.st_mode & S_IFREG) // regular file
+    else if (isSQLite || spattr.st_mode & S_IFREG) // regular file
     {
 #ifdef _WIN32
         // build connectionstring from sourcepath path, assuming it is text based db
@@ -583,44 +582,63 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
             free(fp);
         }
 
-        size_t len = sourcepath.length();
+        if (isSQLite) // sqlite3 db dile
+        {
+            connectionstring = ::string_format(_T("Driver={SQLite3 ODBC Driver};Database=%s;"), sourcepath.c_str());
+            return;
+        }
+
+        len = sourcepath.length();
         _TCHAR drv[_MAX_DRIVE];
         _TCHAR dir[_MAX_DIR];
         _TCHAR fname[_MAX_FNAME];
         _TCHAR fext[_MAX_EXT];
         errno_t errnbr = _tsplitpath_s(sourcepath.c_str(), drv, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, fext, _MAX_EXT);
         assert(errnbr == 0);
+        if (errnbr != 0)
+            return;
         tstring filename = string_format(_T("%s%s"), fname, fext);
-        if (len >= 4 && sourcepath.substr(len - 4) == _T(".dbf"))
+        if (len >= 5 && sourcepath.substr(len - 4) == _T(".dbf"))
         {
             connectionstring = string_format(_T("Driver={Microsoft dBase Driver (*.dbf)};DriverID=277;Dbq=%s%;"), drv, dir);
+            stmt = string_format(_T("select * from %s;"), fname);
+            return;
         }
-        if (len > 4 && (sourcepath.substr(len - 4) == _T(".csv") || sourcepath.substr(len - 4) == _T(".tsv")
+        else if (len > 4 && (sourcepath.substr(len - 4) == _T(".csv") || sourcepath.substr(len - 4) == _T(".tsv")
             || sourcepath.substr(len - 4) == _T(".tab") || sourcepath.substr(len - 4) == _T(".txt")))
         {
             connectionstring = string_format(
                 _T("Driver={Microsoft Text Driver (*.txt; *.csv)};Dbq=%s%s;Extensions=asc,csv,tab,txt;"), drv, dir);
+            stmt = string_format(_T("select * from %s;"), filename.c_str());
+            return;
         }
 #else
         // linux:
         TCHAR* fp = ::realpath(sourcepath.c_str(), nullptr);
         sourcepath.assign(fp);
         free(fp);
-        size_t len = sourcepath.length();
-#endif
-        if ((len >= 4 && sourcepath.substr(len - 4) == _T(".db3")) || (len >= 8 && sourcepath.substr(len - 8) == _T(".sqlite3")))
+        len = sourcepath.length();
+        
+        if (isSQLite) // sqlite3 db dile
         {
-            // sqlite3 db dile
-#ifdef _WIN32
-            connectionstring = ::string_format(_T("Driver={SQLite3 ODBC Driver};Database=%s;"), sourcepath.c_str());
-#else
             connectionstring = ::string_format(_T("Driver=SQLite3;Database=%s;"), sourcepath.c_str());
-#endif
+            return;
         }
-        else if (len >= 4 && sourcepath.substr(len - 4) == _T(".mdb"))
+#endif
+
+        if (len >= 4 && sourcepath.substr(len - 4) == _T(".mdb"))
         {
             connectionstring = ::string_format(
                 _T("Driver={Microsoft Access Driver (*.mdb)};Dbq=%s;Uid=Admin;Pwd=;"), sourcepath.c_str());
         }
     }
+}
+
+tstring isSqliteFilename( tstring& path)
+{
+    size_t len = path.length();
+    if ((len >= 8 && path.substr(len-8) == _T(".sqlite3")) || (len >= 4 && path.substr(len-4) == _T(".db3"))) 
+        return _T("");
+    else
+        return _T("If file does not exist, extension must be .sqlite3 or .db3.");
 }
