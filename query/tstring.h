@@ -15,10 +15,14 @@
 #define tstring wstring
 #define tcout wcout
 #define tcerr wcerr
+#define tcin wcin
+#define tstringstream wstringstream
 #else
 #define tstring string
 #define tcout cout
 #define tcerr cerr
+#define tcin cin
+#define tstringstream stringstream
 #endif
 
 #ifndef __MINGW32__
@@ -37,6 +41,8 @@
 #define tstring string
 #define tcout cout
 #define tcerr cerr
+#define tcin cin
+#define tstringstream stringstrean
 #define _tprintf printf
 #define _tstoi atoi
 #define _tstat64 stat64
