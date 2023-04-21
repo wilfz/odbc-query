@@ -7,8 +7,8 @@
 #include <sys/stat.h>
 #include <exception>
 #include <cassert>
-#include "CLI11.hpp"
 #include "../query/tstring.h"
+#include "CLI11.hpp"
 #include "SimpleIni.h"
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
@@ -21,12 +21,12 @@ using namespace CLI;
 //forward declarations
 void ListDrivers();
 void ListDataSources();
-void FormatResultSet(ostream& os, Query& query, const tstring& rowformat);
-void OutputResultSet(ostream& os, Query& query, const tstring& fieldseparator);
-void GenerateCreate(ostream& os, Query& query, const tstring& tablename);
-void GenerateInsert(ostream& os, Query& query, const tstring& tablename);
+void FormatResultSet(tostream& os, Query& query, const tstring& rowformat);
+void OutputResultSet(tostream& os, Query& query, const tstring& fieldseparator);
+void GenerateCreate(tostream& os, Query& query, const tstring& tablename);
+void GenerateInsert(tostream& os, Query& query, const tstring& tablename);
 void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt);
-tstring isSqliteFilename( tstring& path);
+string isSqliteFilename( string& path);
 
 
 int main(int argc, char** argv) 
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     app.add_option("-s,--source", connectionstring, "ODBC connection string");
     app.add_option("--sourcepath", sourcepath, "path of a textfile or database directory")
         ->excludes("--source")
-        ->check(CLI::ExistingPath | CLI::Validator(isSqliteFilename, _T("*.sqlite or *.db3")));
+        ->check(CLI::ExistingPath | CLI::Validator(isSqliteFilename, "*.sqlite or *.db3"));
     app.add_option("--sqlite3", sqlite3, "path of a sqlite3 database file")
         ->excludes("--source")->excludes("--sourcepath");
     app.add_option("--dir", dirpath, "path of a database directory containing textfiles")
@@ -88,11 +88,12 @@ int main(int argc, char** argv)
         insert = createinsert;
     }
 
-    ofstream ofs;
+    tofstream ofs;
     if (outputfile.length() > 0)
         ofs.open(outputfile);
 
-    ostream& os = ofs.is_open() ? ofs : tcout;
+    // output stream os, may either be the just opened file or otherwise stdout
+    tostream& os = ofs.is_open() ? ofs : tcout;
     SQLRETURN nRetCode = SQL_SUCCESS;
 
     try
@@ -298,7 +299,7 @@ int main(int argc, char** argv)
     }
 
     if (ofs.is_open())
-        ofs.close();
+        ofs.close(); // close the output file stream
     
     if (nRetCode == SQL_NO_DATA) // end of data successfully reached
         nRetCode = SQL_SUCCESS;
@@ -306,7 +307,7 @@ int main(int argc, char** argv)
     return nRetCode;
 }
 
-void FormatResultSet(ostream& os, Query& query, const tstring& rowformat)
+void FormatResultSet(tostream& os, Query& query, const tstring& rowformat)
 {
     // ***********************************************************************
     // Iterate over the rows of the result set. if Result set has 0 rows it will 
@@ -319,7 +320,7 @@ void FormatResultSet(ostream& os, Query& query, const tstring& rowformat)
 }
 
 
-void OutputResultSet(ostream& os, Query& query, const tstring& fieldseparator)
+void OutputResultSet(tostream& os, Query& query, const tstring& fieldseparator)
 {
     short colcount = query.GetODBCFieldCount();
     if (colcount <= 0)
@@ -394,7 +395,7 @@ void ListDataSources()
     tcout << endl;
 }
 
-void GenerateCreate(ostream& os, Query& query, const tstring& tablename)
+void GenerateCreate(tostream& os, Query& query, const tstring& tablename)
 {
     if (tablename.length() == 0)
         return;
@@ -500,7 +501,7 @@ void GenerateCreate(ostream& os, Query& query, const tstring& tablename)
     }
 }
 
-void GenerateInsert(ostream& os, Query& query, const tstring& tablename)
+void GenerateInsert(tostream& os, Query& query, const tstring& tablename)
 {
     if (tablename.length() == 0)
         return;
@@ -549,7 +550,7 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
     bool isSQLite = (len >= 4 && sourcepath.substr(len - 4) == _T(".db3")) 
         || (len >= 8 && sourcepath.substr(len - 8) == _T(".sqlite3"));
     stmt.clear();
-    struct ::_tstat64 spattr;
+    struct ::_stat64 spattr;
     if (::_tstat64(sourcepath.c_str(), &spattr) != 0)
     {
         // error, except when of type sqlite
@@ -634,11 +635,11 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
     }
 }
 
-tstring isSqliteFilename( tstring& path)
+string isSqliteFilename( string& path)
 {
     size_t len = path.length();
-    if ((len >= 8 && path.substr(len-8) == _T(".sqlite3")) || (len >= 4 && path.substr(len-4) == _T(".db3"))) 
-        return _T("");
+    if ((len >= 8 && path.substr(len-8) == ".sqlite3") || (len >= 4 && path.substr(len-4) == ".db3")) 
+        return "";
     else
-        return _T("If file does not exist, extension must be .sqlite3 or .db3.");
+        return "If file does not exist, extension must be .sqlite3 or .db3.";
 }

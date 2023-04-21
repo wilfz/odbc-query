@@ -6,7 +6,7 @@
 // various Window platforms:
 // - Multi_Byte character set or UNICODE
 // - x86 or x64 architecture
-// - VSC or MINGW compiler
+// - MSVC or MINGW compiler
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 #include <tchar.h>
 #define swprintf swprintf_s
@@ -17,12 +17,16 @@
 #define tcerr wcerr
 #define tcin wcin
 #define tstringstream wstringstream
+#define tostream wostream
+#define tofstream wofstream
 #else
 #define tstring string
 #define tcout cout
 #define tcerr cerr
 #define tcin cin
 #define tstringstream stringstream
+#define tostream ostream
+#define tofstream ofstream
 #endif
 
 #ifndef __MINGW32__
@@ -42,7 +46,9 @@
 #define tcout cout
 #define tcerr cerr
 #define tcin cin
-#define tstringstream stringstrean
+#define tstringstream stringstream
+#define tostream ostream
+#define tofstream ofstream
 #define _tprintf printf
 #define _tstoi atoi
 #define _tstat64 stat64
