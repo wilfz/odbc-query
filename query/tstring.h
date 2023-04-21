@@ -51,7 +51,7 @@
 #define tofstream ofstream
 #define _tprintf printf
 #define _tstoi atoi
-#define _tstat64 stat64
+#define _tstat64 stat
 #define _tgetenv getenv
 #define _T
 
