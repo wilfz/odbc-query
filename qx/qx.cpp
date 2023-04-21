@@ -550,7 +550,7 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
     bool isSQLite = (len >= 4 && sourcepath.substr(len - 4) == _T(".db3")) 
         || (len >= 8 && sourcepath.substr(len - 8) == _T(".sqlite3"));
     stmt.clear();
-    struct ::_tstat64 spattr;
+    struct ::_stat64 spattr;
     if (::_tstat64(sourcepath.c_str(), &spattr) != 0)
     {
         // error, except when of type sqlite
