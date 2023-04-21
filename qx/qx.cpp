@@ -40,7 +40,7 @@ int main(int argc, char** argv)
     tstring sqlite3;
     tstring fieldseparator = _T("\t");
     tstring rowformat;
-    tstring inputfile;
+    tstring input;
     tstring outputfile;
     tstring create;
     tstring insert;
@@ -71,7 +71,8 @@ int main(int argc, char** argv)
     app.add_option("--insert", insert, "generate insert statements for specified tablename")->excludes("--format")->excludes("--fieldseparator");
     app.add_option("--createinsert", createinsert, "generate create and insert statements for specified tablename")
         ->excludes("--format")->excludes("--fieldseparator")->excludes("--create")->excludes("--insert");
-    //app.add_option("--inputfile", inputfile, "filepath of input file containing SQL statements");
+    app.add_option("--input", input, "filepath of input file containing SQL statements")
+        ->check(CLI::ExistingFile | CLI::Validator([](string& s) { return s == "stdin" ? "" : "stdin"; }, "stdin"));;
     app.add_option("--outputfile", outputfile, "filename of output file");
     //app.add_option("-t,--target", target, "output target");
     app.add_option("sqlcmd", sqlcmd, "SQL-statement(s) (each enclosed in \"\" and space-separated)");
@@ -245,7 +246,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    // ready to execute real sql statements
+    // ready to execute real sql statements (from command line parameters)
     for (size_t n = 0; n < sqlcmd.size(); n++)
     {
         tstring sql = sqlcmd[n];
@@ -294,12 +295,94 @@ int main(int argc, char** argv)
                 ofs.close();
             return nRetCode;
         }
+    }
 
-        //query.close();
+    // interactive mode (console) or input from file
+    if (input.length() > 0)
+    {
+        tifstream ifs;
+        if (input != _T("stdin"))
+            ifs.open(input);
+
+        tistream& is = ifs.is_open() ? ifs : tcin;
+        tstring buf;
+        tstringstream sql;
+        bool quoted = false;
+        while (getline(is, buf))
+        {
+            if (!quoted && (buf == _T("quit") || buf == _T("exit")))
+                break;
+
+                bool comment = false;
+            if (sql.str().length() > 0)
+                sql << _T('\n');
+
+            for (size_t i = 0; i < buf.length(); i++)
+            {
+                switch (buf[i])
+                {
+                case _T(';'):
+                    sql << buf[i];
+                    if (!quoted && !comment)
+                    {
+                        // do something with sql ...
+                        try
+                        {
+                            nRetCode = query.ExecDirect(sql.str());
+
+                            // Even a single statement (or.batch of statements) can have more than one result set.
+                            // Iterate over all result sets:
+                            while (SQL_SUCCEEDED(nRetCode))
+                            {
+                                // Output the complete current result set in standard format.
+                                ::OutputResultSet(os, query, fieldseparator);
+
+                                // there may be more result sets ...
+                                nRetCode = query.SQLMoreResults();
+                            }
+                        }
+                        catch (DbException& ex)
+                        {
+                            nRetCode = ex.getSqlCode();
+                            tcerr << _T("Execute error:") << endl;
+                            cerr << ex.what() << endl;
+                        }
+
+                        // and afterwards reset the sql to empty string
+                        sql.str(std::tstring());
+                        // ignore following spaces
+                        while (i + 1 < buf.length() && (buf[i + 1] == _T(' ') || buf[i + 1] == _T('\t')))
+                            i++;
+                    }
+                    break;
+                case _T('\''):
+                    sql << buf[i];
+                    quoted = !quoted;
+                    break;
+                case _T('-'):
+                    if (!quoted && i + 1 < buf.length() && buf[i + 1] == _T('-'))
+                        comment = true;
+                    else
+                        sql << buf[i];
+                    break;
+                default:
+                    sql << buf[i];
+                }
+
+                if (comment)
+                    break;
+            }
+        }
+
+        if (ifs.is_open())
+            ifs.close();
     }
 
     if (ofs.is_open())
         ofs.close(); // close the output file stream
+
+    query.Close();
+    con.Close();
     
     if (nRetCode == SQL_NO_DATA) // end of data successfully reached
         nRetCode = SQL_SUCCESS;

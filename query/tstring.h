@@ -19,6 +19,8 @@
 #define tstringstream wstringstream
 #define tostream wostream
 #define tofstream wofstream
+#define tistream wistream
+#define tifstream wifstream
 #else
 #define tstring string
 #define tcout cout
@@ -27,6 +29,8 @@
 #define tstringstream stringstream
 #define tostream ostream
 #define tofstream ofstream
+#define tistream istream
+#define tifstream ifstream
 #endif
 
 #ifndef __MINGW32__
@@ -49,6 +53,8 @@
 #define tstringstream stringstream
 #define tostream ostream
 #define tofstream ofstream
+#define tistream istream
+#define tifstream ifstream
 #define _tprintf printf
 #define _tstoi atoi
 #define _stat64 stat
