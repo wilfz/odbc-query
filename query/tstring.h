@@ -10,6 +10,9 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 #include <tchar.h>
 #define swprintf swprintf_s
+#include <io.h>
+#define ISATTY _isatty
+#define FILENO _fileno
 
 #ifdef UNICODE
 #define tstring wstring
@@ -63,4 +66,7 @@
 #define _T
 
 #define SI_NO_CONVERSION
+#include <unistd.h>
+#define ISATTY isatty
+#define FILENO fileno
 #endif
