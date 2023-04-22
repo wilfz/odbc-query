@@ -318,7 +318,7 @@ int main(int argc, char** argv)
             if (!quoted && (buf == _T("quit") || buf == _T("exit")))
                 break;
 
-                bool comment = false;
+            bool comment = false;
             if (sql.str().length() > 0)
                 sql << _T('\n');
 
