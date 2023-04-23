@@ -14,4 +14,4 @@ elseif(NOT ${ODBC_FOUND})
     target_link_libraries(qx odbcquery)
 endif()
 
-#install(TARGETS qx DESTINATION bin)
+install(TARGETS qx DESTINATION bin)
