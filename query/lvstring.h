@@ -16,12 +16,15 @@ namespace linguversa
 template<typename ... Args>
 std::tstring string_format(const std::tstring& format, Args ... args)
 {
-#ifdef _UNICODE
-    int size_s = swprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
+#ifdef UNICODE
+    #ifdef _MSC_VER
+    __pragma(warning(disable : 4996))
+    #endif
+    int size_s = _snwprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
     if (size_s <= 0) { throw std::runtime_error("Error during formatting."); }
     auto size = static_cast<size_t>(size_s);
     std::unique_ptr<wchar_t[]> buf(new wchar_t[size]);
-    swprintf(buf.get(), size, format.c_str(), args ...);
+    _snwprintf(buf.get(), size, format.c_str(), args ...);
 #else
     int size_s = std::snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
     if (size_s <= 0) { throw std::runtime_error("Error during formatting."); }

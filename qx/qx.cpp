@@ -312,7 +312,7 @@ int main(int argc, char** argv)
         // we use prompt only if we are in normal tty input and output
         bool bCommandPrompt = (input == _T("stdin")) && ISATTY(FILENO(stdin)) && ISATTY(FILENO(stdout));
         if (bCommandPrompt)
-            cout << _T("qx> ");
+            tcout << _T("qx> ");
         while (getline(is, buf))
         {
             if (!quoted && (buf == _T("quit") || buf == _T("exit")))
@@ -381,7 +381,7 @@ int main(int argc, char** argv)
             if (bCommandPrompt)
             {
                 // if sql is empty do a normal prompt, otherwise a different prompt
-                cout << (sql.str().length() > 0 ? _T("> ") : _T("\nqx> "));
+                tcout << (sql.str().length() > 0 ? _T(">>> ") : _T("\nqx> "));
             }
         }
 

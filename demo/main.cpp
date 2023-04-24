@@ -51,7 +51,7 @@ int main(int argc, char **argv)
             tcout << dsn << _T("|") << drivername <<endl;
         }
         
-        cout << endl;
+        tcout << endl;
     }
     catch(DbException& ex)
     {
@@ -562,7 +562,7 @@ int main(int argc, char **argv)
 
         assert( nRetCode == SQL_SUCCESS || nRetCode == SQL_SUCCESS_WITH_INFO);
 
-        cout << endl;
+        tcout << endl;
 
         // ********************************************************************
         // * Getting values of inputouput parameters
