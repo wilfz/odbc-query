@@ -6,6 +6,7 @@
     </Plugin>
   </Plugins>
   <VirtualDirectory Name="include">
+    <File Name="../qx/qx.h"/>
     <File Name="../../query/connection.h"/>
     <File Name="../qx/SimpleIni.h"/>
     <File Name="../qx/CLI11.hpp"/>

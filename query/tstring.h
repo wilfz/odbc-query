@@ -31,5 +31,6 @@
 #else
 // Non-Windows PLatforms
 #define tstring string
+#define _tstoi atoi
 #define _T
 #endif

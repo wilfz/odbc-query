@@ -55,7 +55,6 @@
 #define tistream istream
 #define tifstream ifstream
 #define _tprintf printf
-#define _tstoi atoi
 #define _stat64 stat
 #define _tstat64 stat
 #define _tgetenv getenv
