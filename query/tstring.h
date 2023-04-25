@@ -10,30 +10,11 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 #include <tchar.h>
 #define swprintf swprintf_s
-#include <io.h>
-#define ISATTY _isatty
-#define FILENO _fileno
 
 #ifdef UNICODE
 #define tstring wstring
-#define tcout wcout
-#define tcerr wcerr
-#define tcin wcin
-#define tstringstream wstringstream
-#define tostream wostream
-#define tofstream wofstream
-#define tistream wistream
-#define tifstream wifstream
 #else
 #define tstring string
-#define tcout cout
-#define tcerr cerr
-#define tcin cin
-#define tstringstream stringstream
-#define tostream ostream
-#define tofstream ofstream
-#define tistream istream
-#define tifstream ifstream
 #endif
 
 #ifndef __MINGW32__
@@ -50,23 +31,5 @@
 #else
 // Non-Windows PLatforms
 #define tstring string
-#define tcout cout
-#define tcerr cerr
-#define tcin cin
-#define tstringstream stringstream
-#define tostream ostream
-#define tofstream ofstream
-#define tistream istream
-#define tifstream ifstream
-#define _tprintf printf
-#define _tstoi atoi
-#define _stat64 stat
-#define _tstat64 stat
-#define _tgetenv getenv
 #define _T
-
-#define SI_NO_CONVERSION
-#include <unistd.h>
-#define ISATTY isatty
-#define FILENO fileno
 #endif

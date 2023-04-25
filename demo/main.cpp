@@ -6,6 +6,14 @@
 #include "../query/odbcenvironment.h"
 //#include "../query/procedure.h"
 
+#ifdef UNICODE
+#define tcout wcout
+#define _tprintf wprintf
+#else
+#define tcout cout
+#define _tprintf printf
+#endif
+
 using namespace std;
 using namespace linguversa;
 

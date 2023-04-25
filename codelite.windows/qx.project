@@ -9,6 +9,7 @@
     <File Name="../qx/CMakeLists.txt"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
+    <File Name="../qx/qx.h"/>
     <File Name="../qx/SimpleIni.h"/>
     <File Name="../query/resultinfo.h"/>
     <File Name="../query/query.h"/>

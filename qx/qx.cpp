@@ -1,14 +1,13 @@
 // qx.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include "qx.h"
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <exception>
 #include <cassert>
-#include "../query/tstring.h"
-#include "CLI11.hpp"
 #include "SimpleIni.h"
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
@@ -78,7 +77,11 @@ int main(int argc, char** argv)
     app.add_option("sqlcmd", sqlcmd, "SQL-statement(s) (each enclosed in \"\" and space-separated)");
 
     try {
+        #ifdef UNICODE
+        app.parse(CLI::argc(), CLI::argv());
+        #else
         app.parse(argc, argv);
+        #endif
     } catch(const CLI::ParseError& e) {
         return app.exit(e);
     }

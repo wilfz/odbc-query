@@ -31,6 +31,7 @@
     <ClInclude Include="..\query\resultinfo.h" />
     <ClInclude Include="..\query\tstring.h" />
     <ClInclude Include="..\qx\CLI11.hpp" />
+    <ClInclude Include="..\qx\qx.h" />
     <ClInclude Include="..\qx\SimpleIni.h" />
   </ItemGroup>
   <ItemGroup>

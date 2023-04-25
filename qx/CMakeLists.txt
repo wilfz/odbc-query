@@ -1,7 +1,7 @@
 # command line executable qx
 include(FindODBC)
 
-set(qxSrcs CLI11.hpp SimpleIni.h qx.cpp)
+set(qxSrcs CLI11.hpp SimpleIni.h qx.h qx.cpp)
 add_executable(qx ${qxSrcs})
 
 if (${ODBC_FOUND})
