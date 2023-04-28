@@ -72,11 +72,13 @@ int main(int argc, char** argv)
         ->excludes("--format")->excludes("--fieldseparator")->excludes("--create")->excludes("--insert");
     app.add_option("--input", input, "filepath of input file containing SQL statements")
         ->check(CLI::ExistingFile | CLI::Validator([](string& s) { return s == "stdin" ? "" : "stdin"; }, "stdin"));;
-    app.add_option("--outputfile", outputfile, "filename of output file");
+    app.add_option("--outputfile", outputfile, "filepath of output file");
     //app.add_option("-t,--target", target, "output target");
     app.add_option("sqlcmd", sqlcmd, "SQL-statement(s) (each enclosed in \"\" and space-separated)");
 
     try {
+        // This distinction is only preliminary. After release of CLI11 with widestring unicode support 
+        // we will always use CLI::argc() and CLI::argv()
         #ifdef UNICODE
         app.parse(CLI::argc(), CLI::argv());
         #else
@@ -119,6 +121,9 @@ int main(int argc, char** argv)
         tcerr << _T("Cannot read list of installed drivers:") << endl << ex.what() << endl;
     }
 
+    if (dirpath.length() > 0)
+        sourcepath = dirpath;
+
     if (sourcepath.length() > 0)
     {
         tstring stmt;
@@ -127,8 +132,11 @@ int main(int argc, char** argv)
         if (sqlcmd.size() == 0 && stmt.length() > 0)
             sqlcmd.push_back(stmt);
     }
-
-    if (sqlite3.length() > 0)
+    else if (dbasedir.length() > 0)
+    {
+        connectionstring = ::string_format(_T("Driver={Microsoft dBase Driver (*.dbf)};DriverID=277;Dbq=%s;"), dbasedir.c_str());
+    }
+    else if (sqlite3.length() > 0)
     {
 #ifdef _WIN32
         connectionstring = ::string_format(_T("Driver={SQLite3 ODBC Driver};Database=%s;"), sqlite3.c_str());
@@ -698,7 +706,7 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
         tstring filename = string_format(_T("%s%s"), fname, fext);
         if (len >= 5 && sourcepath.substr(len - 4) == _T(".dbf"))
         {
-            connectionstring = string_format(_T("Driver={Microsoft dBase Driver (*.dbf)};DriverID=277;Dbq=%s%;"), drv, dir);
+            connectionstring = string_format(_T("Driver={Microsoft dBase Driver (*.dbf)};DriverID=277;Dbq=%s;"), drv, dir);
             stmt = string_format(_T("select * from %s;"), fname);
             return;
         }
