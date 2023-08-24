@@ -140,6 +140,10 @@ public:
     bool IsFieldNull( short nIndex);
     bool IsFieldNull( tstring lpszName);
 
+    // TODO: format the value of the specified column as string, according to its FieldInfo.
+    std::tstring FormatFieldValue( short nIndex);
+    std::tstring FormatFieldValue( tstring lpszName);
+
     // formatting of output
     tstring FormatCurrentRow(const std::tstring);
 

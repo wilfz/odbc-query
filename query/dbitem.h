@@ -42,7 +42,7 @@ namespace linguversa
 
         bool operator == (const DBItem& other) const;
 
-        vartype m_nCType;
+        vartype m_nVarType;
         
         union
         {

@@ -365,14 +365,14 @@ bool Query::GetFieldValue(short nIndex, string& sValue)
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_CHAR);
     #ifndef UNICODE
-    if (dbitem.m_nCType == DBItem::lwvt_string)
+    if (dbitem.m_nVarType == DBItem::lwvt_string)
     {
         sValue = *dbitem.m_pstringa;
         return true;
     }
     #endif
 
-    if (dbitem.m_nCType == DBItem::lwvt_astring)
+    if (dbitem.m_nVarType == DBItem::lwvt_astring)
     {
         sValue = *dbitem.m_pstringa;
         return true;
@@ -391,14 +391,14 @@ bool Query::GetFieldValue(short nIndex, wstring& sValue)
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_WCHAR);
     #ifdef UNICODE
-    if (dbitem.m_nCType == DBItem::lwvt_string)
+    if (dbitem.m_nVarType == DBItem::lwvt_string)
     {
         sValue = *dbitem.m_pstringw;
         return true;
     }
     #endif
 
-    if (dbitem.m_nCType == DBItem::lwvt_wstring)
+    if (dbitem.m_nVarType == DBItem::lwvt_wstring)
     {
         sValue = *dbitem.m_pstringw;
         return true;
@@ -568,7 +568,7 @@ bool Query::GetFieldValue(short nIndex, long & lValue)
 
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_LONG);
-    switch (dbitem.m_nCType)
+    switch (dbitem.m_nVarType)
     {
     case DBItem::lwvt_long:
         lValue = dbitem.m_lVal;
@@ -589,7 +589,7 @@ bool Query::GetFieldValue(short nIndex, int & iValue)
 
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_LONG);
-    switch (dbitem.m_nCType)
+    switch (dbitem.m_nVarType)
     {
     case DBItem::lwvt_long:
         iValue = dbitem.m_lVal;
@@ -610,7 +610,7 @@ bool Query::GetFieldValue(short nIndex, short & siValue)
 
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_SHORT);
-    switch (dbitem.m_nCType)
+    switch (dbitem.m_nVarType)
     {
     case DBItem::lwvt_short:
         siValue = dbitem.m_iVal;
@@ -631,7 +631,7 @@ bool Query::GetFieldValue(short nIndex, bytearray & ba)
 
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_BINARY);
-    switch (dbitem.m_nCType)
+    switch (dbitem.m_nVarType)
     {
     case DBItem::lwvt_bytearray:
         ba = *dbitem.m_pByteArray;
@@ -652,7 +652,7 @@ bool Query::GetFieldValue(short nIndex, unsigned ODBCINT64 & ui64Value)
 
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_UBIGINT);
-    switch (dbitem.m_nCType)
+    switch (dbitem.m_nVarType)
     {
     case DBItem::lwvt_bytearray:
         ui64Value = *dbitem.m_pUInt64;
@@ -673,7 +673,7 @@ bool Query::GetFieldValue(short nIndex, double & dValue)
 
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_DOUBLE);
-    switch (dbitem.m_nCType)
+    switch (dbitem.m_nVarType)
     {
     case DBItem::lwvt_double:
         dValue = dbitem.m_dblVal;
@@ -694,7 +694,7 @@ bool Query::GetFieldValue(short nIndex, SQLGUID& guid)
 
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_GUID);
-    switch (dbitem.m_nCType)
+    switch (dbitem.m_nVarType)
     {
     case DBItem::lwvt_guid:
         guid = *dbitem.m_pGUID;
@@ -715,7 +715,7 @@ bool linguversa::Query::GetFieldValue(short nIndex, TIMESTAMP_STRUCT& tsValue)
 
     DBItem dbitem;
     GetFieldValue(nIndex, dbitem, SQL_C_TIMESTAMP);
-    switch (dbitem.m_nCType)
+    switch (dbitem.m_nVarType)
     {
     case DBItem::lwvt_date:
         tsValue = *dbitem.m_pdate;
@@ -768,7 +768,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
             sizeof(byteValue), &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
-            varValue.m_nCType = DBItem::lwvt_bool;
+            varValue.m_nVarType = DBItem::lwvt_bool;
             varValue.m_boolVal = (byteValue ? true : false);
         }
     } break;
@@ -780,7 +780,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
             sizeof(byteValue), &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
-            varValue.m_nCType = DBItem::lwvt_uchar;
+            varValue.m_nVarType = DBItem::lwvt_uchar;
             varValue.m_chVal = byteValue;
         }
     } break;
@@ -792,7 +792,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
             sizeof(sValue), &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
-            varValue.m_nCType = DBItem::lwvt_short;
+            varValue.m_nVarType = DBItem::lwvt_short;
             varValue.m_iVal = sValue;
         }
     } break;
@@ -804,7 +804,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
             sizeof(lValue), &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
-            varValue.m_nCType = DBItem::lwvt_long;
+            varValue.m_nVarType = DBItem::lwvt_long;
             varValue.m_lVal = lValue;
         }
     } break;
@@ -816,7 +816,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
             sizeof(fValue), &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
-            varValue.m_nCType = DBItem::lwvt_single;
+            varValue.m_nVarType = DBItem::lwvt_single;
             varValue.m_fltVal = fValue;
         }
     } break;
@@ -828,7 +828,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
             sizeof(dValue), &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
-            varValue.m_nCType = DBItem::lwvt_double;
+            varValue.m_nVarType = DBItem::lwvt_double;
             varValue.m_dblVal = dValue;
         }
     } break;
@@ -839,7 +839,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, nFieldType, &tsValue, sizeof(TIMESTAMP_STRUCT), &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
-            varValue.m_nCType = DBItem::lwvt_date;
+            varValue.m_nVarType = DBItem::lwvt_date;
             varValue.m_pdate = new TIMESTAMP_STRUCT;
             *varValue.m_pdate = tsValue;
         }
@@ -859,7 +859,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
             if (SQL_SUCCEEDED(nRetCode))
             {
                 // initialize varValue with a pointer to bytearray of proper size
-                varValue.m_nCType = DBItem::lwvt_bytearray;
+                varValue.m_nVarType = DBItem::lwvt_bytearray;
                 varValue.m_pByteArray = new bytearray();
                 bytearray& ba = *(varValue.m_pByteArray);
                 ba.resize(len);
@@ -879,7 +879,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, nFieldType, &biValue, sizeof(biValue), &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
-            varValue.m_nCType = DBItem::lwvt_uint64;
+            varValue.m_nVarType = DBItem::lwvt_uint64;
             varValue.m_pUInt64 = new unsigned ODBCINT64();
             *varValue.m_pUInt64 = biValue;
         }
@@ -894,7 +894,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
             &gValue, sizeof(gValue), &len);
         if (SQL_SUCCEEDED(nRetCode) && len > 0)
         {
-            varValue.m_nCType = DBItem::lwvt_guid;
+            varValue.m_nVarType = DBItem::lwvt_guid;
             varValue.m_pGUID = new SQLGUID;
             *varValue.m_pGUID = gValue;
         }
@@ -916,9 +916,9 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
                 buf[n] = (wchar_t)0;
                 // initialize varValue with a pointer to wstring
                 #ifdef UNICODE
-                varValue.m_nCType = DBItem::lwvt_string;
+                varValue.m_nVarType = DBItem::lwvt_string;
                 #else
-                varValue.m_nCType = DBItem::lwvt_wstring;
+                varValue.m_nVarType = DBItem::lwvt_wstring;
                 #endif
                 varValue.m_pstringw = new wstring();
                 varValue.m_pstringw->assign(buf);
@@ -943,9 +943,9 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
                 buf[len] = (char) 0;
                 // initialize varValue with a pointer to string
                 #ifdef UNICODE
-                varValue.m_nCType = DBItem::lwvt_astring;
+                varValue.m_nVarType = DBItem::lwvt_astring;
                 #else
-                varValue.m_nCType = DBItem::lwvt_string;
+                varValue.m_nVarType = DBItem::lwvt_string;
                 #endif
                 varValue.m_pstringa = new string();
                 varValue.m_pstringa->assign(buf);
@@ -969,13 +969,14 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
             if (SQL_SUCCEEDED(nRetCode))
             {
                 // initialize varValue with a pointer to tstring
-                varValue.m_nCType = DBItem::lwvt_string;
+                varValue.m_nVarType = DBItem::lwvt_string;
                 varValue.m_pstring = new tstring();
                 varValue.m_pstring->assign(buf);
             }
 
             delete[] buf;
         }
+        nFieldType = SQL_C_TCHAR;
     } break;
 
     } // end of case
@@ -999,6 +1000,9 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
 
     if (!SQL_SUCCEEDED(nRetCode))
         throw DbException(nRetCode, SQL_HANDLE_STMT, m_hstmt);
+
+    // Once set, m_nCType must not be cheanged!
+    m_FieldInfo[nIndex].m_nCType = nFieldType;
 
     // SQL_NULL_DATA is -1: negative len can indicate NULL values
     if (len  < 0)
@@ -1135,6 +1139,28 @@ bool Query::IsFieldNull(tstring lpszName)
     // Get the index of the field corresponding to name
     short nField = GetFieldIndexByName(lpszName);
     return IsFieldNull( nField);
+}
+
+std::tstring Query::FormatFieldValue(short nIndex)
+{
+    if (nIndex < 0 || nIndex >= GetODBCFieldCount())
+    {
+        throw DbException(SQL_ERROR, SQL_HANDLE_STMT, m_hstmt); /* TODO: AFX_SQL_ERROR_FIELD_NOT_FOUND*/
+    }
+
+    DBItem varValue;
+    GetFieldValue(nIndex, varValue);
+    FieldInfo fi;
+    GetODBCFieldInfo(nIndex, fi);
+
+    // TODO: VarType is not CType!
+    if ((varValue.m_nVarType == DBItem::lwvt_single || varValue.m_nVarType == DBItem::lwvt_double) && (m_FieldInfo[nIndex].m_nCType == fi.GetDefaultCType()))
+    {
+        tstring fmt = fi.GetDefaultFormat();
+        return DBItem::ConvertToString(varValue, fmt);
+    }
+
+    return DBItem::ConvertToString(varValue);
 }
 
 tstring Query::FormatCurrentRow(const std::tstring fmt)
@@ -1644,7 +1670,7 @@ SQLRETURN Query::Finish()
         if (po == nullptr)
             return SQL_ERROR;
 
-        if (datarow[i].m_nCType == DBItem::lwvt_null)
+        if (datarow[i].m_nVarType == DBItem::lwvt_null)
         {
             po->m_lenInd = SQL_NULL_DATA;
             continue;
@@ -1653,10 +1679,10 @@ SQLRETURN Query::Finish()
         switch (po->m_nCType)
         {
         case SQL_C_TCHAR:
-            if (po->m_pParam && datarow[i].m_nCType == DBItem::lwvt_string && po->m_nParamLen > 0)
+            if (po->m_pParam && datarow[i].m_nVarType == DBItem::lwvt_string && po->m_nParamLen > 0)
             {
                 TCHAR* buf = (TCHAR*)po->m_pParam;
-                if (buf == nullptr || datarow[i].m_nCType != DBItem::lwvt_string)
+                if (buf == nullptr || datarow[i].m_nVarType != DBItem::lwvt_string)
                     return SQL_ERROR;
                 // if the target buffer is not yet large enough
                 if (po->m_nParamLen + 1 < (int)datarow[i].m_pstring->size() && po->m_local)
@@ -1688,7 +1714,7 @@ SQLRETURN Query::Finish()
         case SQL_C_LONG:
             if (po->m_pParam == nullptr)
                 return SQL_ERROR;
-            if (datarow[i].m_nCType == DBItem::lwvt_long)
+            if (datarow[i].m_nVarType == DBItem::lwvt_long)
                 *(long*)po->m_pParam = datarow[i].m_lVal;
             else
                 return SQL_ERROR;
