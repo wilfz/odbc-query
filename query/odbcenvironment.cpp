@@ -78,12 +78,12 @@ SQLRETURN ODBCEnvironment::FetchDriverInfo(tstring& driverdescription, vector<ts
         
     if (SQL_SUCCEEDED(retcode))
     {
-        driverdescription.assign((const TCHAR*) description); // TODO: Unicode
+        driverdescription.assign((const TCHAR*) description);
         tstring s;
         SQLSMALLINT i = 0;
         while (i < usedlen2 && attrib[i] != 0)
         {
-            s.assign((const TCHAR*) attrib+i); // TODO: Unicode
+            s.assign((const TCHAR*) attrib+i);
             attributes.resize(attributes.size()+1,s);
             i += (SQLSMALLINT) s.size() + 1;
         }
@@ -114,8 +114,8 @@ SQLRETURN ODBCEnvironment::FetchDataSourceInfo(tstring& dsn, tstring& drivername
         
     if (SQL_SUCCEEDED(retcode))
     {
-        dsn.assign((const TCHAR*) dsname); // TODO: Unicode
-        drivername.assign((const TCHAR*) driver); // TODO: Unicode
+        dsn.assign((const TCHAR*) dsname); 
+        drivername.assign((const TCHAR*) driver);
     }
     else if(retcode != SQL_NO_DATA)
     {
