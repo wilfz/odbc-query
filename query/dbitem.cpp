@@ -7,13 +7,13 @@ using namespace linguversa;
 
 DBItem::DBItem()
 {
-    m_nCType = lwvt_null;
+    m_nVarType = lwvt_null;
     m_pstring = nullptr;
 }
 
 DBItem::DBItem( const DBItem& src)
 {
-    m_nCType = lwvt_null;
+    m_nVarType = lwvt_null;
     m_pstring = nullptr;
     copyfrom( src);
 }
@@ -25,54 +25,54 @@ DBItem::~DBItem()
 
 void DBItem::clear()
 {
-    switch (m_nCType)
+    switch (m_nVarType)
     {
     case lwvt_string:
         if (m_pstring)
             delete (tstring*) m_pstring;
         m_pstring = nullptr;
-        m_nCType = lwvt_null;
+        m_nVarType = lwvt_null;
         break;
     case lwvt_astring:
         if (m_pstringw)
             delete (wstring*) m_pstringw;
         m_pstringw = nullptr;
-        m_nCType = lwvt_null;
+        m_nVarType = lwvt_null;
         break;
     case lwvt_wstring:
         if (m_pstringa)
             delete (string*) m_pstringa;
         m_pstringa = nullptr;
-        m_nCType = lwvt_null;
+        m_nVarType = lwvt_null;
         break;
     case lwvt_date:
         if (m_pdate)
             delete (TIMESTAMP_STRUCT*) m_pdate;
         m_pdate = nullptr;
-        m_nCType = lwvt_null;
+        m_nVarType = lwvt_null;
         break;
     case lwvt_bytearray:
         if (m_pByteArray)
             delete (bytearray*) m_pByteArray;
         m_pByteArray = nullptr;
-        m_nCType = lwvt_null;
+        m_nVarType = lwvt_null;
         break;
     case lwvt_uint64:
         if (m_pUInt64)
             delete (unsigned ODBCINT64*) m_pUInt64;
         m_pUInt64 = nullptr;
-        m_nCType = lwvt_null;
+        m_nVarType = lwvt_null;
         break;
     case lwvt_guid:
         if (m_pGUID)
             delete (SQLGUID*) m_pGUID;
         m_pGUID = nullptr;
-        m_nCType = lwvt_null;
+        m_nVarType = lwvt_null;
         break;
     default: // The other parts of the union are no pointers.
         // No explicit delete necessary.
         m_lVal = 0L;
-        m_nCType = lwvt_null;
+        m_nVarType = lwvt_null;
     }
 }
 
@@ -84,10 +84,10 @@ DBItem& DBItem::operator = ( const DBItem& src)
 
 bool DBItem::operator==(const DBItem & other) const
 {
-    if (m_nCType != other.m_nCType)
+    if (m_nVarType != other.m_nVarType)
         return false;
 
-    switch (m_nCType)
+    switch (m_nVarType)
     {
     case lwvt_uchar:
         return m_chVal == other.m_chVal;
@@ -168,7 +168,7 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
     }
 
     // format var according to its type
-    switch (var.m_nCType)
+    switch (var.m_nVarType)
     {
     case lwvt_bool:
         if (colFmt.length() == 0)
@@ -193,6 +193,8 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
     case lwvt_single:
         DecimalFormat = colFmt;
         //bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
+        if (DecimalFormat.length() == 0)
+            DecimalFormat = _T("%0.2f");
         sValue = linguversa::string_format( DecimalFormat, var.m_fltVal);
         //if (bNationalDecSep)
         //    sValue.Replace(_T("."),_T(","));
@@ -200,6 +202,8 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
     case lwvt_double: 
         DecimalFormat = colFmt;
         //bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
+        if (DecimalFormat.length() == 0)
+            DecimalFormat = _T("%0.2f");
         sValue = linguversa::string_format( DecimalFormat, var.m_dblVal);
         //if (bNationalDecSep)
         //  sValue.Replace(_T("."),_T(","));
@@ -280,44 +284,44 @@ void DBItem::copyfrom(const DBItem& src)
     if (this == &src)    // if src and target are identical, no need to copy into itself
         return;          // especially avoid the Clear()
 
-    if (m_nCType != src.m_nCType)
+    if (m_nVarType != src.m_nVarType)
     {
         clear();
     }
     
-    switch (src.m_nCType)
+    switch (src.m_nVarType)
     {
     case lwvt_null:
         break;
     case lwvt_bool:
-        m_nCType = src.m_nCType;
+        m_nVarType = src.m_nVarType;
         m_boolVal = src.m_boolVal;
         break;
     case lwvt_uchar:
-        m_nCType = src.m_nCType;
+        m_nVarType = src.m_nVarType;
         m_chVal = src.m_chVal;
         break;
     case lwvt_short:
-        m_nCType = src.m_nCType;
+        m_nVarType = src.m_nVarType;
         m_iVal = src.m_iVal;
         break;
     case lwvt_long:
-        m_nCType = src.m_nCType;
+        m_nVarType = src.m_nVarType;
         m_lVal = src.m_lVal;
         break;
     case lwvt_single:
-        m_nCType = src.m_nCType;
+        m_nVarType = src.m_nVarType;
         m_fltVal = src.m_fltVal;
         break;
     case lwvt_double: 
-        m_nCType = src.m_nCType;
+        m_nVarType = src.m_nVarType;
         m_dblVal = src.m_dblVal;
         break;
     case lwvt_string:
-        if (m_nCType != src.m_nCType)
+        if (m_nVarType != src.m_nVarType)
         {
             m_pstring = new tstring(*src.m_pstring);
-            m_nCType = src.m_nCType;
+            m_nVarType = src.m_nVarType;
         }
         else
         {
@@ -325,10 +329,10 @@ void DBItem::copyfrom(const DBItem& src)
         }
         break;
     case lwvt_date:
-        if (m_nCType != src.m_nCType)
+        if (m_nVarType != src.m_nVarType)
         {
             m_pdate = new TIMESTAMP_STRUCT;
-            m_nCType = src.m_nCType;
+            m_nVarType = src.m_nVarType;
         }
         m_pdate->year = src.m_pdate ? src.m_pdate->year : 0;
         m_pdate->month = src.m_pdate ? src.m_pdate->month : 0;
@@ -339,10 +343,10 @@ void DBItem::copyfrom(const DBItem& src)
         m_pdate->fraction = src.m_pdate ? src.m_pdate->fraction : 0;
         break;
     case lwvt_bytearray:
-        if (m_nCType != src.m_nCType)
+        if (m_nVarType != src.m_nVarType)
         {
             m_pByteArray = new bytearray();
-            m_nCType = src.m_nCType;
+            m_nVarType = src.m_nVarType;
         }
         m_pByteArray->resize(src.m_pByteArray->size());
         for (unsigned int i=0; i < m_pByteArray->size(); i++)
@@ -351,18 +355,18 @@ void DBItem::copyfrom(const DBItem& src)
         }
         break;
     case lwvt_uint64:
-        if (m_nCType != src.m_nCType)
+        if (m_nVarType != src.m_nVarType)
         {
             m_pUInt64 = new unsigned ODBCINT64;
-            m_nCType = src.m_nCType;
+            m_nVarType = src.m_nVarType;
         }
         *m_pUInt64 = *src.m_pUInt64;
         break;
     case lwvt_guid:
-        if (m_nCType != src.m_nCType)
+        if (m_nVarType != src.m_nVarType)
         {
             m_pGUID = new SQLGUID;
-            m_nCType = src.m_nCType;
+            m_nVarType = src.m_nVarType;
         }
         *m_pGUID = *src.m_pGUID;
         break;

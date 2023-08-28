@@ -20,7 +20,8 @@ namespace linguversa
 
         void InitData();
         static short GetDefaultCType(const FieldInfo& fi);
-        short GetDefaultCType();
+        const short GetDefaultCType();
+        const std::tstring GetDefaultFormat();
 
         signed short m_nCType;
         // meta data from ODBC

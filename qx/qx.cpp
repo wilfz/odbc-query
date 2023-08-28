@@ -454,9 +454,10 @@ void OutputResultSet(tostream& os, Query& query, const tstring& fieldseparator)
     {
         for (short col = 0; col < colcount; col++)
         {
-            DBItem dbitem;
-            query.GetFieldValue(col, dbitem);
-            os << DBItem::ConvertToString(dbitem);
+            //DBItem dbitem;
+            //query.GetFieldValue(col, dbitem);
+            //os << DBItem::ConvertToString(dbitem);
+            os << query.FormatFieldValue(col);
             if (col == colcount - 1)
                 os << endl;
             else
@@ -641,7 +642,7 @@ void GenerateInsert(tostream& os, Query& query, const tstring& tablename)
         {
             DBItem dbitem;
             query.GetFieldValue(col, dbitem);
-            os << (dbitem.m_nCType != DBItem::lwvt_null ? DBItem::ConvertToString(dbitem) : _T("NULL"));
+            os << (dbitem.m_nVarType != DBItem::lwvt_null ? DBItem::ConvertToString(dbitem) : _T("NULL"));
             if (col < colcount - 1)
                 os << _T(", ");
         }

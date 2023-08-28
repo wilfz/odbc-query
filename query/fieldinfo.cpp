@@ -1,6 +1,8 @@
 #include "fieldinfo.h"
+#include "lvstring.h"
 
 using namespace linguversa;
+using namespace std;
 
 FieldInfo::FieldInfo()
 {
@@ -134,10 +136,83 @@ short FieldInfo::GetDefaultCType(const FieldInfo& fi)
     return nFieldType;
 }
 
-short FieldInfo::GetDefaultCType()
+const short FieldInfo::GetDefaultCType()
 {
     if (m_nCType != DEFAULT_FIELD_TYPE)    // if member explicitly set
         return m_nCType;
     else // otherwise we derive it from m_nSQLType
         return FieldInfo::GetDefaultCType(*this);
+}
+
+const tstring FieldInfo::GetDefaultFormat()
+{
+    tstring fmt;
+    switch (m_nSQLType)
+    {
+    case SQL_BIT:
+        fmt = _T("%01d");
+        break;
+    case SQL_TINYINT:
+        fmt = string_format(_T("%%%0dd"), m_nPrecision);
+        break;
+    case SQL_SMALLINT:
+        fmt = string_format(_T("%%%0dd"), m_nPrecision);
+        break;
+    case SQL_INTEGER:
+        fmt = string_format(_T("%%%0dd"), m_nPrecision);
+        break;
+    /*
+    case SQL_REAL:
+        fmt = string_format(_T("%%%0dd.%%%0dd"), m_nPrecision, m_nScale);
+        break;
+    case SQL_FLOAT:
+    case SQL_DOUBLE:
+        fmt = string_format(_T("%%0%0dd.%%0%0dd"), m_nPrecision, m_nScale);
+        break;
+    case SQL_DATE: // same as SQL_DATETIME
+    case SQL_TIME:
+    case SQL_TIMESTAMP:
+    case SQL_TYPE_DATE:
+    case SQL_TYPE_TIME:
+    case SQL_TYPE_TIMESTAMP:
+        nFieldType = SQL_C_TIMESTAMP;
+        break;
+
+    case SQL_CHAR:
+    case SQL_VARCHAR:
+    case SQL_LONGVARCHAR:
+        nFieldType = SQL_C_TCHAR;
+        break;
+
+    case SQL_WCHAR:
+    case SQL_WVARCHAR:
+    case SQL_WLONGVARCHAR:
+        nFieldType = SQL_C_TCHAR;
+        break;
+
+    case SQL_BINARY:
+    case SQL_VARBINARY:
+    case SQL_LONGVARBINARY:
+        nFieldType = SQL_C_BINARY;
+        break;
+    */
+    case SQL_NUMERIC:
+    case SQL_DECIMAL:
+        fmt = string_format(_T("%%%0d.%0df"), m_nPrecision, m_nScale);
+        break;
+    /*
+    case SQL_BIGINT:
+        nFieldType = SQL_C_UBIGINT;
+        break;
+    case SQL_GUID:
+        nFieldType = SQL_C_GUID;
+        break;
+    case SQL_UNKNOWN_TYPE:
+        nFieldType = SQL_C_TCHAR;    // a reasonable default for most data types
+        break;
+    default:
+        nFieldType = DEFAULT_FIELD_TYPE;
+    */
+    }
+    return fmt;
 }

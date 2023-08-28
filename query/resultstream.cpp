@@ -6,8 +6,8 @@ using namespace std;
 
 std::ostream& linguversa::operator<<(std::ostream& ar, const DBItem& item)
 {
-    ar << (signed short)item.m_nCType;
-    switch (item.m_nCType)
+    ar << (signed short)item.m_nVarType;
+    switch (item.m_nVarType)
     {
     case DBItem::lwvt_null:
         break;
@@ -83,7 +83,7 @@ std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
     signed short n = 0;
     ar >> n;
     DBItem::vartype vt = (DBItem::vartype)n;
-    if (vt != var.m_nCType)
+    if (vt != var.m_nVarType)
         var.clear();
 
     switch (vt)
@@ -109,7 +109,7 @@ std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
         ar >> var.m_dblVal;
         break;
     case DBItem::lwvt_date:
-        if (var.m_pdate == nullptr || var.m_nCType != vt)
+        if (var.m_pdate == nullptr || var.m_nVarType != vt)
             var.m_pdate = new TIMESTAMP_STRUCT();
         ar >> var.m_pdate->year;
         ar >> var.m_pdate->month;
@@ -120,7 +120,7 @@ std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
         ar >> var.m_pdate->fraction;
         break;
     case DBItem::lwvt_string:
-        if (var.m_pstring == nullptr || var.m_nCType != vt)
+        if (var.m_pstring == nullptr || var.m_nVarType != vt)
             var.m_pstring = new tstring();
         ar >> (*var.m_pstring);
         break;
@@ -130,7 +130,7 @@ std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
         //ar >> (*var.m_pstringw);
         break;
     case DBItem::lwvt_astring:
-        if (var.m_pstringa == nullptr || var.m_nCType != vt)
+        if (var.m_pstringa == nullptr || var.m_nVarType != vt)
             var.m_pstringa = new string();
         ar >> (*var.m_pstringa);
         break;
@@ -142,7 +142,7 @@ std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
     {
         size_t baSize = 0;
         ar >> baSize;
-        if (var.m_pByteArray == nullptr || var.m_nCType != vt)
+        if (var.m_pByteArray == nullptr || var.m_nVarType != vt)
             var.m_pByteArray = new bytearray();
         bytearray& ba = *var.m_pByteArray;
         ba.resize(baSize);
@@ -153,7 +153,7 @@ std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
     }
     break;
     case DBItem::lwvt_uint64:
-        if (var.m_pUInt64 == nullptr || var.m_nCType != vt)
+        if (var.m_pUInt64 == nullptr || var.m_nVarType != vt)
             var.m_pUInt64 = new UINT64();
         ar >> (*var.m_pUInt64);
         break;
@@ -163,7 +163,7 @@ std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
         break;
     }
 
-    var.m_nCType = vt;
+    var.m_nVarType = vt;
 
     return ar;
 }

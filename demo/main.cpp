@@ -443,17 +443,17 @@ int main(int argc, char **argv)
                 query.GetFieldValue((short)2, varBirthDte);
 
                 // Because the birthdte column is of type datetime (and not null) 
-                // DBItem's type selector m_nCType is set to DBItem::lwvt_date
+                // DBItem's type selector m_nVarType is set to DBItem::lwvt_date
                 // and its pointer member m_pdate is set to a valid TIMESTAMP_STRUCT
-                assert(varBirthDte.m_nCType == DBItem::lwvt_date);
+                assert(varBirthDte.m_nVarType == DBItem::lwvt_date);
 
                 // ********************************************************************
                 // Retrieving field value of type decimal
                 // ********************************************************************
 
                 // balance is decimal. The default conversion goes to double
-                // DBItem's type selector m_nCType is set to DBItem::lwvt_double 
-                // (or DBVT_NULL if we come to a NULL value in the result set).
+                // DBItem's type selector m_nVarType is set to DBItem::lwvt_double 
+                // (or lwvt_null if we come to a NULL value in the result set).
                 short nFieldType = DEFAULT_FIELD_TYPE;
 
                 FieldInfo fieldinfo;
@@ -473,9 +473,9 @@ int main(int argc, char **argv)
                 // Either this way ...
                 DBItem varBalance;
                 // using the variant data type DBItem 
-                // (nFieldType is still DEFAULT_FIELD_TYPE, except or sqlite)
+                // (nFieldType is still DEFAULT_FIELD_TYPE, except for sqlite)
                 query.GetFieldValue((short)3, varBalance, nFieldType);
-                assert(varBalance.m_nCType == DBItem::lwvt_double);
+                assert(varBalance.m_nVarType == DBItem::lwvt_double);
 
                 // ... or the easy way:
                 double d = 0.0;
