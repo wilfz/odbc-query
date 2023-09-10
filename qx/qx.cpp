@@ -706,10 +706,10 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
         }
 
         len = sourcepath.length();
-        _TCHAR drv[_MAX_DRIVE];
-        _TCHAR dir[_MAX_DIR];
-        _TCHAR fname[_MAX_FNAME];
-        _TCHAR fext[_MAX_EXT];
+        TCHAR drv[_MAX_DRIVE];
+        TCHAR dir[_MAX_DIR];
+        TCHAR fname[_MAX_FNAME];
+        TCHAR fext[_MAX_EXT];
         errno_t errnbr = _tsplitpath_s(sourcepath.c_str(), drv, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, fext, _MAX_EXT);
         assert(errnbr == 0);
         if (errnbr != 0)
