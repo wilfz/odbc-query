@@ -25,6 +25,7 @@ void OutputResultSet(tostream& os, Query& query, const tstring& fieldseparator);
 void GenerateCreate(tostream& os, Query& query, const tstring& tablename);
 void GenerateInsert(tostream& os, Query& query, const tstring& tablename);
 void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt);
+void ConfigToSchema(tstring filepath, tstring configname);
 string isSqliteFilename( string& path);
 
 
@@ -37,6 +38,7 @@ int main(int argc, char** argv)
     tstring dirpath;
     tstring dbasedir;
     tstring sqlite3;
+    tstring config;
     tstring fieldseparator = _T("\t");
     tstring rowformat;
     tstring input;
@@ -56,6 +58,7 @@ int main(int argc, char** argv)
     app.add_option("--sourcepath", sourcepath, "path of a textfile or database directory")
         ->excludes("--source")
         ->check(CLI::ExistingPath | CLI::Validator(isSqliteFilename, "*.sqlite or *.db3"));
+    app.add_option("--config", config, "template in qx.ini for file description in schema.ini-format");
     app.add_option("--sqlite3", sqlite3, "path of a sqlite3 database file")
         ->excludes("--source")->excludes("--sourcepath");
     app.add_option("--dir", dirpath, "path of a database directory containing textfiles")
@@ -201,6 +204,13 @@ int main(int argc, char** argv)
         if (rowformat.length() > 0)
             os << "Format: " << rowformat << endl;
         return 0;
+    }
+
+    // Microsoft Text Driver only: 
+    // copy schema section from qx.ini to schema.ini
+    if (config.length() > 0 && connectionstring.substr(0,22) == _T("Driver={Microsoft Text"))
+    {
+        ConfigToSchema(sourcepath, config);
     }
 
     //rowformat = _T("[lfnbr:%5d]\\n");
@@ -707,7 +717,7 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
         tstring filename = string_format(_T("%s%s"), fname, fext);
         if (len >= 5 && sourcepath.substr(len - 4) == _T(".dbf"))
         {
-            connectionstring = string_format(_T("Driver={Microsoft dBase Driver (*.dbf)};DriverID=277;Dbq=%s;"), drv, dir);
+            connectionstring = string_format(_T("Driver={Microsoft dBase Driver (*.dbf)};DriverID=277;Dbq=%s%s;"), drv, dir);
             stmt = string_format(_T("select * from %s;"), fname);
             return;
         }
@@ -737,6 +747,48 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
         {
             connectionstring = ::string_format(
                 _T("Driver={Microsoft Access Driver (*.mdb)};Dbq=%s;Uid=Admin;Pwd=;"), sourcepath.c_str());
+        }
+    }
+}
+
+void ConfigToSchema(tstring filepath, tstring configname)
+{
+    size_t len = filepath.length();
+    if (configname.length() > 0 && len > 4 &&
+        (filepath.substr(len - 4) == _T(".csv") || filepath.substr(len - 4) == _T(".tsv")
+            || filepath.substr(len - 4) == _T(".tab") || filepath.substr(len - 4) == _T(".txt")))
+    {
+        _TCHAR drv[_MAX_DRIVE];
+        _TCHAR dir[_MAX_DIR];
+        _TCHAR fname[_MAX_FNAME];
+        _TCHAR fext[_MAX_EXT];
+        errno_t errnbr = _tsplitpath_s(filepath.c_str(), drv, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, fext, _MAX_EXT);
+        assert(errnbr == 0);
+        if (errnbr != 0)
+            return;
+        tstring filename = string_format(_T("%s%s"), fname, fext);
+        tstring schemapath = string_format(_T("%s%s\\schema.ini"), drv, dir);
+
+        CSimpleIni schema_ini;
+        tstring sectionname = string_format(_T("QueryConfig\\%s\\schema"), configname.c_str());
+        SI_Error rc = schema_ini.LoadFile(schemapath.c_str());
+        // Only insert new schema, do not replace already existing schema!
+        if (schema_ini.GetSectionSize(filename.c_str()) <= 0)
+        {
+            CSimpleIni qx_ini;
+            CSimpleIni::TNamesDepend keys;
+            if (qx_ini.LoadFile(_T("qx.ini")) != SI_OK || qx_ini.GetAllKeys(sectionname.c_str(), keys) == false)
+                return;
+
+            keys.sort(CSimpleIni::Entry::LoadOrder());
+            for (std::list<CSimpleIni::Entry>::iterator it = keys.begin(); it != keys.end(); ++it)
+            {
+                const TCHAR* pv = qx_ini.GetValue(sectionname.c_str(), it->pItem, _T(""));
+                rc = schema_ini.SetValue(filename.c_str(), it->pItem, pv ? pv : _T(""), (const TCHAR*)0, true);
+            }
+
+            if (schema_ini.GetSectionSize(filename.c_str()) > 0 && schema_ini.SaveFile(schemapath.c_str()) != SI_OK)
+                return;
         }
     }
 }
