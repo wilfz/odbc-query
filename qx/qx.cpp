@@ -12,6 +12,9 @@
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
 #include "../query/lvstring.h"
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
+#include <filesystem>
+#endif
 
 using namespace std;
 using namespace linguversa;
@@ -758,16 +761,29 @@ void ConfigToSchema(tstring filepath, tstring configname)
         (filepath.substr(len - 4) == _T(".csv") || filepath.substr(len - 4) == _T(".tsv")
             || filepath.substr(len - 4) == _T(".tab") || filepath.substr(len - 4) == _T(".txt")))
     {
-        _TCHAR drv[_MAX_DRIVE];
-        _TCHAR dir[_MAX_DIR];
-        _TCHAR fname[_MAX_FNAME];
-        _TCHAR fext[_MAX_EXT];
+#ifdef WIN32
+        // Windows
+        TCHAR drv[_MAX_DRIVE];
+        TCHAR dir[_MAX_DIR];
+        TCHAR fname[_MAX_FNAME];
+        TCHAR fext[_MAX_EXT];
         errno_t errnbr = _tsplitpath_s(filepath.c_str(), drv, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, fext, _MAX_EXT);
         assert(errnbr == 0);
         if (errnbr != 0)
             return;
         tstring filename = string_format(_T("%s%s"), fname, fext);
         tstring schemapath = string_format(_T("%s%s\\schema.ini"), drv, dir);
+#elif ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
+        // Un*x, C++ 17 or higher
+        std::filesystem::path fpath(filepath);
+        tstring schemapath = string_format(_T("%s\\schema.ini"), fpath.parent_path().string().c_str());
+        tstring filename = fpath.filename().string();
+#else 
+        // Un*x, beforw C++ 11
+        std::size_t botDirPos = filepath.find_last_of("/");
+        tstring schemapath = string_format(_T("%s\\schema.ini"), filepath.substr(0, botDirPos).c_str());
+        tstring filename = filepath.substr(botDirPos, filepath.length());
+#endif
 
         CSimpleIni schema_ini;
         tstring sectionname = string_format(_T("QueryConfig\\%s\\schema"), configname.c_str());
