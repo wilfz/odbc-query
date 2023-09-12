@@ -29,7 +29,7 @@ void GenerateCreate(tostream& os, Query& query, const tstring& tablename);
 void GenerateInsert(tostream& os, Query& query, const tstring& tablename);
 void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt);
 void ConfigToSchema(tstring filepath, tstring configname);
-string isSqliteFilename( string& path);
+string validateSqliteFilename( string& path);
 
 
 int main(int argc, char** argv) 
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     app.add_option("-s,--source", connectionstring, "ODBC connection string");
     app.add_option("--sourcepath", sourcepath, "path of a textfile or database directory")
         ->excludes("--source")
-        ->check(CLI::ExistingPath | CLI::Validator(isSqliteFilename, "*.sqlite or *.db3"));
+        ->check(CLI::ExistingPath | CLI::Validator(validateSqliteFilename, "*.sqlite or *.db3"));
     app.add_option("--config", config, "template in qx.ini for file description in schema.ini-format");
     app.add_option("--sqlite3", sqlite3, "path of a sqlite3 database file")
         ->excludes("--source")->excludes("--sourcepath");
@@ -779,7 +779,7 @@ void ConfigToSchema(tstring filepath, tstring configname)
         tstring schemapath = string_format(_T("%s\\schema.ini"), fpath.parent_path().string().c_str());
         tstring filename = fpath.filename().string();
 #else 
-        // Un*x, beforw C++ 11
+        // Un*x, before C++ 11
         std::size_t botDirPos = filepath.find_last_of("/");
         tstring schemapath = string_format(_T("%s\\schema.ini"), filepath.substr(0, botDirPos).c_str());
         tstring filename = filepath.substr(botDirPos, filepath.length());
@@ -809,7 +809,7 @@ void ConfigToSchema(tstring filepath, tstring configname)
     }
 }
 
-string isSqliteFilename( string& path)
+string validateSqliteFilename( string& path)
 {
     size_t len = path.length();
     if ((len >= 8 && path.substr(len-8) == ".sqlite3") || (len >= 4 && path.substr(len-4) == ".db3")) 

@@ -8,7 +8,7 @@ To compile and use on linux-like system it may be necessary to install unixodbc 
 sudo apt-get install unixodbc
 sudo apt-get install unixodbc-dev
 ```
-In the demo application I used Christian Werner's excellent [sqliteodbc driver](http://www.ch-werner.de/sqliteodbc/).
+The demo application uses Christian Werner's excellent [sqliteodbc driver](http://www.ch-werner.de/sqliteodbc/).
 For Windows just run [sqliteodbc.exe](http://www.ch-werner.de/sqliteodbc/sqliteodbc.exe) and/or [sqliteodbc_w64.exe](http://www.ch-werner.de/sqliteodbc/sqliteodbc_w64.exe) to intall.<br>
 For Linux install the drivers with:
 ```
