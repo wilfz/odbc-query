@@ -655,7 +655,26 @@ void GenerateInsert(tostream& os, Query& query, const tstring& tablename)
         {
             DBItem dbitem;
             query.GetFieldValue(col, dbitem);
-            os << (dbitem.m_nVarType != DBItem::lwvt_null ? DBItem::ConvertToString(dbitem) : _T("NULL"));
+            switch (dbitem.m_nVarType)
+            {
+            case DBItem::lwvt_null:
+                os << _T("NULL");
+                break;
+            case DBItem::lwvt_astring:
+            case DBItem::lwvt_wstring:
+            case DBItem::lwvt_string:
+                os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
+                break;
+            case DBItem::lwvt_guid:
+                os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
+                break;
+            case DBItem::lwvt_date:
+                os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
+                break;
+            default:
+                os << DBItem::ConvertToString(dbitem);
+            }
+            //os << (dbitem.m_nVarType != DBItem::lwvt_null ? DBItem::ConvertToString(dbitem) : _T("NULL"));
             if (col < colcount - 1)
                 os << _T(", ");
         }
