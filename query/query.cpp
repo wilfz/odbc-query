@@ -2836,3 +2836,15 @@ RETCODE Query::InitFieldInfos()
 
     return nRetCode;
 }
+
+#ifdef USE_ROWDATA
+void Query::GetCurrentRow(DataRow& currentRow)
+{
+    currentRow.resize(m_FieldInfo.size());
+    for (unsigned short col = 0; col < m_FieldInfo.size(); col++)
+    {
+        DBItem& item = currentRow[col];
+        GetFieldValue(col, item);
+    }
+}
+#endif

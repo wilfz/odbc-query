@@ -6,8 +6,6 @@
 #include <sqlext.h>
 #include <vector>
 
-#define SQL_C_STRING SQL_VARCHAR
-
 namespace linguversa
 {
     typedef std::vector<unsigned char> bytearray;

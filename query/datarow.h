@@ -5,8 +5,6 @@
 #include "dbitem.h"
 #include "resultinfo.h"
 
-#define SQL_C_STRING SQL_VARCHAR
-
 namespace linguversa
 {
 class DataRow : public std::vector<DBItem>
