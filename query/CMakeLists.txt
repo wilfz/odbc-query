@@ -19,8 +19,10 @@ set(libSrcs
     resultinfo.h
     resultinfo.cpp
     tstring.h
-	lvstring.h
-	lvstring.cpp
+    lvstring.h
+    lvstring.cpp
+    target.h
+	target.cpp
     )
  
 if (UNIX)
