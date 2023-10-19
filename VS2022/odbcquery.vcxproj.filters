@@ -51,6 +51,9 @@
     <ClInclude Include="..\query\lvstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\query\target.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\query\connection.cpp">
@@ -81,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\query\datarow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\query\target.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

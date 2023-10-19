@@ -29,6 +29,7 @@
     <ClInclude Include="..\query\paramitem.h" />
     <ClInclude Include="..\query\query.h" />
     <ClInclude Include="..\query\resultinfo.h" />
+    <ClInclude Include="..\query\target.h" />
     <ClInclude Include="..\query\tstring.h" />
     <ClInclude Include="..\qx\CLI11.hpp" />
     <ClInclude Include="..\qx\qx.h" />
