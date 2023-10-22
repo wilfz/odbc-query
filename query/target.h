@@ -1,6 +1,6 @@
 #pragma once
 
-#include "connection.h"
+#include "query.h"
 #include <fstream>
 #include <iostream>
 #ifdef _WIN32
@@ -11,7 +11,7 @@
 #else
 #define tcout cout
 #define tostream ostream
-#define tostream ostream
+#define tofstream ofstream
 #endif
 #else
 #define tcout cout
@@ -38,18 +38,26 @@ namespace linguversa
         Target();
         ~Target();
 
+        typedef enum {
+            sel_stdout,
+            sel_fileout,
+            sel_odbc
+        } selector_type;
+
+        bool OpenStdOutput();
         bool OpenConnection(std::tstring connection);
         bool OpenFile(std::tstring filepath);
         bool IsOpen();
         void Close();
+
         bool Apply(std::tstring str);
+        void Create( const Query& query, tstring tablename);
+        void InsertCurrentRow(Query& query, tstring tablename);
+        void InsertAll(Query&, tstring tablename);
+        void OutputAsCSV(Query& query, const tstring& fieldseparator);
 
     protected:
-        enum {
-            sel_stdout,
-            sel_fileout,
-            sel_odbc
-        } selector;
+        selector_type selector;
         std::tofstream m_outstream;
         linguversa::Connection m_connnection;
     };

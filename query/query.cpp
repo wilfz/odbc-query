@@ -226,7 +226,7 @@ short Query::GetODBCFieldCount() const
     return (short) colcount;
 }
 
-int Query::GetFieldIndexByName(tstring lpszFieldName)
+int Query::GetFieldIndexByName(tstring lpszFieldName) const
 {
     if (lpszFieldName.empty())
         return SQL_ERROR;
@@ -247,7 +247,7 @@ int Query::GetFieldIndexByName(tstring lpszFieldName)
     return nIndex;
 }
 
-void Query::GetODBCFieldInfo(short nIndex, FieldInfo& fieldinfo)
+void Query::GetODBCFieldInfo(short nIndex, FieldInfo& fieldinfo) const
 {
     if (nIndex < 0 || (unsigned int) nIndex >= m_FieldInfo.size())
     {
@@ -263,7 +263,7 @@ void Query::GetODBCFieldInfo(short nIndex, FieldInfo& fieldinfo)
     fieldinfo.m_nNullability = m_FieldInfo[nIndex].m_nNullability;
 }
 
-bool Query::GetODBCFieldInfo(tstring lpszName, FieldInfo& fieldinfo)
+bool Query::GetODBCFieldInfo(tstring lpszName, FieldInfo& fieldinfo) const
 {
     assert(! lpszName.empty());
 

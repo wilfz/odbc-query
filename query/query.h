@@ -48,15 +48,15 @@ public:
 
     // Returns the 0-based column index which corresponds to the column named lpszFieldName, 
     // -1 if no column name matches.
-    int GetFieldIndexByName(tstring lpszFieldName);
+    int GetFieldIndexByName(tstring lpszFieldName) const;
 
     // Retrieves information about column type and size. See Visual Studio / MFC help for further information 
     // on CODBCFieldInfo.
-    void GetODBCFieldInfo( short nIndex, FieldInfo& fieldinfo);
+    void GetODBCFieldInfo( short nIndex, FieldInfo& fieldinfo) const;
 
     // Retrieves information about column name, type and size. See Visual Studio / MFC help for further information 
     // on CODBCFieldInfo. Returns false if no column with the specified column name exists.
-    bool GetODBCFieldInfo( tstring lpszName, FieldInfo& fieldinfo);
+    bool GetODBCFieldInfo( tstring lpszName, FieldInfo& fieldinfo) const ;
 
     // Some engines (like SQLite) do not always know the complete Fieldinfo. 
     // In those cases the application program should know and 
