@@ -12,6 +12,7 @@
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
 #include "../query/lvstring.h"
+#include "../query/target.h"
 #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
 #include <filesystem>
 #endif
@@ -23,10 +24,7 @@ using namespace CLI;
 //forward declarations
 void ListDrivers();
 void ListDataSources();
-void FormatResultSet(tostream& os, Query& query, const tstring& rowformat);
 void OutputResultSet(tostream& os, Query& query, const tstring& fieldseparator);
-void GenerateCreate(tostream& os, Query& query, const tstring& tablename);
-void GenerateInsert(tostream& os, Query& query, const tstring& tablename);
 void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt);
 void ConfigToSchema(tstring filepath, tstring configname);
 string validateSqliteFilename( string& path);
@@ -46,6 +44,7 @@ int main(int argc, char** argv)
     tstring rowformat;
     tstring input;
     tstring outputfile;
+    tstring targetspec;
     tstring create;
     tstring insert;
     tstring createinsert;
@@ -79,7 +78,7 @@ int main(int argc, char** argv)
     app.add_option("--input", input, "filepath of input file containing SQL statements")
         ->check(CLI::ExistingFile | CLI::Validator([](string& s) { return s == "stdin" ? "" : "stdin"; }, "stdin"));;
     app.add_option("--outputfile", outputfile, "filepath of output file");
-    //app.add_option("-t,--target", target, "output target");
+    app.add_option("--target", targetspec, "target for output")->excludes("--outputfile");
     app.add_option("sqlcmd", sqlcmd, "SQL-statement(s) (each enclosed in \"\" and space-separated)");
 
     try {
@@ -106,6 +105,28 @@ int main(int argc, char** argv)
 
     // output stream os, may either be the just opened file or otherwise stdout
     tostream& os = ofs.is_open() ? ofs : tcout;
+
+    Target target;
+    if (targetspec.length())
+    {
+        bool ret = true;
+        if (lower(targetspec.substr(0, 5)) == _T("file:"))
+        {
+            ret = target.OpenFile(targetspec.substr(5));
+        }
+        else if (lower(targetspec.substr(0, 5)) == _T("odbc:") || lower(targetspec.substr(0, 5)) == _T("odbc;"))
+        {
+            ret = target.OpenConnection(targetspec.substr(5));
+        }
+        else if (lower(targetspec) == _T("stdout"))
+        {
+            ret = target.OpenStdOutput();
+        }
+        
+        if (ret == false)
+            return -1;
+    }
+
     SQLRETURN nRetCode = SQL_SUCCESS;
 
     try
@@ -206,6 +227,8 @@ int main(int argc, char** argv)
     {
         if (rowformat.length() > 0)
             os << "Format: " << rowformat << endl;
+
+        target.Close();
         return 0;
     }
 
@@ -245,6 +268,7 @@ int main(int argc, char** argv)
         cerr << ex.what() << endl;
         if (ofs.is_open())
             ofs.close();
+        target.Close();
         return nRetCode;
     } 
     catch(...) 
@@ -252,6 +276,7 @@ int main(int argc, char** argv)
         tcerr << _T("Cannot open connection!") << endl;
         if (ofs.is_open())
             ofs.close();
+        target.Close();
         return -1;
     }
 
@@ -267,6 +292,7 @@ int main(int argc, char** argv)
     {
         if (ofs.is_open())
             ofs.close();
+        target.Close();
         return -1;
     }
 
@@ -282,7 +308,9 @@ int main(int argc, char** argv)
             nRetCode = query.ExecDirect(sql);
 
             if (SQL_SUCCEEDED(nRetCode) && create.length() > 0)
-                ::GenerateCreate(os, query, create);
+            {
+                target.Create(query, create);
+            }
 
             // Even a single statement (or.batch of statements) can have more than one result set.
             // Iterate over all result sets:
@@ -290,20 +318,29 @@ int main(int argc, char** argv)
             {
                 if (rowformat.length() > 0)
                 {
-                    // Iterate over all rows of the curnnt result set and
-                    // apply user-defined rowformat to each row.
-                    ::FormatResultSet(os, query, rowformat);
+                    // ***********************************************************************
+                    // Iterate over the rows of the current result set. 
+                    // If Result set has 0 rows it will skip the loop because nRetCode is set 
+                    // to SQL_NO_DATA immediately
+                    // ***********************************************************************
+                    for (SQLRETURN nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
+                    {
+                        // apply user-defined rowformat to each row.
+                        target.Apply(query.FormatCurrentRow(rowformat));
+                    }
                 }
-                else if (create.length() > 0 || insert.length() > 0)
+                else if (insert.length() > 0)
                 {
                     // Iterate over all rows of the curnnt result set and
-                    // create an insert statement for each row.
-                    ::GenerateInsert(os, query, insert);
+                    // create one insert statement for all rows.
+                    //::GenerateInsert(sstream, query, insert);
+                    // create one insert statement for all rows.
+                    target.InsertAll(query, insert);
                 }
                 else
                 {
                     // Output the complete current result set in standard format.
-                    ::OutputResultSet(os, query, fieldseparator);
+                    target.OutputAsCSV(query, fieldseparator);
                 }
 
                 // there may be more result sets ...
@@ -317,6 +354,7 @@ int main(int argc, char** argv)
             cerr << ex.what() << endl;
             if (ofs.is_open())
                 ofs.close();
+            target.Close();
             return nRetCode;
         }
     }
@@ -416,6 +454,7 @@ int main(int argc, char** argv)
     if (ofs.is_open())
         ofs.close(); // close the output file stream
 
+    target.Close();
     query.Close();
     con.Close();
     
@@ -425,6 +464,7 @@ int main(int argc, char** argv)
     return nRetCode;
 }
 
+/*
 void FormatResultSet(tostream& os, Query& query, const tstring& rowformat)
 {
     // ***********************************************************************
@@ -436,7 +476,7 @@ void FormatResultSet(tostream& os, Query& query, const tstring& rowformat)
         os << query.FormatCurrentRow(rowformat);
     }
 }
-
+*/
 
 void OutputResultSet(tostream& os, Query& query, const tstring& fieldseparator)
 {
@@ -514,6 +554,7 @@ void ListDataSources()
     tcout << endl;
 }
 
+/*
 void GenerateCreate(tostream& os, Query& query, const tstring& tablename)
 {
     if (tablename.length() == 0)
@@ -681,6 +722,7 @@ void GenerateInsert(tostream& os, Query& query, const tstring& tablename)
         os << _T(")") << endl;
     }
 }
+*/
 
 void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt)
 {
