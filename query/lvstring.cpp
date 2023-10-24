@@ -35,6 +35,42 @@ tstring lvstring::Mid(const size_t from, const size_t cnt) const
     return tstring::substr( from, cnt);
 }
 
+tstring& lvstring::MakeLower()
+{
+    for (size_t i = 0; i < length(); i++)
+    {
+        TCHAR& c = at(i);
+        if (c >= 'A' && c <= 'Z')
+            c += 32;
+    }
+
+    return *this;
+}
+
+tstring& lvstring::MakeUpper()
+{
+    for (size_t i = 0; i < length(); i++)
+    {
+        TCHAR& c = at(i);
+        if (c >= 'a' && c <= 'z')
+            c -= 32;
+    }
+
+    return *this;
+}
+
+tstring linguversa::lower(const std::tstring& str)
+{
+    lvstring ret = str;
+    return ret.MakeLower();
+}
+
+tstring linguversa::upper(const std::tstring& str)
+{
+    lvstring ret = str;
+    return ret.MakeUpper();
+}
+
 tstring linguversa::FormatTimeStamp(const tstring& colFmt, const TIMESTAMP_STRUCT* pdt)
 {
     // The value of the fraction field is the number of billionths of a second and ranges from 0 through 999999999 (1 less than 1 billion).
