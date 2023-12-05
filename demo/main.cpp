@@ -77,12 +77,11 @@ int main(int argc, char **argv)
         #ifdef _WIN32
         b = con.Open(
             _T("Driver={SQLite3 ODBC Driver};Database=test.db3;"));// win32
+           //_T("Driver={SQL Server};Server=localhost;Database=test;Trusted_Connection=Yes;"));
         #else
         b = con.Open(
             "Driver=SQLITE3;Database=test.db3;");    // un*x
         #endif
-        //b = con.Open(
-        //_T("Driver={SQL Server};Server=localhost;Database=test;Trusted_Connection=Yes;"));
     }
     catch(DbException& ex)
     {
@@ -246,7 +245,7 @@ int main(int argc, char **argv)
                 query.SetColumnSqlType(4, SQL_BINARY);
                 // END special hack for SQLite
 
-                SQLGUID g = { 0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };				
+                SQLGUID g = { 0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                 query.GetFieldValue(4, g);	// ODBC C type is implicitly set by the parameter of type GUID.
                     
                 tcout << lfnbr << _T("\t") << sName << _T("\t");
