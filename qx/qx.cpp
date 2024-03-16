@@ -790,7 +790,7 @@ void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstr
         {
             connectionstring = string_format(
                 _T("Driver={Microsoft Text Driver (*.txt; *.csv)};Dbq=%s%s;Extensions=asc,csv,tab,txt;"), drv, dir);
-            stmt = string_format(_T("select * from %s;"), filename.c_str());
+            stmt = string_format(_T("select * from [%s];"), filename.c_str());
             return;
         }
 #else
