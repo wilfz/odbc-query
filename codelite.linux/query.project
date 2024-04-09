@@ -8,6 +8,7 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
+    <File Name="../query/target.cpp"/>
     <File Name="../query/datarow.cpp"/>
     <File Name="../query/lvstring.cpp"/>
     <File Name="../query/resultinfo.cpp"/>
@@ -20,6 +21,7 @@
     <File Name="../query/connection.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
+    <File Name="../query/target.h"/>
     <File Name="../query/lvstring.h"/>
     <File Name="../query/tstring.h"/>
     <File Name="../query/resultinfo.h"/>
