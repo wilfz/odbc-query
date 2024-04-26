@@ -2,7 +2,7 @@
 <CodeLite_Workspace Name="odbc-query" Database="" Version="10.0.0">
   <Project Name="demo" Path="demo.project" Active="Yes"/>
   <Project Name="qx" Path="qx.project" Active="No"/>
-  <Project Name="odbcquery" Path="query.project" Active="No"/>
+  <Project Name="odbcquery" Path="odbcquery.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>
