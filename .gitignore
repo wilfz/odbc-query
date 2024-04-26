@@ -34,7 +34,7 @@ Release/
 *.app
 
 # Runtime generated files
-test.db
+test.db*
 
 # CVS
 CVS/

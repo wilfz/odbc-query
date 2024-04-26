@@ -238,6 +238,7 @@ void Target::InsertCurrentRow(Query& query, tstring tablename)
     for (short col = 0; col < colcount; col++)
     {
         DBItem dbitem;
+        lvstring str;
         query.GetFieldValue(col, dbitem);
         switch (dbitem.m_nVarType)
         {
@@ -247,7 +248,10 @@ void Target::InsertCurrentRow(Query& query, tstring tablename)
         case DBItem::lwvt_astring:
         case DBItem::lwvt_wstring:
         case DBItem::lwvt_string:
-            os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
+            str = DBItem::ConvertToString(dbitem);
+            // double ' to '':
+            str.Replace("'", "''");
+            os << _T("'") << str << _T("'");
             break;
         case DBItem::lwvt_guid:
             os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
@@ -309,6 +313,7 @@ void Target::InsertAll(Query& query, const tstring tablename)
         for (short col = 0; col < colcount; col++)
         {
             DBItem dbitem;
+            lvstring str;
             query.GetFieldValue(col, dbitem);
             switch (dbitem.m_nVarType)
             {
@@ -318,7 +323,10 @@ void Target::InsertAll(Query& query, const tstring tablename)
             case DBItem::lwvt_astring:
             case DBItem::lwvt_wstring:
             case DBItem::lwvt_string:
-                os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
+                str = DBItem::ConvertToString(dbitem);
+                // double ' to '':
+                str.Replace("'", "''");
+                os << _T("'") << str << _T("'");
                 break;
             case DBItem::lwvt_guid:
                 os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
