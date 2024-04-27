@@ -194,7 +194,7 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
         DecimalFormat = colFmt;
         //bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
         if (DecimalFormat.length() == 0)
-            DecimalFormat = _T("%0.2f");
+            DecimalFormat = _T("%0.3f");
         sValue = linguversa::string_format( DecimalFormat, var.m_fltVal);
         //if (bNationalDecSep)
         //    sValue.Replace(_T("."),_T(","));
@@ -203,7 +203,7 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
         DecimalFormat = colFmt;
         //bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
         if (DecimalFormat.length() == 0)
-            DecimalFormat = _T("%0.2f");
+            DecimalFormat = _T("%0.6f");
         sValue = linguversa::string_format( DecimalFormat, var.m_dblVal);
         //if (bNationalDecSep)
         //  sValue.Replace(_T("."),_T(","));

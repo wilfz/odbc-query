@@ -239,6 +239,7 @@ void Target::InsertCurrentRow(Query& query, tstring tablename)
     {
         DBItem dbitem;
         lvstring str;
+        FieldInfo fi;
         query.GetFieldValue(col, dbitem);
         switch (dbitem.m_nVarType)
         {
@@ -249,7 +250,7 @@ void Target::InsertCurrentRow(Query& query, tstring tablename)
         case DBItem::lwvt_wstring:
         case DBItem::lwvt_string:
             str = DBItem::ConvertToString(dbitem);
-            // double ' to '':
+            // change ' to '':
             str.Replace("'", "''");
             os << _T("'") << str << _T("'");
             break;
@@ -258,6 +259,15 @@ void Target::InsertCurrentRow(Query& query, tstring tablename)
             break;
         case DBItem::lwvt_date:
             os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
+            break;
+        case DBItem::lwvt_single:
+        case DBItem::lwvt_double:
+            // don't omit decimal places
+            query.GetODBCFieldInfo(col, fi);
+            if (fi.m_nSQLType == SQL_NUMERIC || fi.m_nSQLType == SQL_DECIMAL)
+                os << DBItem::ConvertToString(dbitem, fi.GetDefaultFormat());
+            else
+                os << DBItem::ConvertToString(dbitem);
             break;
         default:
             os << DBItem::ConvertToString(dbitem);
@@ -314,6 +324,7 @@ void Target::InsertAll(Query& query, const tstring tablename)
         {
             DBItem dbitem;
             lvstring str;
+            FieldInfo fi;
             query.GetFieldValue(col, dbitem);
             switch (dbitem.m_nVarType)
             {
@@ -324,7 +335,7 @@ void Target::InsertAll(Query& query, const tstring tablename)
             case DBItem::lwvt_wstring:
             case DBItem::lwvt_string:
                 str = DBItem::ConvertToString(dbitem);
-                // double ' to '':
+                // change ' to '':
                 str.Replace("'", "''");
                 os << _T("'") << str << _T("'");
                 break;
@@ -333,6 +344,15 @@ void Target::InsertAll(Query& query, const tstring tablename)
                 break;
             case DBItem::lwvt_date:
                 os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
+                break;
+            case DBItem::lwvt_single:
+            case DBItem::lwvt_double:
+                // don't omit decimal places
+                query.GetODBCFieldInfo(col, fi);
+                if (fi.m_nSQLType == SQL_NUMERIC || fi.m_nSQLType == SQL_DECIMAL)
+                    os << DBItem::ConvertToString(dbitem, fi.GetDefaultFormat());
+                else
+                    os << DBItem::ConvertToString(dbitem);
                 break;
             default:
                 os << DBItem::ConvertToString(dbitem);
