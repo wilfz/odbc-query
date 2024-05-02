@@ -251,7 +251,7 @@ void Target::InsertCurrentRow(Query& query, tstring tablename)
         case DBItem::lwvt_string:
             str = DBItem::ConvertToString(dbitem);
             // change ' to '':
-            str.Replace("'", "''");
+            str.Replace(_T("'"), _T("''"));
             os << _T("'") << str << _T("'");
             break;
         case DBItem::lwvt_guid:
@@ -336,7 +336,7 @@ void Target::InsertAll(Query& query, const tstring tablename)
             case DBItem::lwvt_string:
                 str = DBItem::ConvertToString(dbitem);
                 // change ' to '':
-                str.Replace("'", "''");
+                str.Replace(_T("'"), _T("''"));
                 os << _T("'") << str << _T("'");
                 break;
             case DBItem::lwvt_guid:
