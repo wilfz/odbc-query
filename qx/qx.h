@@ -44,7 +44,7 @@
 
 #else
 // Non-Windows PLatforms
-#include "CLI11.hpp"
+#include "external/CLI11.hpp"
 
 #define tcout cout
 #define tcerr cerr

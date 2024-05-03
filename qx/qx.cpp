@@ -13,6 +13,17 @@
 #include "../query/odbcenvironment.h"
 #include "../query/lvstring.h"
 #include "../query/target.h"
+#ifndef UNICODE
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4244 )
+#endif
+#include "external/csv.hpp"
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
+#endif
+
 #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
 #include <filesystem>
 #endif
@@ -39,6 +50,7 @@ int main(int argc, char** argv)
     tstring dirpath;
     tstring dbasedir;
     tstring sqlite3;
+    tstring csvfile;
     tstring config;
     tstring fieldseparator = _T("\t");
     tstring rowformat;
@@ -60,6 +72,10 @@ int main(int argc, char** argv)
     app.add_option("--sourcepath", sourcepath, "path of a textfile or database directory")
         ->excludes("--source")
         ->check(CLI::ExistingPath | CLI::Validator(validateSqliteFilename, "*.sqlite or *.db3"));
+#ifndef UNICODE
+    app.add_option("--csvfile", csvfile, "path of a character separated file")
+        ->check(CLI::ExistingPath);
+#endif
     app.add_option("--config", config, "template in qx.ini for file description in schema.ini-format");
     app.add_option("--sqlite3", sqlite3, "path of a sqlite3 database file")
         ->excludes("--source")->excludes("--sourcepath");
@@ -87,6 +103,7 @@ int main(int argc, char** argv)
         #ifdef UNICODE
         app.parse(CLI::argc(), CLI::argv());
         #else
+        //argv = app.ensure_utf8(argv);
         app.parse(argc, argv);
         #endif
     } catch(const CLI::ParseError& e) {
@@ -223,7 +240,7 @@ int main(int argc, char** argv)
         os << endl;
     }
 
-    if (connectionstring.length() == 0 && sqlcmd.size() == 0)
+    if (csvfile.length() == 0 && connectionstring.length() == 0 && sqlcmd.size() == 0)
     {
         if (rowformat.length() > 0)
             os << "Format: " << rowformat << endl;
@@ -249,6 +266,51 @@ int main(int argc, char** argv)
     s.Replace(_T("\\n"), _T("\n"));
     s.Replace(_T("\\t"), _T("\t"));
     fieldseparator = s;
+
+#ifndef UNICODE
+    if (csvfile.length() > 0)
+    {
+        csv::CSVReader reader(csvfile);
+        for (csv::CSVRow& row : reader) // Input iterator
+        {
+            if (rowformat.length() > 0)
+            {
+                // ***********************************************************************
+                // Iterate over the rows of the current result set. 
+                // If Result set has 0 rows it will skip the loop because nRetCode is set 
+                // to SQL_NO_DATA immediately
+                // ***********************************************************************
+                //for (SQLRETURN nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
+                //{
+                //    // apply user-defined rowformat to each row.
+                //    target.Apply(query.FormatCurrentRow(rowformat));
+                //}
+            }
+            else if (insert.length() > 0)
+            {
+                // Iterate over all rows of the curnnt result set and
+                // create one insert statement for all rows.
+                //::GenerateInsert(sstream, query, insert);
+                // create one insert statement for all rows.
+                //target.InsertAll(query, insert);
+            }
+            else
+            {
+                for (csv::CSVField& field : row)
+                {
+                    // By default, get<>() produces a std::string.
+                    // A more efficient get<string_view>() is also available, where the resulting
+                    // string_view is valid as long as the parent CSVRow is alive
+                    std::cout << field.get<>() << fieldseparator;
+                }
+            }
+            std::cout << endl;
+        }
+
+        if (connectionstring.length() == 0)
+            return 0;
+    }
+#endif
 
     // now open a real connection as specified by connectionstring
     bool b = false;
