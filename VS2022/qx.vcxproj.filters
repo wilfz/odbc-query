@@ -15,12 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\qx\CLI11.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\qx\SimpleIni.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\query\connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -1,7 +1,7 @@
 # command line executable qx
 include(FindODBC)
 
-set(qxSrcs CLI11.hpp SimpleIni.h qx.h qx.cpp)
+set(qxSrcs qx.h qx.cpp)
 if (MSVC)
 set_source_files_properties(qx.cpp PROPERTIES 
     COMPILE_DEFINITIONS _SCL_SECURE_NO_WARNINGS
