@@ -13,11 +13,6 @@
 #define FILENO _fileno
 
 #ifdef UNICODE
-// The following header has been locally build from https://github.com/CLIUtils/CLI11
-// because the latest release of CLI11 does not yet supprt wstring unicode.
-// Probably it can be replaced by the official CLI11.hpp of the next release.
-#include "CLI11wu.hpp"
-
 #define tcout wcout
 #define tcerr wcerr
 #define tcin wcin
@@ -27,7 +22,6 @@
 #define tistream wistream
 #define tifstream wifstream
 #else
-#include "CLI11.hpp"
 #define tcout cout
 #define tcerr cerr
 #define tcin cin
@@ -44,8 +38,6 @@
 
 #else
 // Non-Windows PLatforms
-#include "external/CLI11.hpp"
-
 #define tcout cout
 #define tcerr cerr
 #define tcin cin

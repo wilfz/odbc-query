@@ -8,7 +8,8 @@
 #include <sys/stat.h>
 #include <exception>
 #include <cassert>
-#include "SimpleIni.h"
+#include "external/CLI11.hpp"
+#include "external/SimpleIni.h"
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
 #include "../query/lvstring.h"
@@ -68,7 +69,8 @@ int main(int argc, char** argv)
     app.add_flag("-v,--verbose", verbose, "verbose output");
     app.add_flag("--listdrivers", listdrivers, "list installed ODBC drivers");
     app.add_flag("--listdsn", listdsn, "list ODBC data sources");
-    app.add_option("-s,--source", connectionstring, "ODBC connection string");
+    app.add_option("-s,--source", connectionstring, "ODBC connection string")
+        ->envname("QXCONNECTION");
     app.add_option("--sourcepath", sourcepath, "path of a textfile or database directory")
         ->excludes("--source")
         ->check(CLI::ExistingPath | CLI::Validator(validateSqliteFilename, "*.sqlite or *.db3"));
@@ -98,14 +100,8 @@ int main(int argc, char** argv)
     app.add_option("sqlcmd", sqlcmd, "SQL-statement(s) (each enclosed in \"\" and space-separated)");
 
     try {
-        // This distinction is only preliminary. After release of CLI11 with widestring unicode support 
-        // we will always use CLI::argc() and CLI::argv()
-        #ifdef UNICODE
-        app.parse(CLI::argc(), CLI::argv());
-        #else
-        //argv = app.ensure_utf8(argv);
+        argv = app.ensure_utf8(argv);
         app.parse(argc, argv);
-        #endif
     } catch(const CLI::ParseError& e) {
         return app.exit(e);
     }
@@ -193,25 +189,6 @@ int main(int argc, char** argv)
     // 1. as option --source on the command line
     
     // 2. in environment variable QXCONNECTION
-    if (connectionstring.length() == 0)
-    {
-        #ifdef _MSC_VER
-        #pragma warning(suppress : 4996)
-        #endif
-        const TCHAR* cs = ::_tgetenv(_T("QXCONNECTION"));
-        if (cs)
-            connectionstring.assign(cs);
-    }
-
-    if (connectionstring.length() == 0)
-    {
-        #ifdef _MSC_VER
-        #pragma warning(suppress : 4996)
-        #endif
-        const TCHAR* cs = ::_tgetenv(_T("QEXCONNECTION"));
-        if (cs)
-            connectionstring.assign(cs);
-    }
 
     // 3. as value ConnectionString in qx.ini
     if (connectionstring.length() == 0)
@@ -273,6 +250,7 @@ int main(int argc, char** argv)
         csv::CSVReader reader(csvfile);
         for (csv::CSVRow& row : reader) // Input iterator
         {
+            // TODO:
             if (rowformat.length() > 0)
             {
                 // ***********************************************************************
