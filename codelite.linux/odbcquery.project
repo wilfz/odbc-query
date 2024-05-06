@@ -1,38 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Project Name="qx" Version="10.0.0" InternalType="Console">
+<CodeLite_Project Name="odbcquery" Version="10.0.0" InternalType="Library">
   <Plugins>
     <Plugin Name="qmake">
       <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
     </Plugin>
   </Plugins>
-  <VirtualDirectory Name="include">
-    <File Name="../qx/external/SimpleIni.h"/>
-    <File Name="../qx/external/CLI11.hpp"/>
-    <File Name="../qx/qx.h"/>
-    <File Name="../../query/connection.h"/>
-    <File Name="../query/tstring.h"/>
-    <File Name="../query/datarow.h"/>
-    <File Name="../query/odbcenvironment.h"/>
-    <File Name="../query/odbcexception.h"/>
-    <File Name="../query/paramitem.h"/>
-    <File Name="../query/paraminfo.h"/>
-    <File Name="../query/query.h"/>
-    <File Name="../query/dbitem.h"/>
-    <File Name="../query/fieldinfo.h"/>
-    <File Name="../query/resultinfo.h"/>
-  </VirtualDirectory>
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
-    <File Name="../qx/qx.cpp"/>
+    <File Name="../query/target.cpp"/>
+    <File Name="../query/datarow.cpp"/>
+    <File Name="../query/lvstring.cpp"/>
+    <File Name="../query/resultinfo.cpp"/>
+    <File Name="../query/query.cpp"/>
+    <File Name="../query/paramitem.cpp"/>
+    <File Name="../query/odbcexception.cpp"/>
+    <File Name="../query/odbcenvironment.cpp"/>
+    <File Name="../query/fieldinfo.cpp"/>
+    <File Name="../query/dbitem.cpp"/>
+    <File Name="../query/connection.cpp"/>
   </VirtualDirectory>
-  <Dependencies Name="Release">
-    <Project Name="odbcquery"/>
-  </Dependencies>
-  <Dependencies Name="Debug">
-    <Project Name="odbcquery"/>
-  </Dependencies>
-  <Settings Type="Executable">
+  <VirtualDirectory Name="include">
+    <File Name="../query/target.h"/>
+    <File Name="../query/lvstring.h"/>
+    <File Name="../query/tstring.h"/>
+    <File Name="../query/resultinfo.h"/>
+    <File Name="../query/query.h"/>
+    <File Name="../query/paramitem.h"/>
+    <File Name="../query/paraminfo.h"/>
+    <File Name="../query/odbcexception.h"/>
+    <File Name="../query/odbcenvironment.h"/>
+    <File Name="../query/fieldinfo.h"/>
+    <File Name="../query/dbitem.h"/>
+    <File Name="../query/datarow.h"/>
+    <File Name="../query/connection.h"/>
+  </VirtualDirectory>
+  <Settings Type="Static Library">
     <GlobalSettings>
       <Compiler Options="" C_Options="" Assembler="">
         <IncludePath Value="."/>
@@ -42,23 +45,18 @@
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
-    <Configuration Name="Debug" CompilerType="GCC" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-g;-O0;-Wall" C_Options="-g;-O0;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+    <Configuration Name="Debug" CompilerType="GCC" DebuggerType="GNU gdb debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-g;-O2;-Wall" C_Options="-g;-O2;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
       </Compiler>
-      <Linker Options="" Required="yes">
-        <LibraryPath Value="Debug"/>
-        <Library Value="odbcquery"/>
-        <Library Value="libodbc.so"/>
-        <Library Value="libpthread.so"/>
-      </Linker>
+      <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="-v --listdrivers --listdsn -s&quot;Driver=Sqlite3;database=test.db&quot; &quot;select * from person;&quot;" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(IntermediateDirectory)/lib$(ProjectName).a" IntermediateDirectory="./Debug" Command="" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
-      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="yes">
         <DebuggerSearchPaths/>
         <PostConnectCommands/>
         <StartupCommands/>
@@ -72,7 +70,7 @@
         <PreprocessFileCommand/>
         <SingleFileCommand/>
         <MakefileGenerationCommand/>
-        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <ThirdPartyToolName/>
         <WorkingDirectory/>
       </CustomBuild>
       <AdditionalRules>
@@ -86,19 +84,13 @@
         <SearchPaths/>
       </Completion>
     </Configuration>
-    <Configuration Name="Release" CompilerType="GCC" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+    <Configuration Name="Release" CompilerType="GCC" DebuggerType="GNU gdb debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-O2;-Wall" C_Options="-O2;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
-        <Preprocessor Value="NDEBUG"/>
       </Compiler>
-      <Linker Options="" Required="yes">
-        <LibraryPath Value="Release"/>
-        <Library Value="odbcquery"/>
-        <Library Value="libodbc.so"/>
-        <Library Value="libpthread.so"/>
-      </Linker>
+      <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Release" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(IntermediateDirectory)/lib$(ProjectName).a" IntermediateDirectory="./Release" Command="" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
@@ -117,7 +109,7 @@
         <PreprocessFileCommand/>
         <SingleFileCommand/>
         <MakefileGenerationCommand/>
-        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <ThirdPartyToolName/>
         <WorkingDirectory/>
       </CustomBuild>
       <AdditionalRules>
