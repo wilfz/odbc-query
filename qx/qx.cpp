@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <exception>
 #include <cassert>
+#include "CLI11.hpp"
 #include "SimpleIni.h"
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
@@ -23,7 +24,7 @@ using namespace CLI;
 
 //forward declarations
 void ListDrivers();
-void ListDataSources();
+void ListDataSources(tstring drivername = _T(""));
 void OutputResultSet(tostream& os, Query& query, const tstring& fieldseparator);
 void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt);
 void ConfigToSchema(tstring filepath, tstring configname);
@@ -84,11 +85,13 @@ int main(int argc, char** argv)
     try {
         // This distinction is only preliminary. After release of CLI11 with widestring unicode support 
         // we will always use CLI::argc() and CLI::argv()
-        #ifdef UNICODE
-        app.parse(CLI::argc(), CLI::argv());
-        #else
+        //#ifdef UNICODE
+        //app.parse(CLI::argc(), CLI::argv());
+        //#else
+        //app.parse(argc, argv);
+        //#endif
+        argv = app.ensure_utf8(argv);
         app.parse(argc, argv);
-        #endif
     } catch(const CLI::ParseError& e) {
         return app.exit(e);
     }
@@ -538,7 +541,7 @@ void ListDrivers()
     tcout << endl;
 }
 
-void ListDataSources()
+void ListDataSources(tstring drivername)
 {
     tcout << "ODBC data sources:" << endl;
 
