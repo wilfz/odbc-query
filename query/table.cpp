@@ -166,7 +166,8 @@ SQLRETURN Table::LoadTableInfo(tstring tablename)
     for (nRetCode = SQLFetch(m_hstmt); SQL_SUCCEEDED(nRetCode); nRetCode = SQLFetch(m_hstmt))
     {
         // fill vector _columnInfo with TableColumnInfo for each column
-        _columnInfo.resize(col+1);
+        if (col >= _columnInfo.size())
+            _columnInfo.resize(col+10); // only increase vector size in reasonable steps
         // SQL_NO_TOTAL, SQL_NULL_DATA are < 0
         szColumnName[cbColumnName > 0 ? cbColumnName : 0] = _T('\0');
         _columnInfo[col].ColumnName.assign((TCHAR*)szColumnName);
@@ -176,6 +177,9 @@ SQLRETURN Table::LoadTableInfo(tstring tablename)
         _columnInfo[col].SQLDataType = SQLDataType;
         col++;
     }
+
+    // probably we increased vector size a bit too much, decrease to the real number of columns
+    _columnInfo.resize(col);
 
     if (nRetCode == SQL_NO_DATA)
         nRetCode = SQL_SUCCESS;
