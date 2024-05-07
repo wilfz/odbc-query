@@ -155,6 +155,7 @@
     <ClInclude Include="..\query\query.h" />
     <ClInclude Include="..\query\resultinfo.h" />
     <ClInclude Include="..\query\resultstream.h" />
+    <ClInclude Include="..\query\table.h" />
     <ClInclude Include="..\query\tstring.h" />
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +171,7 @@
     <ClCompile Include="..\query\query.cpp" />
     <ClCompile Include="..\query\resultinfo.cpp" />
     <ClCompile Include="..\query\resultstream.cpp" />
+    <ClCompile Include="..\query\table.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

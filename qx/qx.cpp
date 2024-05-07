@@ -584,9 +584,9 @@ void ListDataSources(tstring drivername)
 
     ODBCEnvironment environment;
     tstring dsn;
-    tstring drivername;
+    tstring currentdrivername;
     for (SQLRETURN nRetCode = environment.FetchDataSourceInfo(dsn, drivername, SQL_FETCH_FIRST); SQL_SUCCEEDED(nRetCode);
-        nRetCode = environment.FetchDataSourceInfo(dsn, drivername))
+        nRetCode = environment.FetchDataSourceInfo(dsn, currentdrivername))
     {
         tcout << dsn << _T("|") << drivername << endl;
     }
