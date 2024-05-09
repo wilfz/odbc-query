@@ -52,8 +52,8 @@ int main(int argc, char** argv)
     tstring dbasedir;
     tstring sqlite3;
     tstring csvfile;
-    TCHAR csvdelimiter;
-    TCHAR csvdecimalsymbol;
+    TCHAR csvdelimiter = _T('\0');
+    TCHAR csvdecimalsymbol = _T('\0');
     vector<tstring> csvcolumns;
     tstring config;
     tstring fieldseparator = _T("\t");
@@ -258,49 +258,66 @@ int main(int argc, char** argv)
     {
     	vector<tstring> csvcolnames;
         vector<SWORD> csvcoltypes;
-        csvcolnames.resize(10);
-        csvcoltypes.resize(10);
+        csvcolnames.resize(csvcolumns.size());
+        csvcoltypes.resize(csvcolumns.size());
         
         // get column names and types from commandline parameter csvcolnames
         for (size_t i = 0; i < csvcolumns.size(); i++)
         {
-            if (i >= csvcolnames.size())
-                csvcolnames.resize(i + 10);
-            if (i >= csvcoltypes.size())
-                csvcoltypes.resize(i + 10);
+            //if (i >= csvcolnames.size())
+            //    csvcolnames.resize(i + 10);
+            //if (i >= csvcoltypes.size())
+            //    csvcoltypes.resize(i + 10);
             tstring& column = csvcolumns[i];
             // separate column name and column tyoe (if present) from each oither
             size_t ln = column.find_first_not_of(_T(" \n\r\t")); // left pos of colname
             size_t rt = column.find_last_not_of(_T(" \n\r\t")); // right pos of coltype
             size_t lt = rt;
             // if column is not only whitespace there might be a whitespace separator between colname and coltype
-            if (ln != tstring::npos && rt != tstring::npos)
-                lt = column.find_last_not_of(_T(" \n\r\t"), column.length() - rt);
-            if (ln < lt && lt <= rt) // we have column name and column type, separated with at least one whitspace character
+            if (ln < rt && ln != tstring::npos && rt != tstring::npos)
+                lt = column.find_last_of(_T(" \n\r\t"), rt);
+            if (ln < lt && lt < rt) // we have column name and column type, separated with at least one whitspace character
             {
+                lt++;
                 lvstring coltype = column.substr(lt, rt - lt + 1);
-                if (coltype.MakeLower() == _T("decimal"))
+                if (coltype.MakeLower() == _T("integer") || coltype.MakeLower() == _T("int"))
+                    csvcoltypes[i] = SQL_INTEGER;
+                else if (coltype.MakeLower() == _T("decimal"))
                     csvcoltypes[i] = SQL_DECIMAL;
+                else if (coltype.MakeLower() == _T("double"))
+                    csvcoltypes[i] = SQL_DOUBLE;
                 else if (coltype.MakeLower() == _T("string"))
                     csvcoltypes[i] = SQL_VARCHAR;
+                else
+                    csvcoltypes[i] = SQL_UNKNOWN_TYPE;
                 csvcolnames[i] = column.substr(ln, column.find_last_not_of(_T(" \n\r\t"), lt - 1 - ln));
             }
-            else if (ln <= rt) // we have only column name, coltype is emtpty and defaults to string
+            else if (ln <= rt && rt != tstring::npos) // we have only column name, coltype is emtpty and defaults to string
             {
                 csvcolnames[i] = column.substr(ln, rt - ln + 1);
+                csvcoltypes[i] = SQL_UNKNOWN_TYPE;
             }
         }
 
         csv::CSVFormat format;
+        format.variable_columns(csv::VariableColumnPolicy::KEEP);
+        //vector<TCHAR> csvdelimiters = { _T('\t'), _T(';'), _T('|'), _T(',') };
         if (csvdelimiter != 0)
             format.delimiter(csvdelimiter);
+        else
+            format.delimiter( { _T('\t'), _T(';'), _T('|'), _T(',') } );
+            //format.guess_delim();
+
         if (csvcolnames.size() > 0)
             format.column_names(csvcolnames);
         // .quote('~')
-        // .header_row(2);   // Header is on 3rd row (zero-indexed)
-        // .no_header();  // Parse CSVs without a header row
-        // .quote(false); // Turn off quoting 
+        // .header_row(2); // Header is on 3rd row (zero-indexed)
+        // .no_header();   // Parse CSVs without a header row
+        // .quote(false);  // Turn off quoting 
         csv::CSVReader reader(csvfile, format);
+        csvcolnames = reader.get_col_names();
+        csv::CSVFormat actualformat = reader.get_format();
+        bool bFirstRow = true;
         for (csv::CSVRow& row : reader) // Input iterator
         {
             // TODO:
@@ -323,10 +340,96 @@ int main(int argc, char** argv)
                 // create one insert statement for all rows.
                 //::GenerateInsert(sstream, query, insert);
                 // create one insert statement for all rows.
-                //target.InsertAll(query, insert);
+                if (bFirstRow)
+                {
+                    os << ::string_format(_T("insert into [%01s]( "), insert.c_str());
+                    // ***********************************************************************
+                    // Retrieve meta information on the columns of the result set.
+                    // ***********************************************************************
+                    for (size_t col = 0; col < csvcolnames.size(); col++)
+                    {
+                        os << csvcolnames[col];
+                        if (col < csvcolnames.size() - 1)
+                            os << _T(", ");
+                    }
+                    os << _T(")") << endl;
+                    os << _T("select ");
+                }
+                else
+                {
+                    os << endl << _T("union all") << endl << _T("select ");
+                }
+
+                size_t col = 0;
+                for (csv::CSVField& field : row)
+                {
+                    if (col >= csvcolnames.size())
+                        break;
+                    csv::DataType csvtype;
+                    tstring val;
+                    SWORD coltype = SQL_UNKNOWN_TYPE;
+                    if (col < csvcoltypes.size())
+                        coltype = csvcoltypes[col];
+                    switch (coltype)
+                    {
+                    case SQL_INTEGER:
+                        csvtype = field.type();
+                        assert(csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_INT64);
+                        os << (csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_INT64 ? field.get<>() : _T("NULL"));
+                        break;
+                    case SQL_DECIMAL:
+                        val = field.get<>();
+                        //TODO: syntax check
+                        if (csvdecimalsymbol != '\0' && csvdecimalsymbol != '.')
+                        {
+                            for (size_t i = 0; i < val.length(); i++)
+                                if (val[i] == csvdecimalsymbol)
+                                    val[i] = '.';
+                        }
+                        os << (val.length() > 0 ? val : _T("NULL"));
+                        break;
+                    case SQL_DOUBLE:
+                        val = field.get<>();
+                        //TODO: syntax check
+                        if (csvdecimalsymbol != '\0' && csvdecimalsymbol != '.')
+                        {
+                            for (size_t i = 0; i < val.length(); i++)
+                                if (val[i] == csvdecimalsymbol)
+                                    val[i] = '.';
+                        }
+                        if (val.length() > 0)
+                            os << atof(val.c_str());
+                        else
+                            os << _T("NULL");
+                        break;
+                    case SQL_VARCHAR:
+                    case SQL_UNKNOWN_TYPE:
+                    default:
+                        val = field.get<>();
+                        os << _T('\"') << val << _T('\"');
+                        break;
+                    }
+                    if (col++ < csvcolnames.size() - 1)
+                        os << _T(", ");
+                }
+                while (col < csvcolnames.size())
+                {
+                    os << _T("NULL");
+                    if (col++ < csvcolnames.size() - 1)
+                        os << _T(", ");
+                }
+                
             }
             else
             {
+                // header row
+                if (bFirstRow)
+                {
+                    for (size_t col = 0; col < csvcolnames.size(); col++)
+                        std::cout << csvcolnames[col] << fieldseparator;
+                    std::cout << endl;
+                }
+                // value rows
                 for (csv::CSVField& field : row)
                 {
                     // By default, get<>() produces a std::string.
@@ -335,8 +438,9 @@ int main(int argc, char** argv)
                     //field.type();
                     std::cout << field.get<>() << fieldseparator;
                 }
+                std::cout << endl;
             }
-            std::cout << endl;
+            bFirstRow = false;
         }
 
         if (connectionstring.length() == 0)
