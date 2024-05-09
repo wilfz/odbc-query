@@ -20,6 +20,12 @@ Connection::Connection()
         retcode = SQLSetEnvAttr(m_henv, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
         if (! SQL_SUCCEEDED(retcode)) 
             throw DbException( retcode, SQL_HANDLE_ENV, m_henv);
+
+        // SQL_ATTR_METADATA_ID: The default value is SQL_FALSE.
+        // The arguments of catalog functions can either contain a string search pattern or not, depending on the argument. 
+        // Case is significant.
+        // SQL_ATTR_METADATA_ID can also be set on the statement level. 
+        // (It is the only connection attribute that is also a statement attribute.)
     }
     
     if (m_henv != SQL_NULL_HENV)

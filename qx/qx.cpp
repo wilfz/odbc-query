@@ -35,7 +35,7 @@ using namespace CLI;
 
 //forward declarations
 void ListDrivers();
-void ListDataSources();
+void ListDataSources(tstring drivername = _T(""));
 void OutputResultSet(tostream& os, Query& query, const tstring& fieldseparator);
 void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt);
 void ConfigToSchema(tstring filepath, tstring configname);
@@ -736,15 +736,15 @@ void ListDrivers()
     tcout << endl;
 }
 
-void ListDataSources()
+void ListDataSources(tstring drivername)
 {
     tcout << "ODBC data sources:" << endl;
 
     ODBCEnvironment environment;
     tstring dsn;
-    tstring drivername;
+    tstring currentdrivername;
     for (SQLRETURN nRetCode = environment.FetchDataSourceInfo(dsn, drivername, SQL_FETCH_FIRST); SQL_SUCCEEDED(nRetCode);
-        nRetCode = environment.FetchDataSourceInfo(dsn, drivername))
+        nRetCode = environment.FetchDataSourceInfo(dsn, currentdrivername))
     {
         tcout << dsn << _T("|") << drivername << endl;
     }

@@ -253,7 +253,7 @@ protected:
     HSTMT m_hstmt;
     ResultInfo m_FieldInfo;
     vector<ParamItem*> m_ParamItem;
-    // If true map named params to the corresponding postional parameter,
+    // If true map named params to the corresponding positional parameter,
     // otherwise append at the end of m_ParamItem regardless of ordinal position in signature.
     bool m_ParamInitComplete;
 

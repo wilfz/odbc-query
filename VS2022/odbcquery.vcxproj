@@ -162,6 +162,7 @@
     <ClInclude Include="..\query\paramitem.h" />
     <ClInclude Include="..\query\query.h" />
     <ClInclude Include="..\query\resultinfo.h" />
+    <ClInclude Include="..\query\table.h" />
     <ClInclude Include="..\query\target.h" />
     <ClInclude Include="..\query\tstring.h" />
   </ItemGroup>
@@ -176,6 +177,7 @@
     <ClCompile Include="..\query\paramitem.cpp" />
     <ClCompile Include="..\query\query.cpp" />
     <ClCompile Include="..\query\resultinfo.cpp" />
+    <ClCompile Include="..\query\table.cpp" />
     <ClCompile Include="..\query\target.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
