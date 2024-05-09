@@ -60,6 +60,7 @@ codelite.windows/.build-release/
 # Visual Studio files
 .vs
 *.vcxproj.user
+VS2015/
 
 # Backup files
 *.bkp

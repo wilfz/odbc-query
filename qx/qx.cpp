@@ -52,6 +52,9 @@ int main(int argc, char** argv)
     tstring dbasedir;
     tstring sqlite3;
     tstring csvfile;
+    TCHAR csvdelimiter;
+    TCHAR csvdecimalsymbol;
+    vector<tstring> csvcolumns;
     tstring config;
     tstring fieldseparator = _T("\t");
     tstring rowformat;
@@ -77,6 +80,12 @@ int main(int argc, char** argv)
 #ifndef UNICODE
     app.add_option("--csvfile", csvfile, "path of a character separated file")
         ->check(CLI::ExistingPath);
+    app.add_option("--csvdelimiter", csvdelimiter, "column delimiter in csv file")
+        ->needs("--csvfile");
+    app.add_option("--csvdecimalsymbol", csvdecimalsymbol, "decimal symbol in csv file")
+        ->needs("--csvfile");
+    app.add_option("--csvcolumns", csvcolumns, "csv column names and types")
+        ->needs("--csvfile");
 #endif
     app.add_option("--config", config, "template in qx.ini for file description in schema.ini-format");
     app.add_option("--sqlite3", sqlite3, "path of a sqlite3 database file")
@@ -247,7 +256,51 @@ int main(int argc, char** argv)
 #ifndef UNICODE
     if (csvfile.length() > 0)
     {
-        csv::CSVReader reader(csvfile);
+    	vector<tstring> csvcolnames;
+        vector<SWORD> csvcoltypes;
+        csvcolnames.resize(10);
+        csvcoltypes.resize(10);
+        
+        // get column names and types from commandline parameter csvcolnames
+        for (size_t i = 0; i < csvcolumns.size(); i++)
+        {
+            if (i >= csvcolnames.size())
+                csvcolnames.resize(i + 10);
+            if (i >= csvcoltypes.size())
+                csvcoltypes.resize(i + 10);
+            tstring& column = csvcolumns[i];
+            // separate column name and column tyoe (if present) from each oither
+            size_t ln = column.find_first_not_of(_T(" \n\r\t")); // left pos of colname
+            size_t rt = column.find_last_not_of(_T(" \n\r\t")); // right pos of coltype
+            size_t lt = rt;
+            // if column is not only whitespace there might be a whitespace separator between colname and coltype
+            if (ln != tstring::npos && rt != tstring::npos)
+                lt = column.find_last_not_of(_T(" \n\r\t"), column.length() - rt);
+            if (ln < lt && lt <= rt) // we have column name and column type, separated with at least one whitspace character
+            {
+                lvstring coltype = column.substr(lt, rt - lt + 1);
+                if (coltype.MakeLower() == _T("decimal"))
+                    csvcoltypes[i] = SQL_DECIMAL;
+                else if (coltype.MakeLower() == _T("string"))
+                    csvcoltypes[i] = SQL_VARCHAR;
+                csvcolnames[i] = column.substr(ln, column.find_last_not_of(_T(" \n\r\t"), lt - 1 - ln));
+            }
+            else if (ln <= rt) // we have only column name, coltype is emtpty and defaults to string
+            {
+                csvcolnames[i] = column.substr(ln, rt - ln + 1);
+            }
+        }
+
+        csv::CSVFormat format;
+        if (csvdelimiter != 0)
+            format.delimiter(csvdelimiter);
+        if (csvcolnames.size() > 0)
+            format.column_names(csvcolnames);
+        // .quote('~')
+        // .header_row(2);   // Header is on 3rd row (zero-indexed)
+        // .no_header();  // Parse CSVs without a header row
+        // .quote(false); // Turn off quoting 
+        csv::CSVReader reader(csvfile, format);
         for (csv::CSVRow& row : reader) // Input iterator
         {
             // TODO:
@@ -279,6 +332,7 @@ int main(int argc, char** argv)
                     // By default, get<>() produces a std::string.
                     // A more efficient get<string_view>() is also available, where the resulting
                     // string_view is valid as long as the parent CSVRow is alive
+                    //field.type();
                     std::cout << field.get<>() << fieldseparator;
                 }
             }

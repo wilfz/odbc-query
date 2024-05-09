@@ -54,6 +54,9 @@
     <ClInclude Include="..\query\target.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\qx\external\csv.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\qx\qx.cpp">
