@@ -39,11 +39,13 @@ std::ostream& linguversa::operator<<(std::ostream& ar, const DBItem& item)
         ar << (item.m_pdate ? item.m_pdate->fraction : (SQLUINTEGER)0);
         break;
     case DBItem::lwvt_string:
+        #ifndef UNICODE
         ar << (item.m_pstring ? *item.m_pstring : (tstring)_T(""));
+        #endif
         break;
-        //case DBItem::lwvt_wstring:
-        //    ar << (item.m_pstringw ? item.m_pstringw->c_str() : L"");
-        //    break;
+    //case DBItem::lwvt_wstring:
+    //    ar << (item.m_pstringw ? *item.m_pstringw : (wstring)L"");
+    //    break;
     case DBItem::lwvt_astring:
         ar << (item.m_pstringa ? *item.m_pstringa : (string)"");
         break;
@@ -120,15 +122,17 @@ std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
         ar >> var.m_pdate->fraction;
         break;
     case DBItem::lwvt_string:
+        #ifndef UNICODE
         if (var.m_pstring == nullptr || var.m_nVarType != vt)
             var.m_pstring = new tstring();
         ar >> (*var.m_pstring);
+        #endif
         break;
-    case DBItem::lwvt_wstring:
-        //if (var.m_pstringw == nullptr || var.m_nCType != vt)
-        //    var.m_pstringw = new wstring();
-        //ar >> (*var.m_pstringw);
-        break;
+    //case DBItem::lwvt_wstring:
+    //    if (var.m_pstringw == nullptr || var.m_nCType != vt)
+    //        var.m_pstringw = new wstring();
+    //    ar >> (*var.m_pstringw);
+    //    break;
     case DBItem::lwvt_astring:
         if (var.m_pstringa == nullptr || var.m_nVarType != vt)
             var.m_pstringa = new string();
@@ -196,5 +200,24 @@ std::ostream& linguversa::operator<<(std::ostream& ar, const FieldInfo& info)
 std::istream& linguversa::operator>>(std::istream& ar, FieldInfo& info)
 {
     ar >> info.m_nCType >> info.m_strName >> info.m_nSQLType >> info.m_nPrecision >> info.m_nScale >> info.m_nNullability;
+    return ar;
+}
+
+std::ostream& linguversa::operator<<(std::ostream& ar, const ResultInfo& resultinfo)
+{
+    size_t colcount = resultinfo.size();
+    ar << colcount;
+    for (size_t i = 0; i < colcount; i++)
+        ar << resultinfo[i];
+    return ar;
+}
+
+std::istream& linguversa::operator>>(std::istream& ar, ResultInfo& resultinfo)
+{
+    size_t colcount = 0;
+    ar >> colcount;
+    resultinfo.resize(colcount);
+    for (size_t i = 0; i < colcount; i++)
+        ar >> resultinfo[i];
     return ar;
 }

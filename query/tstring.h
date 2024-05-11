@@ -13,8 +13,12 @@
 
 #ifdef UNICODE
 #define tstring wstring
+#define tostream wostream
+#define tistream wistream
 #else
 #define tstring string
+#define tostream ostream
+#define tistream istream
 #endif
 
 #ifndef __MINGW32__
@@ -33,4 +37,6 @@
 #define tstring string
 #define _tstoi atoi
 #define _T
+#define tostream ostream
+#define tistream istream
 #endif
