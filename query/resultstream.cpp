@@ -198,3 +198,22 @@ std::istream& linguversa::operator>>(std::istream& ar, FieldInfo& info)
     ar >> info.m_nCType >> info.m_strName >> info.m_nSQLType >> info.m_nPrecision >> info.m_nScale >> info.m_nNullability;
     return ar;
 }
+
+std::ostream& linguversa::operator<<(std::ostream& ar, const ResultInfo& resultinfo)
+{
+    size_t colcount = resultinfo.size();
+    ar << colcount;
+    for (size_t i = 0; i < colcount; i++)
+        ar << resultinfo[i];
+    return ar;
+}
+
+std::istream& linguversa::operator>>(std::istream& ar, ResultInfo& resultinfo)
+{
+    size_t colcount = 0;
+    ar >> colcount;
+    resultinfo.resize(colcount);
+    for (size_t i = 0; i < colcount; i++)
+        ar >> resultinfo[i];
+    return ar;
+}

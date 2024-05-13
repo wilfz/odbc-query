@@ -17,5 +17,5 @@ namespace linguversa
 	std::istream& operator >>(std::istream& ar, FieldInfo& info);
 
 	std::ostream& operator <<(std::ostream& ar, const ResultInfo& resultinfo);
-	std::istream& operator >>(std::istream& ar, FieldInfo& resultinfo);
+	std::istream& operator >>(std::istream& ar, ResultInfo& resultinfo);
 }
