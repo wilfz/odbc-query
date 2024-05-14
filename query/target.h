@@ -3,20 +3,24 @@
 #include "query.h"
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #ifdef _WIN32
 #ifdef UNICODE
 #define tcout wcout
 #define tostream wostream
 #define tofstream wofstream
+#define tstringstream wstringstream
 #else
 #define tcout cout
 #define tostream ostream
 #define tofstream ofstream
+#define tstringstream stringstream
 #endif
 #else
 #define tcout cout
 #define tostream ostream
 #define tofstream ofstream
+#define tstringstream stringstream
 #endif
 
 
@@ -60,5 +64,16 @@ namespace linguversa
         selector_type selector;
         std::tofstream m_outstream;
         linguversa::Connection m_connnection;
+    };
+
+    class TargetStream : public std::tostream
+    {
+    public:
+    	// default constructor
+        TargetStream() : std::tostream(nullptr) {};
+        TargetStream(std::streambuf* pbuf) : std::tostream(pbuf) { };
+        // TODO:
+        TargetStream( linguversa::Connection& con);
+
     };
 }
