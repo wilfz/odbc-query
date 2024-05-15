@@ -169,12 +169,18 @@ SQLRETURN Table::LoadTableInfo(tstring tablename)
         if (col >= _columnInfo.size())
             _columnInfo.resize(col+10); // only increase vector size in reasonable steps
         // SQL_NO_TOTAL, SQL_NULL_DATA are < 0
+        TableColumnInfo& tci = _columnInfo[col];
         szColumnName[cbColumnName > 0 ? cbColumnName : 0] = _T('\0');
-        _columnInfo[col].ColumnName.assign((TCHAR*)szColumnName);
-        _columnInfo[col].DataType = DataType;
+        tci.ColumnName.assign((TCHAR*)szColumnName);
+        tci.DataType = DataType;
         szTypeName[cbTypeName > 0 ? cbTypeName : 0] = _T('\0');
-        _columnInfo[col].ColumnType.assign((TCHAR*)szTypeName);
-        _columnInfo[col].SQLDataType = SQLDataType;
+        tci.ColumnType.assign((TCHAR*)szTypeName);
+        tci.SQLDataType = SQLDataType;
+        tci.ColumnSize = ColumnSize;
+        tci.BufferLength = BufferLength;
+        tci.DecimalDigits = DecimalDigits;
+        tci.NumPrecRadix = NumPrecRadix;
+        tci.Nullable = Nullable;
         col++;
     }
 
@@ -186,6 +192,21 @@ SQLRETURN Table::LoadTableInfo(tstring tablename)
 
     return nRetCode;
 
+}
+
+short int Table::GetColumnIndex(tstring colname) const
+{
+    for (size_t col = 0; col < _columnInfo.size(); col++)
+    {
+        if (lower(colname) == lower(_columnInfo[col].ColumnName))
+            return (short int) col;
+    }
+    return -1;
+}
+
+const TableColumnInfo& Table::GetColumnInfo(size_t col) const
+{
+    return _columnInfo[col];
 }
 
 SQLRETURN Table::Close()

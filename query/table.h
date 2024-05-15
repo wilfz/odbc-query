@@ -17,6 +17,11 @@ namespace linguversa
         SQLSMALLINT DataType;
         tstring ColumnType;
         SQLSMALLINT SQLDataType;
+        SQLINTEGER ColumnSize;
+        SQLINTEGER BufferLength;
+        SQLSMALLINT DecimalDigits;
+        SQLSMALLINT NumPrecRadix;
+        SQLSMALLINT Nullable;
     } TableColumnInfo;
 
     class Table
@@ -31,8 +36,9 @@ namespace linguversa
         void SetDatabase(Connection& connection);
 
         SQLRETURN LoadTableInfo(tstring tablename);
-        const TableColumnInfo& GetColumnInfo(size_t n)
-            { return _columnInfo[n]; };
+        size_t GetColumnCount() const { return _columnInfo.size(); };
+        short int GetColumnIndex(tstring colname) const;
+        const TableColumnInfo& GetColumnInfo(size_t col) const;
 
         // Finish the statement and release all its resources.
         SQLRETURN Close();

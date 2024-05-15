@@ -4,6 +4,7 @@
 
 #include "../query/query.h"
 #include "../query/odbcenvironment.h"
+#include "../query/table.h"
 //#include "../query/procedure.h"
 
 #ifdef UNICODE
@@ -532,11 +533,28 @@ int main(int argc, char **argv)
                     );
 */
             }
+
+            tcout << endl;
         }
 
         // free resources
         // --------------
         nRetCode = query.Close();
+
+        // ********************************************************************
+        // * Retrieving table meta data
+        // ********************************************************************
+        Table table;
+        table.SetDatabase(con);
+        table.LoadTableInfo(_T("person"));
+
+        for (size_t col = 0; col < table.GetColumnCount(); col++)
+        {
+            const TableColumnInfo& tci = table.GetColumnInfo((short int)col);
+            tcout << tci.ColumnName << _T("\t") << tci.DataType << _T("\t") << tci.ColumnType << _T("\t") << tci.SQLDataType << endl;
+        }
+
+        tcout << endl;
 
         // ********************************************************************
         // * Working with stored procedures
@@ -585,7 +603,7 @@ int main(int argc, char **argv)
         // result set.
         // For this driver Finish() proceeds to the very last result set,  
         // reads its one and only row and copies its values into the output 
-        // and inout parameters' buffers. 
+        // or inout parameters' buffers. 
         nRetCode = query.Finish();
         // 
         // end of hack for MySQL's ODBC driver

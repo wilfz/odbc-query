@@ -141,6 +141,10 @@ int main(int argc, char** argv)
         os.rdbuf(ofs.rdbuf());
 
     Target target;
+    // Target should have a member ostream* targetstream
+    // which is either std::cout or ofstream or stringstream (in case of odbc)
+    // most output should be adressed directly to ostream& os = target.ostream();
+    // Better yet a class TargetStream derived from (t)ostrream, with various constructors.
     if (targetspec.length())
     {
         bool ret = true;
