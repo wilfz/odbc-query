@@ -10,17 +10,20 @@
 #define tostream wostream
 #define tofstream wofstream
 #define tstringstream wstringstream
+#define tstreambuf wstreambuf
 #else
 #define tcout cout
 #define tostream ostream
 #define tofstream ofstream
 #define tstringstream stringstream
+#define tstreambuf streambuf
 #endif
 #else
 #define tcout cout
 #define tostream ostream
 #define tofstream ofstream
 #define tstringstream stringstream
+#define tstreambuf streambuf
 #endif
 
 
@@ -71,7 +74,7 @@ namespace linguversa
     public:
     	// default constructor
         TargetStream() : std::tostream(nullptr) {};
-        TargetStream(std::streambuf* pbuf) : std::tostream(pbuf) { };
+        TargetStream(std::tstreambuf* pbuf) : std::tostream(pbuf) { };
         // TODO:
         TargetStream( linguversa::Connection& con);
 

@@ -42,13 +42,15 @@ void ConfigToSchema(tstring filepath, tstring configname);
 string validateSqliteFilename( string& path);
 
 // CSV helper functions
+#ifndef UNICODE
+csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char csvdecimalsymbol = '\0');
 void ParseCSVColumnSpec(vector<tstring>& csvolumns, vector<tstring>& csvcolnames, vector<SWORD>& sqlcoltypes);
 void OutputAsCSV(tostream& os, csv::CSVReader& reader, tstring fieldseparator);
 void OutputFormatted(tostream& os, csv::CSVReader& reader, tstring rowformat, vector<SWORD>& sqlcoltypes, TCHAR csvdecimalsymbol = _T('\0'));
 tstring FormatCurrentRow(csv::CSVRow& csvrow, ResultInfo& resultinfo, tstring rowformat, TCHAR csvdecimalsymbol = _T('\0'));
 void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
     vector<SWORD>& sqlcoltypes, _TCHAR csvdecimalsymbol = _T('\0'));
-
+#endif
 
 int main(int argc, char** argv) 
 {
@@ -932,6 +934,131 @@ string validateSqliteFilename( string& path)
 }
 
 #ifndef UNICODE
+csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char csvdecimalsymbol)
+{
+    // Essentially this is a copy of data_type(csv::string_view in, long double* const out) 
+    // in csv.hpp (namespace csv::internals).
+    // The only difference is that this function accepts other decimalsymbols than '.'.
+    using namespace csv;
+    long double* out = &dVal;
+    if (csvdecimalsymbol)
+        csvdecimalsymbol = '.';
+
+    // Empty string --> NULL
+    if (in.size() == 0)
+        return DataType::CSV_NULL;
+
+    bool ws_allowed = true,
+        dot_allowed = true,
+        digit_allowed = true,
+        is_negative = false,
+        has_digit = false,
+        prob_float = false;
+
+    unsigned places_after_decimal = 0;
+    long double integral_part = 0,
+        decimal_part = 0;
+
+    for (size_t i = 0, ilen = in.size(); i < ilen; i++) {
+        const char& current = in[i];
+
+        if (current == csvdecimalsymbol) {
+            if (!dot_allowed) {
+                return DataType::CSV_STRING;
+            }
+
+            dot_allowed = false;
+            prob_float = true;
+            continue;
+        }
+
+        switch (current) {
+        case ' ':
+            if (!ws_allowed) {
+                if (isdigit(in[i - 1])) {
+                    digit_allowed = false;
+                    ws_allowed = true;
+                }
+                else {
+                    // Ex: '510 123 4567'
+                    return DataType::CSV_STRING;
+                }
+            }
+            break;
+        case '-':
+            if (!ws_allowed) {
+                // Ex: '510-123-4567'
+                return DataType::CSV_STRING;
+            }
+
+            is_negative = true;
+            break;
+        //case '.':
+        //    if (!dot_allowed) {
+        //        return DataType::CSV_STRING;
+        //    }
+
+        //    dot_allowed = false;
+        //    prob_float = true;
+        //    break;
+        case 'e':
+        case 'E':
+            // Process scientific notation
+            if (prob_float || (i && i + 1 < ilen && isdigit(in[i - 1]))) {
+                size_t exponent_start_idx = i + 1;
+                prob_float = true;
+
+                // Strip out plus sign
+                if (in[i + 1] == '+') {
+                    exponent_start_idx++;
+                }
+
+                return internals::_process_potential_exponential(
+                    in.substr(exponent_start_idx),
+                    is_negative ? -(integral_part + decimal_part) : integral_part + decimal_part,
+                    out
+                );
+            }
+
+            return DataType::CSV_STRING;
+            break;
+        default:
+            short digit = static_cast<short>(current - '0');
+            if (digit >= 0 && digit <= 9) {
+                // Process digit
+                has_digit = true;
+
+                if (!digit_allowed)
+                    return DataType::CSV_STRING;
+                else if (ws_allowed) // Ex: '510 456'
+                    ws_allowed = false;
+
+                // Build current number
+                if (prob_float)
+                    decimal_part += digit / internals::pow10(++places_after_decimal);
+                else
+                    integral_part = (integral_part * 10) + digit;
+            }
+            else {
+                return DataType::CSV_STRING;
+            }
+        }
+    }
+
+    // No non-numeric/non-whitespace characters found
+    if (has_digit) {
+        long double number = integral_part + decimal_part;
+        if (out) {
+            *out = is_negative ? -number : number;
+        }
+
+        return prob_float ? DataType::CSV_DOUBLE : internals::_determine_integral_type(number);
+    }
+
+    // Just whitespace
+    return DataType::CSV_NULL;
+}
+
 void ParseCSVColumnSpec(vector<tstring>& csvcolumns, vector<tstring>& csvcolnames, vector<SWORD>& sqlcoltypes)
 {
     csvcolnames.resize(csvcolumns.size());
@@ -983,7 +1110,7 @@ void OutputAsCSV(tostream& os, csv::CSVReader& reader, tstring fieldseparator)
         {
             for (size_t col = 0; col < csvcolnames.size(); col++)
                 os << csvcolnames[col] << fieldseparator;
-            std::cout << endl;
+            os << endl;
             bFirstRow = false;
         }
         // value rows
@@ -1008,7 +1135,34 @@ void OutputFormatted(tostream& os, csv::CSVReader& reader, tstring rowformat, ve
     resultinfo.resize(csvcolnames.size());
     for (size_t col = 0; col < csvcolnames.size(); col++)
     {
-        // TODO: reultinfo initialisieren
+        SWORD sqltype = SQL_UNKNOWN_TYPE;
+        if (col < sqlcoltypes.size())
+            sqltype = sqlcoltypes[col];
+        // resultinfo[col] initialisieren
+        FieldInfo& fi = resultinfo[col];
+        fi.m_strName = csvcolnames[col];
+        switch (sqltype)
+        {
+        case SQL_DECIMAL:
+        case SQL_DOUBLE:
+            fi.m_nSQLType = sqltype;
+            fi.m_nCType = SQL_C_DOUBLE;
+            fi.m_nPrecision = 21;
+            fi.m_nScale = 6;
+            break;
+        case SQL_INTEGER:
+            fi.m_nSQLType = sqltype;
+            fi.m_nCType = SQL_C_LONG;
+            break;
+        case SQL_VARCHAR:
+        case SQL_WVARCHAR:
+        case SQL_UNKNOWN_TYPE:
+        default:
+            fi.m_nSQLType = sqltype;
+            fi.m_nCType = SQL_C_TCHAR;
+            fi.m_nPrecision = 255;
+            break;
+        }
     }
 
     bool bFirstRow = true;
@@ -1041,6 +1195,7 @@ tstring FormatCurrentRow(csv::CSVRow& csvrow, ResultInfo& resultinfo, tstring ro
         csv::CSVField field = csvrow[col];
         csv::DataType csvtype = csv::DataType::UNKNOWN;
         tstring val;
+        long double dVal = 0.0;
         switch (fi.m_nSQLType)
         {
         case SQL_INTEGER:
@@ -1054,17 +1209,10 @@ tstring FormatCurrentRow(csv::CSVRow& csvrow, ResultInfo& resultinfo, tstring ro
             break;
         case SQL_DECIMAL:
         case SQL_DOUBLE:
-            val = field.get<>();
-            //TODO: syntax check
-            if (csvdecimalsymbol != '\0' && csvdecimalsymbol != '.')
+            csvtype = ::ConvertWithDecimal(field.get<csv::string_view>(), dVal, csvdecimalsymbol);
+            if (csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_DOUBLE)
             {
-                for (size_t i = 0; i < val.length(); i++)
-                    if (val[i] == csvdecimalsymbol)
-                        val[i] = '.';
-            }
-            if (val.length() > 0)
-            {
-                item.m_dblVal = atof(val.c_str());
+                item.m_dblVal = dVal;
                 item.m_nVarType = DBItem::lwvt_double;
             }
             break;
@@ -1122,6 +1270,7 @@ void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
                 break;
             csv::DataType csvtype;
             tstring val;
+            long double dVal = 0.0;
             SWORD coltype = SQL_UNKNOWN_TYPE;
             if (col < sqlcoltypes.size())
                 coltype = sqlcoltypes[col];
@@ -1129,31 +1278,23 @@ void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
             {
             case SQL_INTEGER:
                 csvtype = field.type();
-                assert(csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_INT64);
+                assert(csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_INT64 || csvtype == csv::DataType::CSV_NULL);
                 os << (csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_INT64 ? field.get<>() : _T("NULL"));
                 break;
             case SQL_DECIMAL:
-                val = field.get<>();
-                //TODO: syntax check
-                if (csvdecimalsymbol != '\0' && csvdecimalsymbol != '.')
-                {
-                    for (size_t i = 0; i < val.length(); i++)
-                        if (val[i] == csvdecimalsymbol)
-                            val[i] = '.';
-                }
-                os << (val.length() > 0 ? val : _T("NULL"));
+                // TODO: format dVal without exponent
+                csvtype = ::ConvertWithDecimal(field.get<csv::string_view>(), dVal, csvdecimalsymbol);
+                assert(csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_DOUBLE || csvtype == csv::DataType::CSV_NULL);
+                if (csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_DOUBLE)
+                    os << dVal;
+                else
+                    os << _T("NULL");
                 break;
             case SQL_DOUBLE:
-                val = field.get<>();
-                //TODO: syntax check
-                if (csvdecimalsymbol != '\0' && csvdecimalsymbol != '.')
-                {
-                    for (size_t i = 0; i < val.length(); i++)
-                        if (val[i] == csvdecimalsymbol)
-                            val[i] = '.';
-                }
-                if (val.length() > 0)
-                    os << atof(val.c_str());
+                csvtype = ::ConvertWithDecimal(field.get<csv::string_view>(), dVal, csvdecimalsymbol);
+                assert(csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_DOUBLE || csvtype == csv::DataType::CSV_NULL);
+                if (csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_DOUBLE)
+                    os << dVal;
                 else
                     os << _T("NULL");
                 break;
