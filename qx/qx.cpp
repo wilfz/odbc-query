@@ -1093,7 +1093,7 @@ void ParseCSVColumnSpec(vector<tstring>& csvcolumns, vector<tstring>& csvcolname
                 sqlcoltypes[i] = SQL_VARCHAR;
             else
                 sqlcoltypes[i] = SQL_UNKNOWN_TYPE;
-            csvcolnames[i] = column.substr(ln, column.find_last_not_of(_T(" \n\r\t"), lt - 1 - ln));
+            csvcolnames[i] = column.substr(ln, column.find_last_not_of(_T(" \n\r\t"), lt - 1 - ln) + 1);
         }
         else if (ln <= rt && rt != tstring::npos) // we have only column name, coltype is emtpty and defaults to string
         {
@@ -1248,7 +1248,7 @@ void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
     {
         if (bFirstRow)
         {
-            os << ::string_format(_T("insert into [%01s]( "), tablename.c_str());
+            os << ::string_format(_T("insert into %01s( "), tablename.c_str());
             // ***********************************************************************
             // Retrieve meta information on the columns of the result set.
             // ***********************************************************************
@@ -1306,7 +1306,7 @@ void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
             case SQL_UNKNOWN_TYPE:
             default:
                 val = field.get<>();
-                os << _T('\"') << val << _T('\"');
+                os << _T("\'") << val << _T("\'");
                 break;
             }
             if (col++ < csvcolnames.size() - 1)
