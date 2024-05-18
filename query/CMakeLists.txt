@@ -21,9 +21,11 @@ set(libSrcs
     tstring.h
     lvstring.h
     lvstring.cpp
+    table.h
+    table.cpp
     target.h
-	target.cpp
-    )
+    target.cpp
+)
  
 if (UNIX)
    set(libSrcs ${libSrcs} tstring.h)
@@ -34,3 +36,4 @@ endif (UNIX)
 add_library(odbcquery STATIC ${libSrcs})
  
 #install(TARGETS util DESTINATION lib)
+
