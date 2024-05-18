@@ -69,14 +69,27 @@ namespace linguversa
         linguversa::Connection m_connnection;
     };
 
+
     class TargetStream : public std::tostream
     {
     public:
     	// default constructor
-        TargetStream() : std::tostream(nullptr) {};
-        TargetStream(std::tstreambuf* pbuf) : std::tostream(pbuf) { };
-        // TODO:
+        TargetStream() : std::tostream(nullptr) { _pCon = nullptr; };
+        TargetStream( std::tstreambuf* pbuf) : std::tostream(pbuf) { _pCon = nullptr; };
         TargetStream( linguversa::Connection& con);
 
+        void SetConnection( linguversa::Connection& con);
+
+        void OutputAsCSV( linguversa::Query& query, tstring fieldseparator);
+        void OutputFormatted( linguversa::Query& query, tstring rowformat);
+        void CreateTable( const linguversa::Query& query, tstring tablename);
+        void InsertAll( linguversa::Query& query, tstring tablename);
+
+        bool IsODBC() { return (_pCon != nullptr); };
+        SQLRETURN Apply();
+
+    private:
+        tstringstream _strstream;
+        Connection* _pCon;
     };
 }
