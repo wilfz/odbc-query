@@ -8,35 +8,39 @@
   <VirtualDirectory Name="cmake">
     <File Name="../demo/CMakeLists.txt"/>
   </VirtualDirectory>
-  <VirtualDirectory Name="Source Files">
-    <File Name="../query/datarow.cpp"/>
-    <File Name="../query/lvstring.cpp"/>
-    <File Name="../query/resultinfo.cpp"/>
-    <File Name="../demo/main.cpp"/>
-    <File Name="../query/paramitem.cpp"/>
-    <File Name="../query/odbcenvironment.cpp"/>
-    <File Name="../query/odbcexception.cpp"/>
-    <File Name="../query/connection.cpp"/>
-    <File Name="../query/query.cpp"/>
-    <File Name="../query/dbitem.cpp"/>
-    <File Name="../query/fieldinfo.cpp"/>
-  </VirtualDirectory>
   <VirtualDirectory Name="Header Files">
+    <File Name="../query/table.h"/>
     <File Name="../query/lvstring.h"/>
     <File Name="../query/resultinfo.h"/>
     <File Name="../query/tstring.h"/>
     <File Name="../query/datarow.h"/>
-    <File Name="../query/paramitem.h"/>
     <File Name="../query/odbcenvironment.h"/>
-    <File Name="../query/paraminfo.h"/>
     <File Name="../query/odbcexception.h"/>
-    <File Name="../query/connection.h"/>
+    <File Name="../query/paramitem.h"/>
+    <File Name="../query/paraminfo.h"/>
     <File Name="../query/query.h"/>
     <File Name="../query/dbitem.h"/>
     <File Name="../query/fieldinfo.h"/>
+    <File Name="../query/connection.h"/>
+    <File Name="../query/resultinfo.h"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
+  <VirtualDirectory Name="Source Files">
+    <File Name="../query/table.cpp"/>
+    <File Name="../query/datarow.cpp"/>
+    <File Name="../query/lvstring.cpp"/>
+    <File Name="../query/resultinfo.cpp"/>
+    <File Name="../query/connection.cpp"/>
+    <File Name="../query/dbitem.cpp"/>
+    <File Name="../query/fieldinfo.cpp"/>
+    <File Name="../query/odbcenvironment.cpp"/>
+    <File Name="../query/odbcexception.cpp"/>
+    <File Name="../query/paramitem.cpp"/>
+    <File Name="../query/query.cpp"/>
+    <File Name="../query/resultinfo.cpp"/>
+    <File Name="../demo/main.cpp"/>
+  </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
       <Compiler Options="" C_Options="" Assembler="">

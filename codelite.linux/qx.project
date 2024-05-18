@@ -9,9 +9,8 @@
     <File Name="../qx/external/SimpleIni.h"/>
     <File Name="../qx/external/CLI11.hpp"/>
     <File Name="../qx/qx.h"/>
-    <File Name="../../query/connection.h"/>
+    <File Name="../query/connection.h"/>
     <File Name="../query/tstring.h"/>
-    <File Name="../query/datarow.h"/>
     <File Name="../query/odbcenvironment.h"/>
     <File Name="../query/odbcexception.h"/>
     <File Name="../query/paramitem.h"/>
@@ -20,6 +19,7 @@
     <File Name="../query/dbitem.h"/>
     <File Name="../query/fieldinfo.h"/>
     <File Name="../query/resultinfo.h"/>
+    <File Name="../query/datarow.h"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>

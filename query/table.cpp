@@ -73,7 +73,7 @@ SQLRETURN Table::LoadTableInfo(tstring tablename)
 
     // We ignore all parameters except m_hstmt and szTableName by setting them to NULL:
     //SQLTCHAR* szTableName = new TCHAR[tablename.length()+1];
-    SQLRETURN retcode = ::SQLColumns(m_hstmt, NULL, 0, NULL, 0,
+    nRetCode = ::SQLColumns(m_hstmt, NULL, 0, NULL, 0,
         (SQLTCHAR*)tablename.c_str(), SQL_NTS, NULL, 0);
 
     if (!SQL_SUCCEEDED(nRetCode) && nRetCode != SQL_NO_DATA)

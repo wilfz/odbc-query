@@ -9,20 +9,20 @@
     <File Name="../qx/CMakeLists.txt"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
+    <File Name="../qx/external/SimpleIni.h"/>
+    <File Name="../qx/external/CLI11.hpp"/>
     <File Name="../qx/qx.h"/>
-    <File Name="../qx/SimpleIni.h"/>
-    <File Name="../query/resultinfo.h"/>
-    <File Name="../query/query.h"/>
-    <File Name="../query/paramitem.h"/>
-    <File Name="../query/paraminfo.h"/>
-    <File Name="../query/fieldinfo.h"/>
-    <File Name="../query/dbitem.h"/>
-    <File Name="../query/datarow.h"/>
     <File Name="../query/connection.h"/>
-    <File Name="../query/odbcexception.h"/>
     <File Name="../query/tstring.h"/>
     <File Name="../query/odbcenvironment.h"/>
-    <File Name="../qx/CLI11.hpp"/>
+    <File Name="../query/odbcexception.h"/>
+    <File Name="../query/paramitem.h"/>
+    <File Name="../query/paraminfo.h"/>
+    <File Name="../query/query.h"/>
+    <File Name="../query/dbitem.h"/>
+    <File Name="../query/fieldinfo.h"/>
+    <File Name="../query/resultinfo.h"/>
+    <File Name="../query/datarow.h"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
