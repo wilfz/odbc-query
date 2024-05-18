@@ -295,7 +295,6 @@ int main(int argc, char** argv)
         csv::CSVReader reader(csvfile, format);
         csvcolnames = reader.get_col_names();
         csv::CSVFormat actualformat = reader.get_format();
-        bool bFirstRow = true;
         if (rowformat.length() > 0)
             OutputFormatted(os, reader, rowformat, sqlcoltypes, csvdecimalsymbols);
         else if (insert.length() > 0 || create.length() > 0)
@@ -1197,7 +1196,6 @@ void OutputFormatted(tostream& os, csv::CSVReader& reader, tstring rowformat, ve
         }
     }
 
-    bool bFirstRow = true;
     for (csv::CSVRow& row : reader) // Input iterator
     {
         os << FormatCurrentRow(row, resultinfo, rowformat, csvdecimalsymbols);
@@ -1346,7 +1344,7 @@ void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
             case SQL_INTEGER:
                 csvtype = field.type();
                 val = field.get<string>();
-                assert(csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_INT64 || csvtype == csv::DataType::CSV_NULL);
+                assert((csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_INT64) || csvtype == csv::DataType::CSV_NULL);
                 os << (csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_INT64 ? val : _T("NULL"));
                 break;
             case SQL_DECIMAL:
@@ -1355,27 +1353,12 @@ void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
                 else
                     os << _T("NULL");
                 break;
-                // TODO: format dVal without exponent
-                //csvtype = ::ConvertWithDecimal(field.get<csv::string_view>(), dVal, csvdecimalsymbol);
-                //assert(csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_DOUBLE || csvtype == csv::DataType::CSV_NULL);
-                //if (csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_DOUBLE)
-                //    os << dVal;
-                //else
-                //    os << _T("NULL");
-                //break;
             case SQL_DOUBLE:
                 if (field.try_parse_decimal(dVal, csvdecimalsymbols))
                     os << dVal;
                 else
                     os << _T("NULL");
                 break;
-                //csvtype = ::ConvertWithDecimal(field.get<csv::string_view>(), dVal, csvdecimalsymbol);
-                //assert(csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_DOUBLE || csvtype == csv::DataType::CSV_NULL);
-                //if (csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_DOUBLE)
-                //    os << dVal;
-                //else
-                //    os << _T("NULL");
-                //break;
             case SQL_VARCHAR:
             case SQL_UNKNOWN_TYPE:
             default:
