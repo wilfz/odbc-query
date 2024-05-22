@@ -40,18 +40,18 @@ void OutputResultSet(tostream& os, Query& query, const tstring& fieldseparator);
 void BuildConnectionstring( tstring& sourcepath, tstring& connectionstring, tstring& stmt);
 void ConfigToSchema(tstring filepath, tstring configname);
 string validateSqliteFilename( string& path);
+void ParseColumnSpec(vector<tstring>& columns, ResultInfo& resultinfo);
 
 // CSV helper functions
 #ifndef UNICODE
 csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char csvdecimalsymbol = '\0');
-void ParseCSVColumnSpec(vector<tstring>& csvolumns, vector<tstring>& csvcolnames, vector<SWORD>& sqlcoltypes);
 void OutputAsCSV(tostream& os, csv::CSVReader& reader, tstring fieldseparator);
-void OutputFormatted(tostream& os, csv::CSVReader& reader, tstring rowformat, vector<SWORD>& sqlcoltypes, tstring csvdecimalsymbols = _T(""));
-tstring FormatCurrentRow(csv::CSVRow& csvrow, ResultInfo& resultinfo, tstring rowformat, tstring csvdecimalsymbols = _T(""));
-void CreateTable(tostream& os, csv::CSVReader& reader, tstring tablename,
-    vector<SWORD>& sqlcoltypes);
-void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
-    vector<SWORD>& sqlcoltypes, tstring csvdecimalsymbols = _T(""));
+void OutputFormatted(TargetStream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, 
+    tstring rowformat, tstring csvdecimalsymbols = _T(""));
+tstring FormatCurrentRow(csv::CSVRow& csvrow, const ResultInfo& resultinfo, tstring rowformat, tstring csvdecimalsymbols = _T(""));
+void CreateTable(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, tstring tablename);
+void InsertAll(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, 
+    tstring tablename, tstring csvdecimalsymbols = _T(""));
 #endif
 
 int main(int argc, char** argv) 
@@ -134,37 +134,41 @@ int main(int argc, char** argv)
     }
 
     tofstream ofs;
-    if (outputfile.length() > 0)
-        ofs.open(outputfile);
-
-    // output stream os, may either be the just opened file or otherwise stdout
-    tostream os(tcout.rdbuf());
-    if (ofs.is_open())
-        os.rdbuf(ofs.rdbuf());
-
-    Target target;
-    // Target should have a member ostream* targetstream
-    // which is either std::cout or ofstream or stringstream (in case of odbc)
-    // most output should be adressed directly to ostream& os = target.ostream();
-    // Better yet a class TargetStream derived from (t)ostrream, with various constructors.
+    Connection target;
+    TargetStream os;
     if (targetspec.length())
     {
         bool ret = true;
         if (lower(targetspec.substr(0, 5)) == _T("file:"))
+            outputfile = targetspec.substr(5);
+        if (outputfile.length() > 0)
         {
-            ret = target.OpenFile(targetspec.substr(5));
+            ofs.open(outputfile);
+            if (ofs.is_open())
+                os.rdbuf(ofs.rdbuf());
+            else
+                ret = false;
         }
         else if (lower(targetspec.substr(0, 5)) == _T("odbc:") || lower(targetspec.substr(0, 5)) == _T("odbc;"))
         {
-            ret = target.OpenConnection(targetspec.substr(5));
+            ret = target.Open(targetspec.substr(5));
+            if (ret == true)
+                os.SetConnection(target);
         }
-        else if (lower(targetspec) == _T("stdout"))
+        else if (targetspec == _T("stdout"))
         {
-            ret = target.OpenStdOutput();
+            os.rdbuf(tcout.rdbuf());
         }
-        
+
         if (ret == false)
+        {
+            tcerr << _T("Error: Cannot open target!") << endl;
             return -1;
+        }
+    }
+    else
+    {
+        os.rdbuf(tcout.rdbuf());
     }
 
     SQLRETURN nRetCode = SQL_SUCCESS;
@@ -274,9 +278,12 @@ int main(int argc, char** argv)
 #ifndef UNICODE
     if (csvfile.length() > 0)
     {
+        ResultInfo resultinfo;
+        ParseColumnSpec(csvcolumns, resultinfo);
         vector<tstring> csvcolnames;
-        vector<SWORD> sqlcoltypes;
-        ParseCSVColumnSpec( csvcolumns, csvcolnames, sqlcoltypes);
+        csvcolnames.resize(resultinfo.size());
+        for (size_t col = 0; col < resultinfo.size(); col++)
+            csvcolnames[col] = resultinfo[col].m_strName;
 
         csv::CSVFormat format;
         format.variable_columns(csv::VariableColumnPolicy::KEEP);
@@ -286,8 +293,8 @@ int main(int argc, char** argv)
             format.delimiter( { _T('\t'), _T(';'), _T('|'), _T(',') } );
             //format.guess_delim();
 
-        if (csvcolnames.size() > 0)
-            format.column_names(csvcolnames);
+        //if (csvcolnames.size() > 0)
+        //    format.column_names(csvcolnames);
         // .quote('~')
         // .header_row(2); // Header is on 3rd row (zero-indexed)
         // .no_header();   // Parse CSVs without a header row
@@ -296,13 +303,13 @@ int main(int argc, char** argv)
         csvcolnames = reader.get_col_names();
         csv::CSVFormat actualformat = reader.get_format();
         if (rowformat.length() > 0)
-            OutputFormatted(os, reader, rowformat, sqlcoltypes, csvdecimalsymbols);
+            OutputFormatted(os, reader, resultinfo, rowformat, csvdecimalsymbols);
         else if (insert.length() > 0 || create.length() > 0)
         {
             if (create.length() > 0)
-                CreateTable(os, reader, insert, sqlcoltypes);
+                CreateTable(os, reader, resultinfo, insert);
             if (insert.length() > 0)
-                InsertAll(os, reader, insert, sqlcoltypes, csvdecimalsymbols);
+                InsertAll(os, reader, resultinfo, insert, csvdecimalsymbols);
         }
         else // Output the complete current result set in standard format.
             OutputAsCSV(os, reader, fieldseparator);
@@ -371,7 +378,7 @@ int main(int argc, char** argv)
 
             if (SQL_SUCCEEDED(nRetCode) && create.length() > 0)
             {
-                target.Create(query, create);
+                os.CreateTable(query, create);
             }
 
             // Even a single statement (or.batch of statements) can have more than one result set.
@@ -385,24 +392,18 @@ int main(int argc, char** argv)
                     // If Result set has 0 rows it will skip the loop because nRetCode is set 
                     // to SQL_NO_DATA immediately
                     // ***********************************************************************
-                    for (SQLRETURN nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
-                    {
-                        // apply user-defined rowformat to each row.
-                        target.Apply(query.FormatCurrentRow(rowformat));
-                    }
+                    os.OutputFormatted(query, rowformat);
                 }
                 else if (insert.length() > 0)
                 {
                     // Iterate over all rows of the curnnt result set and
                     // create one insert statement for all rows.
-                    //::GenerateInsert(sstream, query, insert);
-                    // create one insert statement for all rows.
-                    target.InsertAll(query, insert);
+                    os.InsertAll(query, insert);
                 }
-                else
+                else if (create.length() == 0) // the default only applies if no output format is not given
                 {
                     // Output the complete current result set in standard format.
-                    target.OutputAsCSV(query, fieldseparator);
+                    os.OutputAsCSV(query, fieldseparator);
                 }
 
                 // there may be more result sets ...
@@ -943,6 +944,48 @@ string validateSqliteFilename( string& path)
         return "If file does not exist, extension must be .sqlite3 or .db3.";
 }
 
+void ParseColumnSpec(vector<tstring>& columns, ResultInfo& resultinfo)
+{
+    resultinfo.resize(columns.size());
+
+    // get column names and types from commandline parameter csvcolnames
+    for (size_t i = 0; i < columns.size(); i++)
+    {
+        tstring& column = columns[i];
+        FieldInfo& fi = resultinfo[i];
+        // separate column name and column type (if present) from each other
+        size_t ln = column.find_first_not_of(_T(" \n\r\t")); // left pos of colname
+        size_t rt = column.find_last_not_of(_T(" \n\r\t")); // right pos of coltype
+        size_t lt = rt;
+        // if column is not only whitespace there might be a whitespace separator between colname and coltype
+        if (ln < rt && ln != tstring::npos && rt != tstring::npos)
+            lt = column.find_last_of(_T(" \n\r\t"), rt);
+        if (ln < lt && lt < rt) // we have column name and column type, separated with at least one whitspace character
+        {
+            lt++;
+            lvstring coltype = column.substr(lt, rt - lt + 1);
+            if (coltype.MakeLower() == _T("integer") || coltype.MakeLower() == _T("int"))
+                fi.m_nSQLType = SQL_INTEGER;
+            else if (coltype.MakeLower() == _T("decimal"))
+                fi.m_nSQLType = SQL_DECIMAL;
+            else if (coltype.MakeLower() == _T("double"))
+                fi.m_nSQLType = SQL_DOUBLE;
+            else if (coltype.MakeLower() == _T("string"))
+                fi.m_nSQLType = SQL_VARCHAR;
+            else
+                fi.m_nSQLType = SQL_UNKNOWN_TYPE;
+            fi.m_strName = column.substr(ln, column.find_last_not_of(_T(" \n\r\t"), lt - 1 - ln) + 1);
+            fi.m_nCType = fi.GetDefaultCType();
+        }
+        else if (ln <= rt && rt != tstring::npos) // we have only column name, coltype is emtpty and defaults to string
+        {
+            fi.m_strName = column.substr(ln, rt - ln + 1);
+            fi.m_nSQLType = SQL_UNKNOWN_TYPE;
+            fi.m_nCType = SQL_C_TCHAR;
+        }
+    }
+}
+
 #ifndef UNICODE
 csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char csvdecimalsymbol)
 {
@@ -1003,6 +1046,13 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char cs
                 }
             }
             break;
+        case '+':
+            if (!ws_allowed) {
+                return DataType::CSV_STRING;
+            }
+
+            break;
+
         case '-':
             if (!ws_allowed) {
                 // Ex: '510-123-4567'
@@ -1090,46 +1140,6 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char cs
     return DataType::CSV_NULL;
 }
 
-void ParseCSVColumnSpec(vector<tstring>& csvcolumns, vector<tstring>& csvcolnames, vector<SWORD>& sqlcoltypes)
-{
-    csvcolnames.resize(csvcolumns.size());
-    sqlcoltypes.resize(csvcolumns.size());
-
-    // get column names and types from commandline parameter csvcolnames
-    for (size_t i = 0; i < csvcolumns.size(); i++)
-    {
-        tstring& column = csvcolumns[i];
-        // separate column name and column type (if present) from each other
-        size_t ln = column.find_first_not_of(_T(" \n\r\t")); // left pos of colname
-        size_t rt = column.find_last_not_of(_T(" \n\r\t")); // right pos of coltype
-        size_t lt = rt;
-        // if column is not only whitespace there might be a whitespace separator between colname and coltype
-        if (ln < rt && ln != tstring::npos && rt != tstring::npos)
-            lt = column.find_last_of(_T(" \n\r\t"), rt);
-        if (ln < lt && lt < rt) // we have column name and column type, separated with at least one whitspace character
-        {
-            lt++;
-            lvstring coltype = column.substr(lt, rt - lt + 1);
-            if (coltype.MakeLower() == _T("integer") || coltype.MakeLower() == _T("int"))
-                sqlcoltypes[i] = SQL_INTEGER;
-            else if (coltype.MakeLower() == _T("decimal"))
-                sqlcoltypes[i] = SQL_DECIMAL;
-            else if (coltype.MakeLower() == _T("double"))
-                sqlcoltypes[i] = SQL_DOUBLE;
-            else if (coltype.MakeLower() == _T("string"))
-                sqlcoltypes[i] = SQL_VARCHAR;
-            else
-                sqlcoltypes[i] = SQL_UNKNOWN_TYPE;
-            csvcolnames[i] = column.substr(ln, column.find_last_not_of(_T(" \n\r\t"), lt - 1 - ln) + 1);
-        }
-        else if (ln <= rt && rt != tstring::npos) // we have only column name, coltype is emtpty and defaults to string
-        {
-            csvcolnames[i] = column.substr(ln, rt - ln + 1);
-            sqlcoltypes[i] = SQL_UNKNOWN_TYPE;
-        }
-    }
-}
-
 void OutputAsCSV(tostream& os, csv::CSVReader& reader, tstring fieldseparator)
 {
     vector<tstring> csvcolnames = reader.get_col_names();
@@ -1157,58 +1167,23 @@ void OutputAsCSV(tostream& os, csv::CSVReader& reader, tstring fieldseparator)
     }
 }
 
-void OutputFormatted(tostream& os, csv::CSVReader& reader, tstring rowformat, vector<SWORD>& sqlcoltypes, tstring csvdecimalsymbols)
+void OutputFormatted(TargetStream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, tstring rowformat, tstring csvdecimalsymbols)
 {
-    vector<tstring> csvcolnames = reader.get_col_names();
-    csv::CSVFormat actualformat = reader.get_format();
-
-    ResultInfo resultinfo;
-    resultinfo.resize(csvcolnames.size());
-    for (size_t col = 0; col < csvcolnames.size(); col++)
-    {
-        SWORD sqltype = SQL_UNKNOWN_TYPE;
-        if (col < sqlcoltypes.size())
-            sqltype = sqlcoltypes[col];
-        // resultinfo[col] initialisieren
-        FieldInfo& fi = resultinfo[col];
-        fi.m_strName = csvcolnames[col];
-        switch (sqltype)
-        {
-        case SQL_DECIMAL:
-        case SQL_DOUBLE:
-            fi.m_nSQLType = sqltype;
-            fi.m_nCType = SQL_C_DOUBLE;
-            fi.m_nPrecision = 21;
-            fi.m_nScale = 6;
-            break;
-        case SQL_INTEGER:
-            fi.m_nSQLType = sqltype;
-            fi.m_nCType = SQL_C_LONG;
-            break;
-        case SQL_VARCHAR:
-        case SQL_WVARCHAR:
-        case SQL_UNKNOWN_TYPE:
-        default:
-            fi.m_nSQLType = sqltype;
-            fi.m_nCType = SQL_C_TCHAR;
-            fi.m_nPrecision = 255;
-            break;
-        }
-    }
-
     for (csv::CSVRow& row : reader) // Input iterator
     {
         os << FormatCurrentRow(row, resultinfo, rowformat, csvdecimalsymbols);
+        if (os.IsODBC())
+            os.Apply();
     }
 }
 
-tstring FormatCurrentRow(csv::CSVRow& csvrow, ResultInfo& resultinfo, tstring rowformat, tstring csvdecimalsymbols)
+tstring FormatCurrentRow(csv::CSVRow& csvrow, const ResultInfo& resultinfo, tstring rowformat, tstring csvdecimalsymbols)
 {
     linguversa::DataRow dr;
     dr.resize(resultinfo.size());
     for (unsigned short col = 0; col < resultinfo.size(); col++)
     {
-        FieldInfo& fi = resultinfo[col];
+        const FieldInfo& fi = resultinfo[col];
         DBItem& item = dr[col];
         item.clear();
 
@@ -1261,26 +1236,22 @@ tstring FormatCurrentRow(csv::CSVRow& csvrow, ResultInfo& resultinfo, tstring ro
     return dr.Format(resultinfo, rowformat);
 }
 
-void CreateTable(tostream& os, csv::CSVReader& reader, tstring tablename,
-    vector<SWORD>& sqlcoltypes)
+void CreateTable(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, tstring tablename)
 {
-    vector<tstring> csvcolnames = reader.get_col_names();
-    csv::CSVFormat actualformat = reader.get_format();
-
     os << ::string_format(_T("create table %01s(\n    "), tablename.c_str());
     // ***********************************************************************
     // Retrieve meta information on the columns of the result set.
     // ***********************************************************************
-    for (size_t col = 0; col < csvcolnames.size(); col++)
+    for (size_t col = 0; col < resultinfo.size(); col++)
     {
-        os << csvcolnames[col];
-        switch (sqlcoltypes[col])
+        os << resultinfo[col].m_strName;
+        switch (resultinfo[col].m_nSQLType)
         {
         case SQL_INTEGER:
             os << _T(" int null");
             break;
         case SQL_DECIMAL:
-            os << _T(" decimal(21,6) null"); 
+            os << _T(" decimal(21,6) null");
             break;
         case SQL_DOUBLE:
             os << _T(" double null");
@@ -1291,7 +1262,7 @@ void CreateTable(tostream& os, csv::CSVReader& reader, tstring tablename,
             os << _T(" varchar(1024) null");
         }
 
-        if (col < csvcolnames.size() - 1)
+        if (col < resultinfo.size() - 1)
             os << _T(",\n    ");
     }
     os << _T("\n);") << endl;
@@ -1299,10 +1270,9 @@ void CreateTable(tostream& os, csv::CSVReader& reader, tstring tablename,
 
 // Iterate over all rows of the current reader and
 // create one insert statement for all rows.
-void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
-    vector<SWORD>& sqlcoltypes, tstring csvdecimalsymbols)
+void InsertAll(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, 
+    tstring tablename, tstring csvdecimalsymbols)
 {
-    vector<tstring> csvcolnames = reader.get_col_names();
     csv::CSVFormat actualformat = reader.get_format();
     bool bFirstRow = true;
     for (csv::CSVRow& row : reader) // Input iterator
@@ -1313,10 +1283,10 @@ void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
             // ***********************************************************************
             // Retrieve meta information on the columns of the result set.
             // ***********************************************************************
-            for (size_t col = 0; col < csvcolnames.size(); col++)
+            for (size_t col = 0; col < resultinfo.size(); col++)
             {
-                os << csvcolnames[col];
-                if (col < csvcolnames.size() - 1)
+                os << resultinfo[col].m_strName;
+                if (col < resultinfo.size() - 1)
                     os << _T(", ");
             }
             os << _T(")") << endl;
@@ -1331,14 +1301,13 @@ void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
         size_t col = 0;
         for (csv::CSVField& field : row)
         {
-            if (col >= csvcolnames.size())
+            if (col >= resultinfo.size())
                 break;
             csv::DataType csvtype;
             tstring val;
             long double dVal = 0.0;
             SWORD coltype = SQL_UNKNOWN_TYPE;
-            if (col < sqlcoltypes.size())
-                coltype = sqlcoltypes[col];
+            coltype = resultinfo[col].m_nSQLType;
             switch (coltype)
             {
             case SQL_INTEGER:
@@ -1366,16 +1335,17 @@ void InsertAll(tostream& os, csv::CSVReader& reader, tstring tablename,
                 os << _T("\'") << val << _T("\'");
                 break;
             }
-            if (col++ < csvcolnames.size() - 1)
+            if (col++ < resultinfo.size() - 1)
                 os << _T(", ");
         }
-        while (col < csvcolnames.size())
+        while (col < resultinfo.size())
         {
             os << _T("NULL");
-            if (col++ < csvcolnames.size() - 1)
+            if (col++ < resultinfo.size() - 1)
                 os << _T(", ");
         }
     }
     os << _T(";") << endl;
 }
+
 #endif
