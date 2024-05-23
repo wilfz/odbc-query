@@ -46,10 +46,14 @@ void ParseColumnSpec(vector<tstring>& columns, ResultInfo& resultinfo);
 #ifndef UNICODE
 csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char csvdecimalsymbol = '\0');
 void OutputAsCSV(tostream& os, csv::CSVReader& reader, tstring fieldseparator);
+// TODO: 
+void OutputAsCSV(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, tstring fieldseparator);
 void OutputFormatted(TargetStream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, 
     tstring rowformat, tstring csvdecimalsymbols = _T(""));
 tstring FormatCurrentRow(csv::CSVRow& csvrow, const ResultInfo& resultinfo, tstring rowformat, tstring csvdecimalsymbols = _T(""));
 void CreateTable(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, tstring tablename);
+// TODO:
+void CreateTable(tostream& os, const ResultInfo& resultinfo, tstring tablename);
 void InsertAll(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, 
     tstring tablename, tstring csvdecimalsymbols = _T(""));
 #endif
@@ -67,6 +71,7 @@ int main(int argc, char** argv)
     TCHAR csvdelimiter = _T('\0');
     tstring csvdecimalsymbols = _T("");
     vector<tstring> csvcolumns;
+    bool csvnoheader = false;
     tstring config;
     tstring fieldseparator = _T("\t");
     tstring rowformat;
@@ -98,6 +103,9 @@ int main(int argc, char** argv)
         ->needs("--csvfile");
     app.add_option("--csvcolumns", csvcolumns, "csv column names and types")
         ->needs("--csvfile");
+    app.add_flag("--csvnoheader", csvnoheader, "no header line in csv file (all lines are data)")
+        ->needs("--csvfile")
+        ->needs("--csvdelimiter");
 #endif
     app.add_option("--config", config, "template in qx.ini for file description in schema.ini-format");
     app.add_option("--sqlite3", sqlite3, "path of a sqlite3 database file")
@@ -280,33 +288,58 @@ int main(int argc, char** argv)
     {
         ResultInfo resultinfo;
         ParseColumnSpec(csvcolumns, resultinfo);
-        vector<tstring> csvcolnames;
-        csvcolnames.resize(resultinfo.size());
-        for (size_t col = 0; col < resultinfo.size(); col++)
-            csvcolnames[col] = resultinfo[col].m_strName;
 
         csv::CSVFormat format;
+        vector<tstring> csvcolnames;
         format.variable_columns(csv::VariableColumnPolicy::KEEP);
-        if (csvdelimiter != 0)
+        format.header_row(csvnoheader ? -1 : 0); // // Header is on n-th row (zero-indexed), -1: no header at all
+        if (csvnoheader)
+        {
+            // copy col_names from resultinfo to format
+            csvcolnames.resize(resultinfo.size());
+            for (size_t col = 0; col < resultinfo.size(); col++)
+                csvcolnames[col] = resultinfo[col].m_strName;
+            format.column_names(csvcolnames); // <-- implicitly sets header to -1;
+        }
+        // TODO: if csvcolnames are neither given on command line nor in header_row we might get them from the ini-file
+
+        if (csvdelimiter != _T('\0'))
             format.delimiter(csvdelimiter);
         else
             format.delimiter( { _T('\t'), _T(';'), _T('|'), _T(',') } );
-            //format.guess_delim();
+            //format.guess_delim(); <-- will be invoked automatically if more than one delimiter
 
-        //if (csvcolnames.size() > 0)
-        //    format.column_names(csvcolnames);
         // .quote('~')
         // .header_row(2); // Header is on 3rd row (zero-indexed)
         // .no_header();   // Parse CSVs without a header row
         // .quote(false);  // Turn off quoting 
         csv::CSVReader reader(csvfile, format);
-        csvcolnames = reader.get_col_names();
+        if (resultinfo.size() == 0 && !csvnoheader)
+        {
+            // copy col_names from csvfile's header row to resultinfo
+            csvcolnames = reader.get_col_names();
+            resultinfo.resize(csvcolnames.size());
+            for (size_t col; col < csvcolnames.size(); col++)
+                resultinfo[col].m_strName = csvcolnames[col];
+        }
+        else if (resultinfo.size() == 0 && csvnoheader)
+        {
+            // TODO: initialize column names to col1, col2, col3, ...
+            // but, if we read the first row here to achieve number of columns it'll be missing in the resultset!
+            //    csv::CSVRow row;
+            //    reader.read_row(row);
+            //    size_t ncols = row.size();
+            //    resultinfo.resize(ncols);
+            //    for (size_t col = 0; col < ncols; col++)
+            //        resultinfo[col].m_strName = ::string_format(_T("col%0d"), col + 1);
+        }
+
         csv::CSVFormat actualformat = reader.get_format();
         if (rowformat.length() > 0)
             OutputFormatted(os, reader, resultinfo, rowformat, csvdecimalsymbols);
         else if (insert.length() > 0 || create.length() > 0)
         {
-            if (create.length() > 0)
+            if (create.length() > 0 && resultinfo.size() > 0)
                 CreateTable(os, reader, resultinfo, insert);
             if (insert.length() > 0)
                 InsertAll(os, reader, resultinfo, insert, csvdecimalsymbols);
@@ -1238,6 +1271,7 @@ tstring FormatCurrentRow(csv::CSVRow& csvrow, const ResultInfo& resultinfo, tstr
 
 void CreateTable(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, tstring tablename)
 {
+    assert(resultinfo.size() > 0);
     os << ::string_format(_T("create table %01s(\n    "), tablename.c_str());
     // ***********************************************************************
     // Retrieve meta information on the columns of the result set.
@@ -1273,7 +1307,7 @@ void CreateTable(tostream& os, csv::CSVReader& reader, const ResultInfo& resulti
 void InsertAll(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinfo, 
     tstring tablename, tstring csvdecimalsymbols)
 {
-    csv::CSVFormat actualformat = reader.get_format();
+    assert(resultinfo.size() > 0);
     bool bFirstRow = true;
     for (csv::CSVRow& row : reader) // Input iterator
     {
