@@ -1338,7 +1338,7 @@ void InsertAll(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinf
             if (col >= resultinfo.size())
                 break;
             csv::DataType csvtype;
-            tstring val;
+            lvstring val;
             long double dVal = 0.0;
             SWORD coltype = SQL_UNKNOWN_TYPE;
             coltype = resultinfo[col].m_nSQLType;
@@ -1366,6 +1366,7 @@ void InsertAll(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinf
             case SQL_UNKNOWN_TYPE:
             default:
                 val = field.get<>();
+                val.Replace("\'", "\'\'");
                 os << _T("\'") << val << _T("\'");
                 break;
             }
