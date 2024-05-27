@@ -1020,7 +1020,7 @@ void ParseColumnSpec(vector<tstring>& columns, ResultInfo& resultinfo)
 }
 
 #ifndef UNICODE
-csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char csvdecimalsymbol)
+csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, const string& decimalsymbols)
 {
     // Essentially this is a copy of data_type(csv::string_view in, long double* const out) 
     // in csv.hpp (namespace csv::internals).
@@ -1028,8 +1028,6 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char cs
     // But it seems, that it has less precision than the built-in atof()!
     using namespace csv;
     long double* out = &dVal;
-    if (!csvdecimalsymbol)
-        csvdecimalsymbol = '.';
 
     // Empty string --> NULL
     if (in.size() == 0)
@@ -1045,26 +1043,10 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char cs
     unsigned places_after_decimal = 0;
     long double integral_part = 0,
         decimal_part = 0;
+    char csvdecimalsymbol = '\0';
 
     for (size_t i = 0, ilen = in.size(); i < ilen; i++) {
         const char& current = in[i];
-
-        //const string decimalsymbols;
-        //const char* p = decimalsymbols.c_str();
-        //while (*p != '\0' &&  *p != current)
-        //    p++;
-
-        //csvdecimalsymbol = *p ? *p : '.';
-
-        if (current == csvdecimalsymbol) {
-            if (!dot_allowed) {
-                return DataType::CSV_STRING;
-            }
-
-            dot_allowed = false;
-            prob_float = true;
-            continue;
-        }
 
         switch (current) {
         case ' ':
@@ -1094,14 +1076,6 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char cs
 
             is_negative = true;
             break;
-        //case '.':
-        //    if (!dot_allowed) {
-        //        return DataType::CSV_STRING;
-        //    }
-
-        //    dot_allowed = false;
-        //    prob_float = true;
-        //    break;
         case 'e':
         case 'E':
             // Process scientific notation
@@ -1117,7 +1091,7 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char cs
                 return internals::_process_potential_exponential(
                     in.substr(exponent_start_idx),
                     is_negative ? -(integral_part + decimal_part) : integral_part + decimal_part,
-                    out
+                    &dVal
                 );
             }
 
@@ -1139,6 +1113,22 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char cs
                     decimal_part += digit / internals::pow10(++places_after_decimal);
                 else
                     integral_part = (integral_part * 10) + digit;
+            } 
+            else if (dot_allowed) {
+                // check for any of the specified decimal symbols
+                const char* p = decimalsymbols.c_str();
+                while (*p != '\0') {
+                    if (*p == current) {
+                        csvdecimalsymbol = *p;
+                        dot_allowed = false;
+                        prob_float = true;
+                        break;
+                    }
+                    p++;
+                }
+
+                if (*p == '\0') // current is not a decimal symbol
+                    return DataType::CSV_STRING;
             }
             else {
                 return DataType::CSV_STRING;
@@ -1148,23 +1138,21 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, char cs
 
     // No non-numeric/non-whitespace characters found
     if (has_digit) {
-        if (prob_float && out) {
-            // use the built in conversion function because it is more accurate
-            string sval(in);
-            for (size_t i = 0; i < sval.length(); i++) {
-                if (sval[i] == csvdecimalsymbol) {
-                    sval[i] = '.';
-                    break;
-                }
-            }
-            *out = atof(sval.c_str());
-            return DataType::CSV_DOUBLE;
-        }
+        //if (prob_float) {
+        //    // use the built in conversion function because it is more accurate
+        //    string sval(in);
+        //    for (size_t i = 0; i < sval.length(); i++) {
+        //        if (sval[i] == csvdecimalsymbol) {
+        //            sval[i] = '.';
+        //            break;
+        //        }
+        //    }
+        //    dVal = atof(sval.c_str());
+        //    return DataType::CSV_DOUBLE;
+        //}
 
         long double number = integral_part + decimal_part;
-        if (out) {
-            *out = is_negative ? -number : number;
-        }
+        dVal = is_negative ? -number : number;
 
         return prob_float ? DataType::CSV_DOUBLE : internals::_determine_integral_type(number);
     }
@@ -1214,6 +1202,7 @@ tstring FormatCurrentRow(csv::CSVRow& csvrow, const ResultInfo& resultinfo, tstr
 {
     linguversa::DataRow dr;
     dr.resize(resultinfo.size());
+    TCHAR csvdecimalsymbol = csvdecimalsymbols[0] ? csvdecimalsymbols[0] : _T('.');
     for (unsigned short col = 0; col < resultinfo.size(); col++)
     {
         const FieldInfo& fi = resultinfo[col];
@@ -1240,13 +1229,13 @@ tstring FormatCurrentRow(csv::CSVRow& csvrow, const ResultInfo& resultinfo, tstr
             break;
         case SQL_DECIMAL:
         case SQL_DOUBLE:
-            if (field.try_parse_decimal(dVal, csvdecimalsymbols))
+            if (field.try_parse_decimal(dVal, csvdecimalsymbol))
             {
                 item.m_dblVal = dVal;
                 item.m_nVarType = DBItem::lwvt_double;
             }
             break;
-            //csvtype = ::ConvertWithDecimal(field.get<csv::string_view>(), dVal, csvdecimalsymbol);
+            //csvtype = ::ConvertWithDecimal(field.get<csv::string_view>(), dVal, csvdecimalsymbols);
             //if (csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_DOUBLE)
             //{
             //    item.m_dblVal = dVal;
@@ -1309,6 +1298,7 @@ void InsertAll(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinf
 {
     assert(resultinfo.size() > 0);
     bool bFirstRow = true;
+    TCHAR csvdecimalsymbol = csvdecimalsymbols[0] ? csvdecimalsymbols[0] : _T('.');
     for (csv::CSVRow& row : reader) // Input iterator
     {
         if (bFirstRow)
@@ -1351,13 +1341,13 @@ void InsertAll(tostream& os, csv::CSVReader& reader, const ResultInfo& resultinf
                 os << (csvtype >= csv::DataType::CSV_INT8 && csvtype <= csv::DataType::CSV_INT64 ? val : _T("NULL"));
                 break;
             case SQL_DECIMAL:
-                if (field.try_parse_decimal(dVal, csvdecimalsymbols))
+                if (field.try_parse_decimal(dVal, csvdecimalsymbol))
                     os << dVal; // TODO: format dVal without exponent
                 else
                     os << _T("NULL");
                 break;
             case SQL_DOUBLE:
-                if (field.try_parse_decimal(dVal, csvdecimalsymbols))
+                if (field.try_parse_decimal(dVal, csvdecimalsymbol))
                     os << dVal;
                 else
                     os << _T("NULL");
