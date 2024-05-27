@@ -1127,7 +1127,7 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, const s
                     p++;
                 }
 
-                if (*p == '\0') // current is not a decimal symbol
+                if (*p == '\0') // current is neither digit nor a decimal symbol
                     return DataType::CSV_STRING;
             }
             else {
