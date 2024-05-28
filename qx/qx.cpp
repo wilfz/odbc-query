@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     tstring sqlite3;
     tstring csvfile;
     TCHAR csvdelimiter = _T('\0');
-    tstring csvdecimalsymbols = _T("");
+    tstring csvdecimalsymbols = _T(".,");
     vector<tstring> csvcolumns;
     bool csvnoheader = false;
     tstring config;
@@ -1000,7 +1000,11 @@ void ParseColumnSpec(vector<tstring>& columns, ResultInfo& resultinfo)
             if (coltype.MakeLower() == _T("integer") || coltype.MakeLower() == _T("int"))
                 fi.m_nSQLType = SQL_INTEGER;
             else if (coltype.MakeLower() == _T("decimal"))
+            {
                 fi.m_nSQLType = SQL_DECIMAL;
+                fi.m_nPrecision = 21;
+                fi.m_nScale = 6;
+            }
             else if (coltype.MakeLower() == _T("double"))
                 fi.m_nSQLType = SQL_DOUBLE;
             else if (coltype.MakeLower() == _T("string"))
@@ -1027,7 +1031,6 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, const s
     // The only difference is that this function accepts other decimalsymbols than '.'.
     // But it seems, that it has less precision than the built-in atof()!
     using namespace csv;
-    long double* out = &dVal;
 
     // Empty string --> NULL
     if (in.size() == 0)
