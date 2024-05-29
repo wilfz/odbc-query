@@ -319,7 +319,7 @@ int main(int argc, char** argv)
             // copy col_names from csvfile's header row to resultinfo
             csvcolnames = reader.get_col_names();
             resultinfo.resize(csvcolnames.size());
-            for (size_t col; col < csvcolnames.size(); col++)
+            for (size_t col = 0; col < csvcolnames.size(); col++)
                 resultinfo[col].m_strName = csvcolnames[col];
         }
         else if (resultinfo.size() == 0 && csvnoheader)
@@ -1046,7 +1046,6 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, const s
     unsigned places_after_decimal = 0;
     long double integral_part = 0,
         decimal_part = 0;
-    char csvdecimalsymbol = '\0';
 
     for (size_t i = 0, ilen = in.size(); i < ilen; i++) {
         const char& current = in[i];
@@ -1122,7 +1121,6 @@ csv::DataType ConvertWithDecimal(csv::string_view in, long double& dVal, const s
                 const char* p = decimalsymbols.c_str();
                 while (*p != '\0') {
                     if (*p == current) {
-                        csvdecimalsymbol = *p;
                         dot_allowed = false;
                         prob_float = true;
                         break;
