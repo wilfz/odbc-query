@@ -7,15 +7,15 @@
 
 namespace linguversa
 {
-	std::ostream& operator <<(std::ostream& ar, const DBItem& item);
-	std::istream& operator >>(std::istream& ar, DBItem& item);
+	std::tostream& operator <<(std::tostream& ar, const DBItem& item);
+	std::tistream& operator >>(std::tistream& ar, DBItem& item);
 
-	std::ostream& operator <<(std::ostream& ar, const DataRow& row);
-	std::istream& operator >>(std::istream& ar, DataRow& row);
+	std::tostream& operator <<(std::tostream& ar, const DataRow& row);
+	std::tistream& operator >>(std::tistream& ar, DataRow& row);
 
-	std::ostream& operator <<(std::ostream& ar, const FieldInfo& info);
-	std::istream& operator >>(std::istream& ar, FieldInfo& info);
+	std::tostream& operator <<(std::tostream& ar, const FieldInfo& info);
+	std::tistream& operator >>(std::tistream& ar, FieldInfo& info);
 
-	std::ostream& operator <<(std::ostream& ar, const ResultInfo& resultinfo);
-	std::istream& operator >>(std::istream& ar, ResultInfo& resultinfo);
+	std::tostream& operator <<(std::tostream& ar, const ResultInfo& resultinfo);
+	std::tistream& operator >>(std::tistream& ar, ResultInfo& resultinfo);
 }

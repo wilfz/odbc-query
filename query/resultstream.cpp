@@ -4,7 +4,7 @@
 using namespace linguversa;
 using namespace std;
 
-std::ostream& linguversa::operator<<(std::ostream& ar, const DBItem& item)
+std::tostream& linguversa::operator<<(std::tostream& ar, const DBItem& item)
 {
     ar << (signed short)item.m_nVarType;
     switch (item.m_nVarType)
@@ -39,15 +39,17 @@ std::ostream& linguversa::operator<<(std::ostream& ar, const DBItem& item)
         ar << (item.m_pdate ? item.m_pdate->fraction : (SQLUINTEGER)0);
         break;
     case DBItem::lwvt_string:
-        #ifndef UNICODE
         ar << (item.m_pstring ? *item.m_pstring : (tstring)_T(""));
+        break;
+    case DBItem::lwvt_wstring:
+        #ifdef UNICODE
+        ar << (item.m_pstringw ? *item.m_pstringw : (wstring)L"");
         #endif
         break;
-    //case DBItem::lwvt_wstring:
-    //    ar << (item.m_pstringw ? *item.m_pstringw : (wstring)L"");
-    //    break;
     case DBItem::lwvt_astring:
+        #ifndef UNICODE
         ar << (item.m_pstringa ? *item.m_pstringa : (string)"");
+        #endif
         break;
     case DBItem::lwvt_binary:
         assert(false);
@@ -80,7 +82,7 @@ std::ostream& linguversa::operator<<(std::ostream& ar, const DBItem& item)
     return ar;
 }
 
-std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
+std::tistream& linguversa::operator>>(std::tistream& ar, DBItem& var)
 {
     signed short n = 0;
     ar >> n;
@@ -122,21 +124,23 @@ std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
         ar >> var.m_pdate->fraction;
         break;
     case DBItem::lwvt_string:
-        #ifndef UNICODE
         if (var.m_pstring == nullptr || var.m_nVarType != vt)
             var.m_pstring = new tstring();
         ar >> (*var.m_pstring);
+        break;
+    case DBItem::lwvt_wstring:
+        #ifdef UNICODE
+        if (var.m_pstringw == nullptr || var.m_nVarType != vt)
+            var.m_pstringw = new wstring();
+        ar >> (*var.m_pstringw);
         #endif
         break;
-    //case DBItem::lwvt_wstring:
-    //    if (var.m_pstringw == nullptr || var.m_nCType != vt)
-    //        var.m_pstringw = new wstring();
-    //    ar >> (*var.m_pstringw);
-    //    break;
     case DBItem::lwvt_astring:
+        #ifndef UNICODE
         if (var.m_pstringa == nullptr || var.m_nVarType != vt)
             var.m_pstringa = new string();
         ar >> (*var.m_pstringa);
+        #endif
         break;
     case DBItem::lwvt_binary:
         assert(false);
@@ -172,7 +176,7 @@ std::istream& linguversa::operator>>(std::istream& ar, DBItem& var)
     return ar;
 }
 
-std::ostream& linguversa::operator<<(std::ostream& ar, const DataRow& row)
+std::tostream& linguversa::operator<<(std::tostream& ar, const DataRow& row)
 {
     size_t colcount = row.size();
     ar << colcount;
@@ -181,7 +185,7 @@ std::ostream& linguversa::operator<<(std::ostream& ar, const DataRow& row)
     return ar;
 }
 
-std::istream& linguversa::operator>>(std::istream& ar, DataRow& row)
+std::tistream& linguversa::operator>>(std::tistream& ar, DataRow& row)
 {
     size_t colcount = 0;
     ar >> colcount;
@@ -191,19 +195,19 @@ std::istream& linguversa::operator>>(std::istream& ar, DataRow& row)
     return ar;
 }
 
-std::ostream& linguversa::operator<<(std::ostream& ar, const FieldInfo& info)
+std::tostream& linguversa::operator<<(std::tostream& ar, const FieldInfo& info)
 {
     ar << info.m_nCType << info.m_strName << info.m_nSQLType << info.m_nPrecision << info.m_nScale << info.m_nNullability;
     return ar;
 }
 
-std::istream& linguversa::operator>>(std::istream& ar, FieldInfo& info)
+std::tistream& linguversa::operator>>(std::tistream& ar, FieldInfo& info)
 {
     ar >> info.m_nCType >> info.m_strName >> info.m_nSQLType >> info.m_nPrecision >> info.m_nScale >> info.m_nNullability;
     return ar;
 }
 
-std::ostream& linguversa::operator<<(std::ostream& ar, const ResultInfo& resultinfo)
+std::tostream& linguversa::operator<<(std::tostream& ar, const ResultInfo& resultinfo)
 {
     size_t colcount = resultinfo.size();
     ar << colcount;
@@ -212,7 +216,7 @@ std::ostream& linguversa::operator<<(std::ostream& ar, const ResultInfo& resulti
     return ar;
 }
 
-std::istream& linguversa::operator>>(std::istream& ar, ResultInfo& resultinfo)
+std::tistream& linguversa::operator>>(std::tistream& ar, ResultInfo& resultinfo)
 {
     size_t colcount = 0;
     ar >> colcount;
