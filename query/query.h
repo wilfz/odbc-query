@@ -23,6 +23,7 @@ class Query
 public:
     Query();
     Query( Connection* pConnection);
+    Query( Connection& connection);
     ~Query();
 
     // Set the database handle to a Connection object which encapsulates the ODBC connection.

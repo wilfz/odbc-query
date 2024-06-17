@@ -76,20 +76,19 @@ SQLRETURN Table::LoadTableInfo(tstring tablename)
     nRetCode = ::SQLColumns(m_hstmt, NULL, 0, NULL, 0,
         (SQLTCHAR*)tablename.c_str(), SQL_NTS, NULL, 0);
 
-    if (!SQL_SUCCEEDED(nRetCode) && nRetCode != SQL_NO_DATA)
+    if (!SQL_SUCCEEDED(nRetCode))
     {
         throw DbException(nRetCode, SQL_HANDLE_STMT, m_hstmt);
+        Close();
         return nRetCode;
     }
-
-    if (nRetCode == SQL_NO_DATA)
-        return nRetCode;
 
     SQLSMALLINT attrcount = 0; // number of meta data attributes for each column
     nRetCode = ::SQLNumResultCols(m_hstmt, &attrcount);
     if (!SQL_SUCCEEDED(nRetCode))
     {
         throw DbException(nRetCode, SQL_HANDLE_STMT, m_hstmt);
+        Close();
         return nRetCode;
     }
 

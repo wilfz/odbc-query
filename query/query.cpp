@@ -20,6 +20,11 @@ Query::Query( Connection* pConnection)
     SetDatabase(pConnection);
 }
 
+Query::Query(Connection& connection)
+    : Query( &connection)
+{
+}
+
 Query::~Query()
 {
     try	// Do not terminate destructor by exception!
