@@ -29,6 +29,8 @@
 # Executables
 Debug/
 Release/
+Debug(wchar)/
+Release(wchar)/
 x64/Debug/
 x64/Release/
 *.exe
