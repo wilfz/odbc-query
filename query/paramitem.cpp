@@ -5,6 +5,7 @@ using namespace linguversa;
 using namespace std;
 
 ParamItem::ParamItem()
+    : ParamInfo()
 {
     m_nParamLen = 0;
     m_nCType = SQL_TYPE_NULL;
