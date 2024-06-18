@@ -29,6 +29,8 @@
 # Executables
 Debug/
 Release/
+x64/Debug/
+x64/Release/
 *.exe
 *.out
 *.app
