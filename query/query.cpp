@@ -2574,7 +2574,24 @@ RETCODE Query::SetParamNull(SQLUSMALLINT ParameterNumber)
     }
 
     pPi-> m_lenInd = SQL_NULL_DATA;
-    return SQL_SUCCESS;
+
+    RETCODE nRetCode = ::SQLBindParameter(m_hstmt, ParameterNumber, 
+        (SQLSMALLINT)(pPi->m_InputOutputType ? pPi->m_InputOutputType : SQL_PARAM_INPUT),
+        pPi->m_nCType ? pPi->m_nCType : SQL_C_DEFAULT,
+        pPi->m_nSQLType,
+        (SQLULEN)pPi->m_nParamLen,			// ColumnSize argument
+        (SQLSMALLINT)(pPi->m_nScale >= 0 ? pPi->m_nScale : 0),	// DecimalDigits argument
+        nullptr, // TODO
+        (SQLLEN)0,	// allocated buffer size (must stay valid for complete life cycle of the statement)
+        &(pPi->m_lenInd));	// real data length (can change on execution but must never be larger than paramBufLen)
+
+    if (!SQL_SUCCEEDED(nRetCode))
+    {
+        throw DbException(nRetCode, SQL_HANDLE_STMT, m_hstmt);
+        return nRetCode;
+    }
+
+    return nRetCode;
 }
 
 bool Query::GetParamValue(SQLUSMALLINT ParameterNumber, long& nParamValue)
