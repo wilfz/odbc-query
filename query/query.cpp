@@ -2484,6 +2484,8 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, tstring lpszValue, Pa
             // terminating 0x00 and fill up the remaining buffer:
             for (unsigned long i = (unsigned long) lpszValue.length(); i < (unsigned long) (pPi->m_nParamLen) + 1; i++)    // +1 because of terminating 0x00
                 ((TCHAR*)(pPi->m_pParam))[i] = (TCHAR)0x00;
+            // re-initialize length indicator
+            pPi->m_lenInd = SQL_NTS;	// null terminted tstring
             return SQL_SUCCESS;
         }
     }
@@ -2581,7 +2583,7 @@ RETCODE Query::SetParamNull(SQLUSMALLINT ParameterNumber)
         pPi->m_nSQLType,
         (SQLULEN)pPi->m_nParamLen,			// ColumnSize argument
         (SQLSMALLINT)(pPi->m_nScale >= 0 ? pPi->m_nScale : 0),	// DecimalDigits argument
-        nullptr, // TODO
+        pPi->m_pParam,
         (SQLLEN)0,	// allocated buffer size (must stay valid for complete life cycle of the statement)
         &(pPi->m_lenInd));	// real data length (can change on execution but must never be larger than paramBufLen)
 
