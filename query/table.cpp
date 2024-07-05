@@ -36,7 +36,6 @@ void Table::SetDatabase(Connection* pConnection)
     {
         Close();
         m_pConnection = pConnection;
-        m_hdbc = m_pConnection ? m_pConnection->GetSqlHDbc() : SQL_NULL_HDBC;
     }
 }
 
@@ -46,27 +45,27 @@ void Table::SetDatabase(Connection& connection)
     {
         Close();
         m_pConnection = &connection;
-        m_hdbc = m_pConnection ? m_pConnection->GetSqlHDbc() : SQL_NULL_HDBC;
     }
 }
 
 SQLRETURN Table::LoadTableInfo(tstring tablename)
 {
     SQLRETURN nRetCode = SQL_SUCCESS;    //Return code for your ODBC calls
-    if (m_hdbc == NULL && m_pConnection != nullptr)
-        m_hdbc = m_pConnection->GetSqlHDbc();
-    assert(m_hdbc != SQL_NULL_HDBC);
+    HDBC hdbc = SQL_NULL_HDBC;
+    if (m_pConnection != nullptr)
+        hdbc = m_pConnection->GetSqlHDbc();
+    assert(hdbc != SQL_NULL_HDBC);
 
-    if (m_hdbc == NULL)
+    if (hdbc == SQL_NULL_HDBC)
         return SQL_INVALID_HANDLE;
 
     if (m_hstmt == NULL)
     {
         // Allocate new Statement Handle based on existing connection
-        nRetCode = ::SQLAllocHandle(SQL_HANDLE_STMT, m_hdbc, &m_hstmt);
+        nRetCode = ::SQLAllocHandle(SQL_HANDLE_STMT, hdbc, &m_hstmt);
         if (!SQL_SUCCEEDED(nRetCode) || m_hstmt == NULL)
         {
-            throw DbException(nRetCode, SQL_HANDLE_DBC, m_hdbc);
+            throw DbException(nRetCode, SQL_HANDLE_DBC, hdbc);
             return nRetCode;
         }
     }
@@ -189,6 +188,7 @@ SQLRETURN Table::LoadTableInfo(tstring tablename)
     if (nRetCode == SQL_NO_DATA)
         nRetCode = SQL_SUCCESS;
 
+    Close();
     return nRetCode;
 
 }
@@ -218,7 +218,7 @@ SQLRETURN Table::Close()
     nRetCode = ::SQLFreeHandle(SQL_HANDLE_STMT, m_hstmt);
     if (!SQL_SUCCEEDED(nRetCode) &&
         // do not throw exception if db was closed earlier than query
-        !(nRetCode == SQL_INVALID_HANDLE && (m_pConnection ? m_pConnection->GetSqlHDbc() : m_hdbc) == SQL_NULL_HDBC))
+        !(nRetCode == SQL_INVALID_HANDLE && (m_pConnection ? m_pConnection->GetSqlHDbc() : SQL_NULL_HDBC) == SQL_NULL_HDBC))
     {
         throw DbException(nRetCode, SQL_HANDLE_STMT, m_hstmt);
         return nRetCode;
