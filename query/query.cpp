@@ -856,7 +856,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
         // Call SQLGetData to determine the amount of data that's waiting.
         BYTE b = 0;    // dummy variable, but necessary!
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, nFieldType, &b, 0, &len);
-        if (SQL_SUCCEEDED(nRetCode) && len > 0)
+        if (SQL_SUCCEEDED(nRetCode) && len >= 0)
         {
             BYTE* buf = new BYTE[len + 1];
             // Get all the data at once.
@@ -882,7 +882,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
     {
         unsigned ODBCINT64 biValue = 0;
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, nFieldType, &biValue, sizeof(biValue), &len);
-        if (SQL_SUCCEEDED(nRetCode) && len > 0)
+        if (SQL_SUCCEEDED(nRetCode) && len >= 0)
         {
             varValue.m_nVarType = DBItem::lwvt_uint64;
             varValue.m_pUInt64 = new unsigned ODBCINT64();
@@ -897,7 +897,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1,
             (fieldinfo.m_nSQLType == SQL_BINARY) ? SQL_C_BINARY : SQL_C_GUID,    //TODO
             &gValue, sizeof(gValue), &len);
-        if (SQL_SUCCEEDED(nRetCode) && len > 0)
+        if (SQL_SUCCEEDED(nRetCode) && len >= 0)
         {
             varValue.m_nVarType = DBItem::lwvt_guid;
             varValue.m_pGUID = new SQLGUID;
@@ -909,7 +909,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
     {
         wchar_t c = 0;    // dummy variable, but necessary!
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_WCHAR, &c, 0, &len);
-        if (SQL_SUCCEEDED(nRetCode) && len > 0)
+        if (SQL_SUCCEEDED(nRetCode) && len >= 0)
         {
             // create a buffer
             size_t n = len / sizeof(wchar_t);
@@ -937,7 +937,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
     {
         char c = 0;    // dummy variable, but necessary!
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_CHAR, &c, 0, &len);
-        if (SQL_SUCCEEDED(nRetCode) && len > 0)
+        if (SQL_SUCCEEDED(nRetCode) && len >= 0)
         {
             // create a buffer
             char* buf = new char[len + 1];
@@ -964,7 +964,7 @@ void Query::GetFieldValue(short nIndex, DBItem& varValue, short nFieldType)
     {
         TCHAR c = 0;    // dummy variable, but necessary!
         nRetCode = ::SQLGetData(m_hstmt, nIndex + 1, SQL_C_TCHAR, &c, 0, &len);
-        if (SQL_SUCCEEDED(nRetCode) && len > 0)
+        if (SQL_SUCCEEDED(nRetCode) && len >= 0)
         {
             // create a buffer
             size_t n = len/sizeof(TCHAR);
