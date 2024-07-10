@@ -74,6 +74,8 @@ int main(int argc, char** argv)
     bool csvnoheader = false;
     tstring config;
     tstring fieldseparator = _T("\t");
+    tstring decimalformat = _T("");
+    tstring datetimeformat = _T("");
     tstring rowformat;
     tstring input;
     tstring outputfile;
@@ -118,6 +120,8 @@ int main(int argc, char** argv)
         ->check(CLI::ExistingDirectory);
     app.add_option("-f,--format", rowformat, "row format");
     app.add_option("--fieldseparator", fieldseparator, "fieldseparator (Default is TAB)")->excludes("--format");
+    app.add_option("--decimalformat", decimalformat, "c-style format string for decimal values")->excludes("--format");
+    app.add_option("--datetimeformat", datetimeformat, "c-style format string for datetime values")->excludes("--format");
     app.add_option("--create", create, "generate create statement for specified tablename")->excludes("--format")->excludes("--fieldseparator");
     app.add_option("--insert", insert, "generate insert statements for specified tablename")->excludes("--format")->excludes("--fieldseparator");
     app.add_option("--createinsert", createinsert, "generate create and insert statements for specified tablename")
@@ -436,7 +440,7 @@ int main(int argc, char** argv)
                 else if (create.length() == 0) // the default only applies if no output format is not given
                 {
                     // Output the complete current result set in standard format.
-                    os.OutputAsCSV(query, fieldseparator);
+                    os.OutputAsCSV(query, fieldseparator, decimalformat, datetimeformat);
                 }
 
                 // there may be more result sets ...

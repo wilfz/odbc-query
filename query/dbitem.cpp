@@ -151,11 +151,24 @@ bool DBItem::operator==(const DBItem & other) const
     }
 }
 
-//TODO
+TCHAR ConvertNationalDecSeparator( tstring& DecimalFormat)
+{
+    size_t n = 0;
+    TCHAR ret;
+    if ((n = DecimalFormat.find(_T(','), 0)) != tstring::npos && DecimalFormat.find(_T(','), n + 1) == tstring::npos)
+    {
+        ret = DecimalFormat[n];
+        DecimalFormat[n] = _T('.');
+        return ret;
+    }
+
+    return _T('\0');
+}
+
 tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
 {
     tstring sValue;
-    //bool bNationalDecSep = false;
+    TCHAR cNationalDecSep = 0;
     tstring DecimalFormat;
     tstring NullDefault;
 
@@ -192,21 +205,21 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
         break;
     case lwvt_single:
         DecimalFormat = colFmt;
-        //bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
+        cNationalDecSep = ::ConvertNationalDecSeparator( DecimalFormat);
         if (DecimalFormat.length() == 0)
             DecimalFormat = _T("%0.3f");
         sValue = linguversa::string_format( DecimalFormat, var.m_fltVal);
-        //if (bNationalDecSep)
-        //    sValue.Replace(_T("."),_T(","));
+        if (cNationalDecSep && (nPos = sValue.find(_T('.'), 0)) != tstring::npos)
+            sValue[nPos] = cNationalDecSep;
         break;
     case lwvt_double: 
         DecimalFormat = colFmt;
-        //bNationalDecSep = ConvertNationalSeparator( DecimalFormat);
+        cNationalDecSep = ::ConvertNationalDecSeparator( DecimalFormat);
         if (DecimalFormat.length() == 0)
             DecimalFormat = _T("%0.6f");
         sValue = linguversa::string_format( DecimalFormat, var.m_dblVal);
-        //if (bNationalDecSep)
-        //  sValue.Replace(_T("."),_T(","));
+        if (cNationalDecSep && (nPos = sValue.find(_T('.'), 0)) != tstring::npos)
+            sValue[nPos] = cNationalDecSep;
         break;
     case lwvt_date:
         sValue = linguversa::FormatTimeStamp( colFmt, var.m_pdate);

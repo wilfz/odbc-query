@@ -80,7 +80,8 @@ namespace linguversa
 
         void SetConnection( linguversa::Connection& con);
 
-        void OutputAsCSV( linguversa::Query& query, tstring fieldseparator);
+        void OutputAsCSV( linguversa::Query& query, const tstring fieldseparator, 
+            const tstring decimalformat = _T(""), const tstring datetimeformat = _T(""));
         void OutputFormatted( linguversa::Query& query, tstring rowformat);
         void CreateTable( const linguversa::Query& query, tstring tablename);
         void InsertAll( linguversa::Query& query, tstring tablename);

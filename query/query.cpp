@@ -1158,7 +1158,7 @@ std::tstring Query::FormatFieldValue(short nIndex)
     FieldInfo fi;
     GetODBCFieldInfo(nIndex, fi);
 
-    // TODO: VarType is not CType!
+    // VarType is not CType!
     if ((varValue.m_nVarType == DBItem::lwvt_single || varValue.m_nVarType == DBItem::lwvt_double) && (m_FieldInfo[nIndex].m_nCType == fi.GetDefaultCType()))
     {
         tstring fmt = fi.GetDefaultFormat();

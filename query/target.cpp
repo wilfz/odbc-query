@@ -422,7 +422,8 @@ void TargetStream::SetConnection( Connection& con)
     _pCon = &con;
 }
 
-void TargetStream::OutputAsCSV( Query& query, tstring fieldseparator)
+void TargetStream::OutputAsCSV( Query& query, const tstring fieldseparator,
+    const tstring decimalformat, const tstring datetimeformat)
 {
     if (IsODBC())
         return; // better: even throw an error
@@ -456,7 +457,29 @@ void TargetStream::OutputAsCSV( Query& query, tstring fieldseparator)
     {
         for (short col = 0; col < colcount; col++)
         {
-            os << query.FormatFieldValue(col);
+            DBItem varValue;
+            query.GetFieldValue(col, varValue);
+            FieldInfo fieldinfo;
+            query.GetODBCFieldInfo(col, fieldinfo);
+            if ((fieldinfo.GetDefaultCType() == SQL_C_FLOAT 
+                || fieldinfo.GetDefaultCType() == SQL_C_DOUBLE) && !decimalformat.empty())
+            {
+                DBItem varValue;
+                query.GetFieldValue(col, varValue);
+                os << DBItem::ConvertToString(varValue, decimalformat);
+            }
+            else if (fieldinfo.GetDefaultCType() == SQL_C_TIMESTAMP 
+                && !datetimeformat.empty())
+            {
+                DBItem varValue;
+                query.GetFieldValue(col, varValue);
+                os << DBItem::ConvertToString(varValue, datetimeformat);
+            }
+            else
+            {
+                os << query.FormatFieldValue(col);
+            }
+
             if (col == colcount - 1)
                 os << endl;
             else
