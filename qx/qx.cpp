@@ -121,7 +121,7 @@ int main(int argc, char** argv)
     app.add_option("-f,--format", rowformat, "row format");
     app.add_option("--fieldseparator", fieldseparator, "fieldseparator (Default is TAB)")->excludes("--format");
     app.add_option("--decimalformat", decimalformat, "c-style format string for decimal values")->excludes("--format");
-    app.add_option("--datetimeformat", datetimeformat, "c-style format string for datetime values")->excludes("--format");
+    app.add_option("--datetimeformat", datetimeformat, "format string for datetime values eg. YYYY-MM-DD")->excludes("--format");
     app.add_option("--create", create, "generate create statement for specified tablename")->excludes("--format")->excludes("--fieldseparator");
     app.add_option("--insert", insert, "generate insert statements for specified tablename")->excludes("--format")->excludes("--fieldseparator");
     app.add_option("--createinsert", createinsert, "generate create and insert statements for specified tablename")
