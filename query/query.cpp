@@ -2347,6 +2347,8 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, long nParamValue, Par
         assert(pPi->m_pParam != NULL);
         // so we only have to assign the new value:
         *((long*)(pPi->m_pParam)) = nParamValue;
+		// re-initialize length indicator
+		pPi->m_lenInd = 0;
         return SQL_SUCCESS;
     }
 
@@ -2379,6 +2381,8 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, double dParamValue, P
         assert(pPi->m_pParam != NULL);
         // so we only have to assign the new value:
         *((double*)(pPi->m_pParam)) = dParamValue;
+		// re-initialize length indicator
+		pPi->m_lenInd = 0;
         return SQL_SUCCESS;
     }
 
@@ -2410,7 +2414,9 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, TIMESTAMP_STRUCT tsPa
     {
         // so we only have to assign the new value:
         *((TIMESTAMP_STRUCT*)(pPi->m_pParam)) = tsParamValue;
-        return SQL_SUCCESS;
+		// re-initialize length indicator
+		pPi->m_lenInd = 0;
+		return SQL_SUCCESS;
     }
 
     if (pPi && pPi->m_local)
@@ -2437,11 +2443,13 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, SQLGUID guid, ParamIn
     if (ParameterNumber < m_ParamItem.size())
         pPi = m_ParamItem[ParameterNumber];
 
-    if (pPi && pPi->m_local && pPi->m_nCType == SQL_C_GUID && pPi->m_pParam) // already bound to local heap variable of type TIMESTAMP_STRUCT
+    if (pPi && pPi->m_local && pPi->m_nCType == SQL_C_GUID && pPi->m_pParam) // already bound to local heap variable of type SQL_C_GUID
     {
         // so we only have to assign the new value:
         *((SQLGUID*)(pPi->m_pParam)) = guid;
-        return SQL_SUCCESS;
+		// re-initialize length indicator
+		pPi->m_lenInd = sizeof(SQLGUID);
+		return SQL_SUCCESS;
     }
 
     if (pPi && pPi->m_local)
@@ -2532,7 +2540,8 @@ RETCODE Query::SetParamValue(SQLUSMALLINT ParameterNumber, const bytearray& ba, 
         // so we only have to copy the current ByteaArray to the (same old) buffer:
         for (unsigned int i = 0; i < ba.size(); i++)
             ((BYTE*)(pPi->m_pParam))[i] = ba[i];
-
+		// re-initialize length indicator
+		pPi->m_lenInd = ba.size();
         return SQL_SUCCESS;
     }
 
