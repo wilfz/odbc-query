@@ -486,8 +486,6 @@ void TargetStream::OutputAsCSV( Query& query, const tstring fieldseparator,
                 os << fieldseparator;
         }
     }
-
-    os << endl;
 }
 
 void TargetStream::OutputFormatted( Query& query, tstring rowformat)
