@@ -55,6 +55,7 @@ void ParamItem::Clear()
 
         // Prevent from deleting again unless m_local is explicitly set.
         m_local = false;
+		m_lenInd = 0;
 
         // don't delete driver side information
     }
