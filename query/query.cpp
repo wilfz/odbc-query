@@ -1146,7 +1146,12 @@ bool Query::IsFieldNull(tstring lpszName)
     return IsFieldNull( nField);
 }
 
-std::tstring Query::FormatFieldValue(short nIndex)
+void Query::SetCTypeFormat(const signed short ctype, const tstring fmt)
+{
+    m_CTypeFormat[ctype] = fmt;
+}
+
+tstring Query::FormatFieldValue(short nIndex)
 {
     if (nIndex < 0 || nIndex >= GetODBCFieldCount())
     {
@@ -1155,13 +1160,17 @@ std::tstring Query::FormatFieldValue(short nIndex)
 
     DBItem varValue;
     GetFieldValue(nIndex, varValue);
-    FieldInfo fi;
-    GetODBCFieldInfo(nIndex, fi);
-
+    FieldInfo& fi = m_FieldInfo[nIndex];
+ 
+    tstring fmt = m_CTypeFormat[fi.m_nCType];
+    if (!fmt.empty())
+    {
+        return DBItem::ConvertToString(varValue, fmt);
+    }
     // VarType is not CType!
     if ((varValue.m_nVarType == DBItem::lwvt_single || varValue.m_nVarType == DBItem::lwvt_double) && (m_FieldInfo[nIndex].m_nCType == fi.GetDefaultCType()))
     {
-        tstring fmt = fi.GetDefaultFormat();
+        fmt = fi.GetDefaultFormat();
         return DBItem::ConvertToString(varValue, fmt);
     }
 

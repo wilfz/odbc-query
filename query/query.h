@@ -10,6 +10,7 @@
 #ifdef USE_ROWDATA
 #include "datarow.h"
 #endif
+#include <map>
 
 using namespace std;
 
@@ -141,9 +142,11 @@ public:
     bool IsFieldNull( short nIndex);
     bool IsFieldNull( tstring lpszName);
 
+    // set the format for various CTypes
+    void SetCTypeFormat(const signed short ctype, const tstring fmt);
     // TODO: format the value of the specified column as string, according to its FieldInfo.
-    std::tstring FormatFieldValue( short nIndex);
-    std::tstring FormatFieldValue( tstring lpszName);
+    tstring FormatFieldValue( short nIndex);
+    tstring FormatFieldValue( tstring lpszName);
 
     // formatting of output
     tstring FormatCurrentRow(const std::tstring);
@@ -254,6 +257,7 @@ protected:
     HSTMT m_hstmt;
     ResultInfo m_FieldInfo;
     vector<ParamItem*> m_ParamItem;
+    std::map<signed short, tstring> m_CTypeFormat;
     // If true map named params to the corresponding positional parameter,
     // otherwise append at the end of m_ParamItem regardless of ordinal position in signature.
     bool m_ParamInitComplete;

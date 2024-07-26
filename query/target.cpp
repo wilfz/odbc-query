@@ -677,7 +677,7 @@ void TargetStream::InsertAll(Query& query, tstring tablename)
                 os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
                 break;
             case DBItem::lwvt_date:
-                os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
+                os << _T("'") << query.FormatFieldValue(col) << _T("'");
                 break;
             case DBItem::lwvt_single:
             case DBItem::lwvt_double:

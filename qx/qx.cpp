@@ -433,6 +433,8 @@ int main(int argc, char** argv)
                 }
                 else if (insert.length() > 0)
                 {
+                    if (!datetimeformat.empty())
+                        query.SetCTypeFormat(SQL_C_TIMESTAMP, datetimeformat);
                     // Iterate over all rows of the curnnt result set and
                     // create one insert statement for all rows.
                     os.InsertAll(query, insert);
