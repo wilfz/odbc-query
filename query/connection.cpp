@@ -85,6 +85,40 @@ bool Connection::Open(tstring connectionstring)
     return SQL_SUCCEEDED(retcode) && usedlen <= buflen && m_hdbc != SQL_NULL_HDBC;
 }
 
+bool Connection::Open(tstring& connectionstring, HWND hWnd, SQLUSMALLINT driverCompletion)
+{
+    if (m_henv == SQL_NULL_HENV || m_hdbc != SQL_NULL_HDBC)
+        return false;
+
+    SQLRETURN retcode = ::SQLAllocConnect(m_henv, &m_hdbc);
+    if (!SQL_SUCCEEDED(retcode) || m_hdbc == SQL_NULL_HDBC)
+        throw DbException(retcode, SQL_HANDLE_ENV, m_henv);
+
+    // length of the input buffer in bytes or Unicode characters
+    const int buflen = SQL_MAX_MESSAGE_LENGTH;
+    SQLSMALLINT usedlen = 0;
+    SQLTCHAR connect_output[buflen];
+    retcode = ::SQLDriverConnect(m_hdbc, hWnd, (SQLTCHAR*)connectionstring.c_str(), SQL_NTS,
+        connect_output, buflen,
+        &usedlen, driverCompletion);
+
+    // user cancel is allowed and must not throw exception
+    if (retcode == SQL_NO_DATA)
+        return false;
+
+    if (!SQL_SUCCEEDED(retcode))
+    {
+        // ::SQLDisconnect(m_hdbc); <-- would cause another error because we are not connected
+        // but we still need m_hdbc for a qualified error message.
+        throw DbException(retcode, SQL_HANDLE_DBC, m_hdbc);
+    }
+
+    if (usedlen <= buflen && m_hdbc != SQL_NULL_HDBC)
+        connectionstring.assign((const TCHAR*) connect_output);
+
+    return SQL_SUCCEEDED(retcode) && usedlen <= buflen && m_hdbc != SQL_NULL_HDBC;
+}
+
 bool Connection::IsOpen() const
 {
     return m_henv != SQL_NULL_HENV && m_hdbc != SQL_NULL_HDBC;
@@ -105,7 +139,7 @@ void Connection::Close()
     }
 }
 
-SQLRETURN Connection::SqlGetDriverName(tstring& drivername)
+SQLRETURN Connection::SqlGetInfo(SQLUSMALLINT InfoType, tstring& info) const
 {
     if (m_hdbc == NULL)
         return SQL_INVALID_HANDLE;
@@ -117,28 +151,8 @@ SQLRETURN Connection::SqlGetDriverName(tstring& drivername)
         nBufLen = nBufNeeded + 1;
         SQLTCHAR* pBuf = new SQLTCHAR[nBufLen];
         // use SQLGetInfo() function to find out about the driver
-        nRetCode = ::SQLGetInfo(m_hdbc, SQL_DRIVER_NAME, pBuf, nBufLen, &nBufNeeded);
-        drivername.assign( (const TCHAR*) pBuf);
-        delete[] pBuf;
-    } while (SQL_SUCCEEDED(nRetCode) && nBufLen <= nBufNeeded);
-
-    return nRetCode;
-}
-
-SQLRETURN Connection::SqlGetDriverVersion(tstring& driverversion)
-{
-    if (m_hdbc == NULL)
-        return SQL_INVALID_HANDLE;
-
-    SQLRETURN nRetCode = SQL_SUCCESS;
-    SQLSMALLINT nBufNeeded = 32;
-    SQLSMALLINT nBufLen = 0;
-    do {
-        nBufLen = nBufNeeded + 1;
-        SQLTCHAR* pBuf = new SQLTCHAR[nBufLen];
-        // use SQLGetInfo() function to find out about the driver
-        nRetCode = ::SQLGetInfo(m_hdbc, SQL_DRIVER_VER, pBuf, nBufLen, &nBufNeeded);
-        driverversion.assign( (const TCHAR*) pBuf);
+        nRetCode = ::SQLGetInfo(m_hdbc, InfoType, pBuf, nBufLen, &nBufNeeded);
+        info.assign((const TCHAR*)pBuf);
         delete[] pBuf;
     } while (SQL_SUCCEEDED(nRetCode) && nBufLen <= nBufNeeded);
 

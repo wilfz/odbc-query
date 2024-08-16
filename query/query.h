@@ -274,6 +274,16 @@ protected:
     DataRow m_RowData;
     vector<bool> m_Init;
 #endif
+
+    friend class QueryException;
+};
+
+class QueryException : public DbException
+{
+public:
+    QueryException(SQLRETURN ret, const Query& q)
+        : DbException(ret, SQL_HANDLE_STMT, q.m_hstmt)
+    {};
 };
 
 }
