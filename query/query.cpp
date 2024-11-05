@@ -65,13 +65,6 @@ SQLRETURN Query::ExecDirect( tstring statement)
     if (m_hdbc == NULL)
         return SQL_INVALID_HANDLE;
 
-    m_RowFieldState.clear();
-
-    #ifdef USE_ROWDATA
-        m_RowData.clear();
-        m_Init.clear();
-    #endif
-
     if (m_hstmt == NULL)
     {
         // Allocate new Statement Handle based on existing connection
@@ -81,6 +74,17 @@ SQLRETURN Query::ExecDirect( tstring statement)
             throw DbException(nRetCode, SQL_HANDLE_DBC, m_hdbc);
             return nRetCode;
         }
+    }
+    else
+    {
+        // read behind the last result set and
+        // clear all corresponding data of previous call
+        do {
+            nRetCode = SQLMoreResults();
+        } while (SQL_SUCCEEDED(nRetCode));
+
+        if (nRetCode != SQL_NO_DATA_FOUND)
+            return nRetCode;
     }
 
     nRetCode = ::SQLExecDirect( m_hstmt, (SQLTCHAR*) statement.c_str(), SQL_NTS);    // makro sets nRetCode
@@ -2777,6 +2781,15 @@ RETCODE Query::Execute()
     assert(m_hstmt);
     if (m_hdbc == NULL || m_hstmt == NULL)
         return SQL_INVALID_HANDLE;
+
+    // read behind the last result set and
+    // clear all corresponding data of previous call
+    do {
+        nRetCode = SQLMoreResults();
+    } while (SQL_SUCCEEDED(nRetCode));
+
+    if (nRetCode != SQL_NO_DATA_FOUND)
+        return nRetCode;
 
     nRetCode = ::SQLExecute(m_hstmt);
 
