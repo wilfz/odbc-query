@@ -47,6 +47,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: install linux packages
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        sudo apt-get install unixodbc
+        sudo apt-get install unixodbc-dev
+        sudo apt-get install sqlite3
+        sudo apt-get install libsqliteodbc
+
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
