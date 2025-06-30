@@ -88,8 +88,9 @@ jobs:
         mkdir upload/bin
         
     - name: windows-upload
-      if: ${{ matrix.os == '^windows-latest' }}
+      if: ${{ matrix.os == 'windows-latest' }}
       run: |
+        cp query/*.h upload/query/
         cp build/query/Release/odbcquery.lib upload/query/
         cp build/demo/Release/demo.exe upload/bin/
         cp build/qx/Release/qx.exe upload/bin/
@@ -97,6 +98,7 @@ jobs:
     - name: ubuntu-clang-upload
       if: ${{ matrix.c_compiler == 'clang' }}
       run: |
+        cp query/*.h upload/query/
         cp build/query/libodbcquery.a upload/query/
         cp build/demo/demo upload/bin/
         cp build/qx/qx upload/bin/
@@ -104,6 +106,7 @@ jobs:
     - name: ubuntu-gcc-upload
       if: ${{ matrix.c_compiler == 'gcc' }}
       run: |
+        cp query/*.h upload/query/
         cp build/query/libodbcquery.a upload/query/
         cp build/demo/demo upload/bin/
         cp build/qx/qx upload/bin/
