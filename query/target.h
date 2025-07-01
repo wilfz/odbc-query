@@ -32,7 +32,7 @@ namespace linguversa
     class ResultGroup
     {
     protected:
-        uint64_t selector;
+        unsigned long long selector;
         std::tstring firstRowFormat;
         std::tstring eachRowFormat;
         std::tstring lastRowFormat;
