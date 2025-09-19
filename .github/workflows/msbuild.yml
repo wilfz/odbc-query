@@ -53,8 +53,9 @@ jobs:
         # A file, directory or wildcard pattern that describes what to upload
         # Required.
         path: |
-          qx/Release/qx.exe
-          query/Release/*.dll
+          VS2022/Release/qx.exe
+          VS2022/Release/*.dll
+          VS2022/Release/*.lib
           query/*.h
 
         # The desired behavior if no files are found using the provided path.
