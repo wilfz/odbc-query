@@ -61,6 +61,9 @@ jobs:
           VS2022/${{matrix.build_type}}/qx.exe
           VS2022/${{matrix.build_type}}/*.dll
           VS2022/${{matrix.build_type}}/*.lib
+          VS2022/x64/${{matrix.build_type}}/qx.exe
+          VS2022/x64/${{matrix.build_type}}/*.dll
+          VS2022/x64/${{matrix.build_type}}/*.lib
           query/*.h
 
         # The desired behavior if no files are found using the provided path.
