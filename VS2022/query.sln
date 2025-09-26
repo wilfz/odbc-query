@@ -24,10 +24,18 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Debug(wchar)|x64.ActiveCfg = Debug(wchar)|x64
+		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Debug(wchar)|x64.Build.0 = Debug(wchar)|x64
+		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Debug(wchar)|x86.ActiveCfg = Debug(wchar)|Win32
+		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Debug(wchar)|x86.Build.0 = Debug(wchar)|Win32
 		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Debug|x64.ActiveCfg = Debug|x64
 		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Debug|x64.Build.0 = Debug|x64
 		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Debug|x86.ActiveCfg = Debug|Win32
 		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Debug|x86.Build.0 = Debug|Win32
+		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Release(wchar)|x64.ActiveCfg = Release(wchar)|x64
+		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Release(wchar)|x64.Build.0 = Release(wchar)|x64
+		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Release(wchar)|x86.ActiveCfg = Release(wchar)|Win32
+		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Release(wchar)|x86.Build.0 = Release(wchar)|Win32
 		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Release|x64.ActiveCfg = Release|x64
 		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Release|x64.Build.0 = Release|x64
 		{852D8FBF-A122-42A0-B7CA-3D33758C632F}.Release|x86.ActiveCfg = Release|Win32
