@@ -15,7 +15,11 @@ std::tostream& linguversa::operator<<(std::tostream& ar, const DBItem& item)
         ar << item.m_boolVal;
         break;
     case DBItem::lwvt_uchar:
-        ar << item.m_chVal;
+#ifdef UNICODE
+        ar << (unsigned short) item.m_chVal;
+#else
+		ar << item.m_chVal;
+#endif
         break;
     case DBItem::lwvt_short:
         ar << item.m_iVal;
@@ -98,7 +102,15 @@ std::tistream& linguversa::operator>>(std::tistream& ar, DBItem& var)
         ar >> var.m_boolVal;
         break;
     case DBItem::lwvt_uchar:
+#ifdef UNICODE
+    {
+        unsigned short ch = 0;
+        ar >> ch;
+        var.m_chVal = (unsigned char) ch;
+    }
+#else
         ar >> var.m_chVal;
+#endif
         break;
     case DBItem::lwvt_short:
         ar >> var.m_iVal;
@@ -156,7 +168,13 @@ std::tistream& linguversa::operator>>(std::tistream& ar, DBItem& var)
         ba.resize(baSize);
         for (size_t i = 0; i < ba.size(); i++)
         {
+#ifdef UNICODE
+            int ival = 0;
+			ar >> ival;
+			ba[i] = (unsigned char)ival;
+#else
             ar >> ba[i];
+#endif
         }
     }
     break;
