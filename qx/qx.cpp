@@ -99,10 +99,8 @@ int main(int argc, char** argv)
 #ifndef UNICODE
     app.add_option("--csvfile", csvfile, "path of a character separated file")
         ->check(CLI::ExistingPath);
-    app.add_option("--csvdelimiter", csvdelimiter, "column delimiter in csv file")
-        ->needs("--csvfile");
-    app.add_option("--csvdecimalsymbol", csvdecimalsymbols, "decimal symbol in csv file")
-        ->needs("--csvfile");
+    app.add_option("--csvdelimiter", csvdelimiter, "column delimiter in csv file");
+    app.add_option("--csvdecimalsymbol", csvdecimalsymbols, "decimal symbol in csv file");
     app.add_option("--csvcolumns", csvcolumns, "csv column names and types")
         ->needs("--csvfile");
     app.add_flag("--csvnoheader", csvnoheader, "no header line in csv file (all lines are data)")
@@ -271,9 +269,18 @@ int main(int argc, char** argv)
 
     // Microsoft Text Driver only: 
     // copy schema section from qx.ini to schema.ini
-    if (config.length() > 0 && connectionstring.substr(0,22) == _T("Driver={Microsoft Text"))
+    if (connectionstring.substr(0,22) == _T("Driver={Microsoft Text"))
     {
-        ConfigToSchema(sourcepath, config);
+        if (config.length() > 0)
+            ConfigToSchema(sourcepath, config);
+        
+        if (csvdelimiter != _T('\0')) {
+            // TODO: write to schema.ini
+        }
+
+        if (csvdecimalsymbols.length() > 0) {
+            // TODO: write the first character as decimal symbol to schema.ini
+        }
     }
 
     //rowformat = _T("[lfnbr:%5d]\\n");
@@ -942,12 +949,12 @@ void ConfigToSchema(tstring filepath, tstring configname)
 #elif ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
         // Un*x, C++ 17 or higher
         std::filesystem::path fpath(filepath);
-        tstring schemapath = string_format(_T("%s\\schema.ini"), fpath.parent_path().string().c_str());
+        tstring schemapath = string_format(_T("%s/schema.ini"), fpath.parent_path().string().c_str());
         tstring filename = fpath.filename().string();
 #else 
         // Un*x, before C++ 11
         std::size_t botDirPos = filepath.find_last_of("/");
-        tstring schemapath = string_format(_T("%s\\schema.ini"), filepath.substr(0, botDirPos).c_str());
+        tstring schemapath = string_format(_T("%s/schema.ini"), filepath.substr(0, botDirPos).c_str());
         tstring filename = filepath.substr(botDirPos, filepath.length());
 #endif
 
