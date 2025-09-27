@@ -29,7 +29,7 @@ jobs:
 
     strategy:
       matrix:
-        build_type: [Release(wchar)]
+        build_type: [Release, Release(wchar)]
         platform: [x86]
 
     steps:
@@ -47,9 +47,9 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: |
-        msbuild /m /p:"Configuration=${{matrix.build_type}}" /p:Platform=$.{{matrix.platform}} VS2022/odbcquery.vcxproj
-        msbuild /m /p:"Configuration=${{matrix.build_type}}" /p:Platform=$.{{matrix.platform}} VS2022/qx.vcxproj
-        msbuild /m /p:"Configuration=${{matrix.build_type}}" /p:Platform=$.{{matrix.platform}} VS2022/demo.vcxproj
+        msbuild /m /p:"Configuration=${{matrix.build_type}}" /p:Platform=${{matrix.platform}} VS2022/odbcquery.vcxproj
+        msbuild /m /p:"Configuration=${{matrix.build_type}}" /p:Platform=${{matrix.platform}} VS2022/qx.vcxproj
+        msbuild /m /p:"Configuration=${{matrix.build_type}}" /p:Platform=${{matrix.platform}} VS2022/demo.vcxproj
 
     - name: Publish executables, html and readme.txt
       uses: actions/upload-artifact@v4
