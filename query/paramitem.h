@@ -2,8 +2,6 @@
 
 #include "paraminfo.h"
 
-using namespace std;
-
 namespace linguversa
 {
     // internal helper class
