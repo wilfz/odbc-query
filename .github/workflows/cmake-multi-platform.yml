@@ -22,7 +22,6 @@ jobs:
         "${GITHUB_WORKSPACE}/single_header/single_header.sh"
 
     - name: single_header-upload
-      working-directory: "${GITHUB_WORKSPACE}"
       uses: actions/upload-artifact@v4
       with:
         # Name of the artifact to upload.
