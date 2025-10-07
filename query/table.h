@@ -8,14 +8,12 @@
 #include "datarow.h"
 #endif
 
-using namespace std;
-
 namespace linguversa
 {
     typedef struct {
-        tstring ColumnName;
+        std::tstring ColumnName;
         SQLSMALLINT DataType;
-        tstring ColumnType;
+        std::tstring ColumnType;
         SQLSMALLINT SQLDataType;
         SQLINTEGER ColumnSize;
         SQLINTEGER BufferLength;
@@ -35,9 +33,9 @@ namespace linguversa
         void SetDatabase(Connection* pConnection);
         void SetDatabase(Connection& connection);
 
-        SQLRETURN LoadTableInfo(tstring tablename);
+        SQLRETURN LoadTableInfo(std::tstring tablename);
         size_t GetColumnCount() const { return _columnInfo.size(); };
-        short int GetColumnIndex(tstring colname) const;
+        short int GetColumnIndex(std::tstring colname) const;
         const TableColumnInfo& GetColumnInfo(size_t col) const;
 
         // Finish the statement and release all its resources.
@@ -47,6 +45,6 @@ namespace linguversa
         Connection* m_pConnection;
         HDBC m_hdbc;
         HSTMT m_hstmt;
-        vector<TableColumnInfo> _columnInfo;
+        std::vector<TableColumnInfo> _columnInfo;
     };
 }

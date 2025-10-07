@@ -5,8 +5,6 @@
 #include <sql.h>
 #include <sqlext.h>
 
-using namespace std;
-
 namespace linguversa
 {
     // Element of Implementation Parameter Descriptor (IPD):
@@ -32,7 +30,7 @@ namespace linguversa
         // other members
         InputOutputType m_InputOutputType;
         // nur für stored proceduers
-        tstring m_ParamName;
+        std::tstring m_ParamName;
 
         ParamInfo()
         {

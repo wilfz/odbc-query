@@ -225,7 +225,7 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
         sValue = linguversa::FormatTimeStamp( colFmt, var.m_pdate);
         break;
     case lwvt_string:
-        if (var.m_pstring && !colFmt.length() == 0 && colFmt.find(_T('%')) != tstring::npos)
+        if (var.m_pstring && !(colFmt.length() == 0) && colFmt.find(_T('%')) != tstring::npos)
             sValue = string_format(colFmt, var.m_pstring->c_str());
         else
             sValue = var.m_pstring ? *(var.m_pstring) : _T(""); // StrLenFormat(var.m_pstring ? var.m_pstring->c_str() : _T(""), colFmt);
@@ -234,7 +234,7 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
     case lwvt_wstring:
         {
             wstring str = var.m_pstringw ? *(var.m_pstringw) : L"";
-            if (!colFmt.length() == 0 && colFmt.find('%') != wstring::npos)
+            if (!(colFmt.length() == 0) && colFmt.find('%') != wstring::npos)
                 sValue = string_format(colFmt, str.c_str());
             else
                 sValue = str; //StrLenFormat(str, colFmt);
@@ -244,7 +244,7 @@ tstring DBItem::ConvertToString( const DBItem& var, tstring colFmt)
     case lwvt_astring:
         {
             string str = var.m_pstringa ? *(var.m_pstringa) : "";
-            if (!colFmt.length() == 0 && colFmt.find('%') != string::npos)
+            if (!(colFmt.length() == 0) && colFmt.find('%') != string::npos)
                 sValue = string_format(colFmt, str.c_str());
             else
                 sValue = str; //StrLenFormat(str, colFmt);
