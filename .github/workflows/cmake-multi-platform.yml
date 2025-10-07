@@ -11,7 +11,6 @@ on:
 jobs:
   single-header:
     runs-on: ubuntu-latest
-    working-directory: ${{ github.workspace }}
     steps:
     - name: amalgate
       working-directory: query
@@ -23,7 +22,7 @@ jobs:
         "${GITHUB_WORKSPACE}/single_header/single_header.sh"
 
     - name: single_header-upload
-      working-directory: ${GITHUB_WORKSPACE}
+      working-directory: "${GITHUB_WORKSPACE}"
       uses: actions/upload-artifact@v4
       with:
         # Name of the artifact to upload.
