@@ -16,7 +16,7 @@ jobs:
       # run script
       shell: bash
       run: |
-        "./single_header/single_header.sh"
+        ./single_header/single_header.sh
 
     - name: single_header-upload
       uses: actions/upload-artifact@v4
