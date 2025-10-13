@@ -14,10 +14,10 @@ jobs:
     steps:
     - name: amalgate
       shell: bash
-      working-directory: query
       run: |
+        echo Hallo
         # make file runnable, might not be necessary
-        chmod +x "../single_header/single_header.sh"
+        #chmod +x "../single_header/single_header.sh"
 
         # run script
         #"../single_header/single_header.sh"
