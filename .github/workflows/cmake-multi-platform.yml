@@ -13,14 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: amalgate
+      # run script
       shell: bash
       run: |
-        echo Hallo
-        # make file runnable, might not be necessary
-        #chmod +x "../single_header/single_header.sh"
-
-        # run script
-        #"../single_header/single_header.sh"
+        "./single_header/single_header.sh"
 
     - name: single_header-upload
       uses: actions/upload-artifact@v4
