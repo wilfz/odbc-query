@@ -16,10 +16,10 @@ jobs:
       working-directory: query
       run: |
         # make file runnable, might not be necessary
-        chmod +x "${GITHUB_WORKSPACE}/single_header/single_header.sh"
+        chmod +x "../single_header/single_header.sh"
 
         # run script
-        "${GITHUB_WORKSPACE}/single_header/single_header.sh"
+        "../single_header/single_header.sh"
 
     - name: single_header-upload
       uses: actions/upload-artifact@v4
