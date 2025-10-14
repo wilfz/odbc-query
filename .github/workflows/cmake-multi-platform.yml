@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: amalgate
+      working-directory: ${{env.GITHUB_WORKSPACE}}
       # run script
       shell: bash
       run: |
