@@ -2,7 +2,7 @@
 Command line tool **qx** and library **odbcquery** to easily access databases by ODBC in C++<br>
 Multiplatform: Works for Windows and Linux.<br>
 Windows support for x86 and x64, Multibyte and UNICODE.<br>
-## Prerequistes
+## Prerequisites
 To compile and use on linux-like system it may be necessary to install unixodbc first:
 ```bash
 sudo apt-get install unixodbc
