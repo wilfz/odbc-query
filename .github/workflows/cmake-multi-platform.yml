@@ -19,8 +19,8 @@ jobs:
       # run script
       shell: bash
       run: |
-        chmod +x "./single_header/single_header.sh"
-        ./single_header/single_header.sh
+        chmod +x "./headeronly.sh"
+        ./headeronly.sh
 
     - name: single_header-upload
       uses: actions/upload-artifact@v4
