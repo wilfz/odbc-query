@@ -22,7 +22,7 @@ jobs:
         chmod +x "./headeronly.sh"
         ./headeronly.sh
 
-    - name: single_header-upload
+    - name: headeronly-upload
       uses: actions/upload-artifact@v4
       with:
         # Name of the artifact to upload.
@@ -32,7 +32,7 @@ jobs:
         # A file, directory or wildcard pattern that describes what to upload
         # Required.
         path: |
-          single_header/odbcquery.hpp
+          headeronly/odbcquery.hpp
 
         # The desired behavior if no files are found using the provided path.
         # Available Options:
