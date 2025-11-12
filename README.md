@@ -17,7 +17,7 @@ Although there are already some ODBC wrappers for C++ I decided to create this L
 - ANSI/Multibyte and Windows UNICODE
 
 The purpose of this library is neither to cover the complete potential of ODBC, nor to keep programmers away from the underlying API. Instead it should provide an easy way for the most common database-related tasks and give C++ programmers a guideline on how to use the more advanced and specific features of ODBC.  
-## Prerequistes
+## Prerequisites
 To compile and use on linux-like systems it may be necessary to install unixodbc first:
 ```bash
 sudo apt-get install unixodbc
@@ -49,7 +49,7 @@ catch(DbException& ex)
     ...
 }
 ```
-In this example we intantiate a **Connection** object con. The connection string in the Open funcion specifies as data source a SQLite database, which resides in your current working directory of your local file system. That has the advantage that we can play around with the data without tampering real data in a production environment. With other connection strings you may connect to large dstributed database systems.
+In this example we intantiate a **Connection** object con. The connection string in the Open funcion specifies as data source a SQLite database, which resides in your current working directory of your local file system. That has the advantage that we can play around with the data without tampering real data in a production environment. With other connection strings you may connect to large server-based database systems.
 
 Besides Connection we see another library class: **DBException**. Of course it inherits from exception.
 
@@ -73,8 +73,7 @@ catch(DbException& ex)
 ```
 As its name suggests the **Query** class is the central class of the odbcquery library. It is used to execute any SQL satement, not only data queries, but also statements of the data definition language such as "create table" or "drop table" and data manipulation statements such as "insert" or "update". You may see the class name **Query** as a reference to the middle part of "Structured Query Language".
 
-Of course executing the statement "drop table person;" in a newly created database causes an exception, since there is no such table.
+Of course executing the statement "drop table person;" in a newly created database causes an exception, since there is not yet such table.
 
-For the sake of an example program this nevertheless makes sense, since we may want to run the program a second and a third time.
+For this example program this nevertheless makes sense, since we may want to run the program a second and a third time.
 
-In that case we would get an DBException with the next code squence.
