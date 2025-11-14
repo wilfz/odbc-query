@@ -142,30 +142,31 @@ jobs:
 
     - run: |
         mkdir upload
-        mkdir upload/query
         mkdir upload/bin
+        mkdir upload/lib
+        mkdir upload/include
         
     - name: windows-upload
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
-        cp query/*.h upload/query/
-        cp build/query/Release/odbcquery.lib upload/query/
+        cp query/*.h upload/include/
+        cp build/query/Release/odbcquery.lib upload/lib/
         cp build/demo/Release/demo.exe upload/bin/
         cp build/qx/Release/qx.exe upload/bin/
         
     - name: ubuntu-clang-upload
       if: ${{ matrix.c_compiler == 'clang' }}
       run: |
-        cp query/*.h upload/query/
-        cp build/query/libodbcquery.a upload/query/
+        cp query/*.h upload/include/
+        cp build/query/libodbcquery.a upload/lib/
         cp build/demo/demo upload/bin/
         cp build/qx/qx upload/bin/
       
     - name: ubuntu-gcc-upload
       if: ${{ matrix.c_compiler == 'gcc' }}
       run: |
-        cp query/*.h upload/query/
-        cp build/query/libodbcquery.a upload/query/
+        cp query/*.h upload/include/
+        cp build/query/libodbcquery.a upload/lib/
         cp build/demo/demo upload/bin/
         cp build/qx/qx upload/bin/
       
