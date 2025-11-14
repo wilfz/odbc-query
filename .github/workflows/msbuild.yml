@@ -61,10 +61,10 @@ jobs:
         # A file, directory or wildcard pattern that describes what to upload
         # Required.
         path: |
-          VS2022/${{matrix.build_type}}/qx.exe
+          VS2022/${{matrix.build_type}}/*.exe
           VS2022/${{matrix.build_type}}/*.dll
           VS2022/${{matrix.build_type}}/*.lib
-          VS2022/x64/${{matrix.build_type}}/qx.exe
+          VS2022/x64/${{matrix.build_type}}/*.exe
           VS2022/x64/${{matrix.build_type}}/*.dll
           VS2022/x64/${{matrix.build_type}}/*.lib
           query/*.h
