@@ -703,6 +703,90 @@ void TargetStream::InsertAll(Query& query, tstring tablename)
     }
 }
 
+void TargetStream::InsertValues(Query& query, tstring tablename)
+{
+    if (tablename.length() == 0)
+        return;
+
+    short colcount = query.GetODBCFieldCount();
+    if (colcount <= 0)
+        return;
+
+    tostream& os = (*this);
+
+    // ***********************************************************************
+    // Now we retrieve data by iterating over the rows of the result set.
+    // If Result set has 0 rows it will skip the loop because nRetCode is set to SQL_NO_DATA immediately
+    // ***********************************************************************
+    bool bFirstRow = true;
+    for (SQLRETURN nRetCode = query.Fetch(); nRetCode != SQL_NO_DATA; nRetCode = query.Fetch())
+    {
+        os << ::string_format(_T("insert into %01s( "), tablename.c_str());
+        // ***********************************************************************
+        // Retrieve meta information on the columns of the result set.
+        // ***********************************************************************
+        for (short col = 0; col < colcount; col++)
+        {
+            FieldInfo fieldinfo;
+            query.GetODBCFieldInfo(col, fieldinfo);
+            os << fieldinfo.m_strName;
+            if (col < colcount - 1)
+                os << _T(", ");
+        }
+        os << _T(")") << endl;
+        os << _T(" values (");
+
+        for (short col = 0; col < colcount; col++)
+        {
+            DBItem dbitem;
+            lvstring str;
+            FieldInfo fi;
+            query.GetFieldValue(col, dbitem);
+            switch (dbitem.m_nVarType)
+            {
+            case DBItem::lwvt_null:
+                os << _T("NULL");
+                break;
+            case DBItem::lwvt_astring:
+            case DBItem::lwvt_wstring:
+            case DBItem::lwvt_string:
+                str = DBItem::ConvertToString(dbitem);
+                // change ' to '':
+                str.Replace(_T("'"), _T("''"));
+                os << _T("'") << str << _T("'");
+                break;
+            case DBItem::lwvt_guid:
+                os << _T("'") << DBItem::ConvertToString(dbitem) << _T("'");
+                break;
+            case DBItem::lwvt_date:
+                os << _T("'") << query.FormatFieldValue(col) << _T("'");
+                break;
+            case DBItem::lwvt_single:
+            case DBItem::lwvt_double:
+                // don't omit decimal places
+                query.GetODBCFieldInfo(col, fi);
+                if (fi.m_nSQLType == SQL_NUMERIC || fi.m_nSQLType == SQL_DECIMAL)
+                    os << DBItem::ConvertToString(dbitem, fi.GetDefaultFormat());
+                else
+                    os << DBItem::ConvertToString(dbitem);
+                break;
+            default:
+                os << DBItem::ConvertToString(dbitem);
+            }
+            if (col >= colcount - 1)
+                os << _T(")") << endl;
+            else
+                os << _T(", ");
+        }
+    }
+
+    if (!bFirstRow)
+    {
+        os << _T(";");
+        Apply();
+    }
+}
+
 SQLRETURN TargetStream::Apply()
 {
     SQLRETURN ret = SQL_SUCCESS;

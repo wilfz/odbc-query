@@ -82,6 +82,7 @@ int main(int argc, char** argv)
     tstring targetspec;
     tstring create;
     tstring insert;
+    tstring insertvalues;
     tstring createinsert;
     bool verbose = false;
     bool listdrivers = false;
@@ -121,9 +122,10 @@ int main(int argc, char** argv)
     app.add_option("--decimalformat", decimalformat, "c-style format string for decimal values")->excludes("--format");
     app.add_option("--datetimeformat", datetimeformat, "format string for datetime values eg. YYYY-MM-DD")->excludes("--format");
     app.add_option("--create", create, "generate create statement for specified tablename")->excludes("--format")->excludes("--fieldseparator");
-    app.add_option("--insert", insert, "generate insert statements for specified tablename")->excludes("--format")->excludes("--fieldseparator");
+    app.add_option("--insert", insert, "generate one insert statement for specified tablename")->excludes("--format")->excludes("--fieldseparator");
+    app.add_option("--insertvalues", insertvalues, "generate separate insert statements for specified tablename")->excludes("--format")->excludes("--fieldseparator")->excludes("--insert");
     app.add_option("--createinsert", createinsert, "generate create and insert statements for specified tablename")
-        ->excludes("--format")->excludes("--fieldseparator")->excludes("--create")->excludes("--insert");
+        ->excludes("--format")->excludes("--fieldseparator")->excludes("--create")->excludes("--insert")->excludes("--insertvalues");
     app.add_option("--input", input, "filepath of input file containing SQL statements")
         ->check(CLI::ExistingFile | CLI::Validator([](string& s) { return s == "stdin" ? "" : "stdin"; }, "stdin"));;
     app.add_option("--outputfile", outputfile, "filepath of output file");
@@ -446,6 +448,14 @@ int main(int argc, char** argv)
                     // create one insert statement for all rows.
                     os.InsertAll(query, insert);
                 }
+                else if (insertvalues.length() > 0)
+                {
+                    if (!datetimeformat.empty())
+                        query.SetCTypeFormat(SQL_C_TIMESTAMP, datetimeformat);
+                    // Iterate over all rows of the curnnt result set and
+                    // create a separate insert statement for each row.
+                    os.InsertValues(query, insertvalues);
+                }
                 else if (create.length() == 0) // the default only applies if no output format is not given
                 {
                     // Output the complete current result set in standard format.
@@ -659,8 +669,8 @@ void ListDataSources(tstring drivername)
     for (SQLRETURN nRetCode = environment.FetchDataSourceInfo(dsn, currentdrivername, SQL_FETCH_FIRST); SQL_SUCCEEDED(nRetCode);
         nRetCode = environment.FetchDataSourceInfo(dsn, currentdrivername))
     {
-		if (drivername.empty() || currentdrivername == drivername)
-			tcout << dsn << _T("|") << currentdrivername << endl;
+        if (drivername.empty() || currentdrivername == drivername)
+            tcout << dsn << _T("|") << currentdrivername << endl;
     }
 
     tcout << endl;

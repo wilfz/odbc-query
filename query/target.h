@@ -73,7 +73,7 @@ namespace linguversa
     class TargetStream : public std::tostream
     {
     public:
-    	// default constructor
+        // default constructor
         TargetStream() : std::tostream(nullptr) { _pCon = nullptr; };
         TargetStream( std::tstreambuf* pbuf) : std::tostream(pbuf) { _pCon = nullptr; };
         TargetStream( linguversa::Connection& con);
@@ -85,6 +85,7 @@ namespace linguversa
         void OutputFormatted( linguversa::Query& query, tstring rowformat);
         void CreateTable( const linguversa::Query& query, tstring tablename);
         void InsertAll( linguversa::Query& query, tstring tablename);
+        void InsertValues(linguversa::Query& query, tstring tablename);
 
         bool IsODBC() { return (_pCon != nullptr); };
         SQLRETURN Apply();
